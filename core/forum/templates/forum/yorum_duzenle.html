@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Yorum Düzenle - Forum - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Yorum Düzenle</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Yorumunuzu düzenleyin</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Yorum Düzenleme Formu -->
+    <section class="forum-section py-5">
+      <div class="container">
+        <!-- Mesaj Bildirimleri -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Üst Navigasyon -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="forum-breadcrumb">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-0">
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'forum:forum_main' %}">Forum</a>
+                  </li>
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'forum:kategori_detay' kategori_slug=yorum.konu.kategori.slug %}">{{ yorum.konu.kategori.baslik }}</a>
+                  </li>
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'forum:konu_detay' kategori_slug=yorum.konu.kategori.slug konu_slug=yorum.konu.slug %}">{{ yorum.konu.baslik|truncatechars:30 }}</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">Yorum Düzenle</li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <!-- Yorum Düzenleme Formu -->
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-edit me-2" style="color: #6f42c1;"></i>Yorum Düzenle</h4>
+              </div>
+              <div class="card-body">
+                <form method="post">
+                  {% csrf_token %}
+
+                  <div class="form-group mb-4">
+                    <label for="icerik" class="form-label fw-bold">Yorum İçeriği</label>
+                    <textarea name="icerik" id="icerik" class="form-control" rows="8" placeholder="Yorum içeriğini yazın..." required>{{ yorum.icerik }}</textarea>
+                  </div>
+
+                  <div class="forum-kurallar alert alert-info mb-4">
+                    <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i> Forum Kuralları</h5>
+                    <ul class="mb-0">
+                      <li>Saygılı ve kibar bir dil kullanın.</li>
+                      <li>Tıbbi tavsiye vermek yerine deneyim paylaşın.</li>
+                      <li>Kişisel bilgilerinizi paylaşmamaya özen gösterin.</li>
+                    </ul>
+                  </div>
+
+                  <div class="d-flex justify-content-end">
+                    <a href="{% url 'forum:konu_detay' kategori_slug=yorum.konu.kategori.slug konu_slug=yorum.konu.slug %}" class="btn btn-outline-secondary me-2">İptal</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i> Kaydet</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Forum Stilleri */
+    .page-banner {
+      background: linear-gradient(135deg, #6f42c1 0%, #9e77e0 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 100px 0 120px;
+      margin-top: -60px;
+    }
+    
+    .badge.bg-primary {
+      background-color: #6f42c1 !important;
+    }
+    
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .forum-section h5 {
+      color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary:hover {
+      background-color: #5a32a3;
+      border-color: #5a32a3;
+    }
+    
+    .form-label {
+      color: #212529;
+    }
+  </style>
+{% endblock %}

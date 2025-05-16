@@ -1,0 +1,45 @@
+{% load static %}
+<div class="client-carousel client-carousel--home">
+    <div class="container">
+        <div class="client-carousel__content">
+            <h4 class="client-carousel__title">İş Birliklerimiz</h4>
+        </div>
+        <div class="client-carousel__carousel eduhive-owl__carousel owl-theme owl-carousel" data-owl-options="{
+            &quot;items&quot;: 5,
+            &quot;margin&quot;: 65,
+            &quot;smartSpeed&quot;: 700,
+            &quot;loop&quot;: true,
+            &quot;autoplay&quot;: 6000,
+            &quot;nav&quot;: false,
+            &quot;dots&quot;: false,
+            &quot;responsive&quot;: {
+                &quot;0&quot;: {&quot;items&quot;: 2, &quot;margin&quot;: 50},
+                &quot;500&quot;: {&quot;items&quot;: 3, &quot;margin&quot;: 60},
+                &quot;768&quot;: {&quot;items&quot;: 3, &quot;margin&quot;: 80},
+                &quot;992&quot;: {&quot;items&quot;: 4, &quot;margin&quot;: 60},
+                &quot;1200&quot;: {&quot;items&quot;: 5, &quot;margin&quot;: 65}
+            }
+        }">
+            <div class="client-carousel__item">
+                <img src="{% static 'assets/images/brand/hastane-1.png' %}" alt="Hastane 1" class="client-carousel__image">
+                <img src="{% static 'assets/images/brand/hastane-1-hover.png' %}" alt="Hastane 1" class="client-carousel__hover-image">
+            </div>
+            <div class="client-carousel__item">
+                <img src="{% static 'assets/images/brand/hastane-2.png' %}" alt="Hastane 2" class="client-carousel__image">
+                <img src="{% static 'assets/images/brand/hastane-2-hover.png' %}" alt="Hastane 2" class="client-carousel__hover-image">
+            </div>
+            <div class="client-carousel__item">
+                <img src="{% static 'assets/images/brand/hastane-3.png' %}" alt="Hastane 3" class="client-carousel__image">
+                <img src="{% static 'assets/images/brand/hastane-3-hover.png' %}" alt="Hastane 3" class="client-carousel__hover-image">
+            </div>
+            <div class="client-carousel__item">
+                <img src="{% static 'assets/images/brand/hastane-4.png' %}" alt="Hastane 4" class="client-carousel__image">
+                <img src="{% static 'assets/images/brand/hastane-4-hover.png' %}" alt="Hastane 4" class="client-carousel__hover-image">
+            </div>
+            <div class="client-carousel__item">
+                <img src="{% static 'assets/images/brand/hastane-5.png' %}" alt="Hastane 5" class="client-carousel__image">
+                <img src="{% static 'assets/images/brand/hastane-5-hover.png' %}" alt="Hastane 5" class="client-carousel__hover-image">
+            </div>
+        </div>
+    </div>
+</div> 

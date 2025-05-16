@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Yeni Mesaj - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Yeni Mesaj</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Yeni bir mesaj oluşturun ve gönderin.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Yeni Mesaj Section -->
+    <section class="new-message-section py-5">
+      <div class="container">
+        <!-- Kontrol Çubuğu -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'mesajlar' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Mesajlara Dön</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mesaj Formu -->
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-pen-to-square me-2 text-primary"></i>Yeni Mesaj Oluştur</h4>
+              </div>
+              <div class="card-body">
+                <form method="post" action="{% url 'yeni_mesaj' %}">
+                  {% csrf_token %}
+
+                  <!-- Alıcı Seçimi -->
+                  <div class="mb-3">
+                    <label for="alici" class="form-label">Alıcı <span class="text-danger">*</span></label>
+                    <select name="alici" id="alici" class="form-select" required>
+                      <option value="">-- Alıcı Seçin --</option>
+                      {% for kullanici in staff_kullanicilar %}
+                        <option value="{{ kullanici.id }}">
+                          {{ kullanici.fullname|default:kullanici.username }}
+                          {% if kullanici.is_staff %} (Yönetici){% endif %}
+                          {% if kullanici.id == user.sorumlu_staff.id %} (Sorumlu Personel){% endif %}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <div class="form-text">
+                      {% if user.is_staff %}
+                        Mesaj göndermek istediğiniz kullanıcıyı seçin.
+                      {% else %}
+                        {% if user.sorumlu_staff %}
+                          Sadece size atanmış sorumlu personele mesaj gönderebilirsiniz.
+                        {% else %}
+                          Sadece yöneticilere mesaj gönderebilirsiniz.
+                        {% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Konu -->
+                  <div class="mb-3">
+                    <label for="konu" class="form-label">Konu <span class="text-danger">*</span></label>
+                    <input type="text" name="konu" id="konu" class="form-control" placeholder="Mesaj konusunu girin" required />
+                  </div>
+
+                  <!-- İçerik -->
+                  <div class="mb-4">
+                    <label for="icerik" class="form-label">İçerik <span class="text-danger">*</span></label>
+                    <textarea name="icerik" id="icerik" class="form-control" rows="10" placeholder="Mesaj içeriğini girin" required></textarea>
+                  </div>
+
+                  <!-- Gönder -->
+                  <div class="text-end">
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-paper-plane me-2"></i>Mesajı Gönder</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #674cef;
+      box-shadow: 0 0 0 0.25rem rgba(103, 76, 239, 0.25);
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Tüm Forum Konuları - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner" style="background-color: #6610f2; background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%); padding: 100px 0 120px; position: relative; overflow: hidden; margin-top: -60px; color: white;">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Tüm Forum Konuları</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Sistemdeki tüm forum konularını bu sayfadan görüntüleyebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- İçerik -->
+    <section class="konular-section py-5">
+      <div class="container">
+        <!-- Navigasyon -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'forum:forum_main' %}">Forum</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Tüm Konular</li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+        
+        <!-- Sıralama Seçenekleri -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <form method="get" action="{% url 'forum:tum_konular' %}" class="form-inline">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="sirala" class="me-2">Sıralama:</label>
+                        <select name="sirala" id="sirala" class="form-select" onchange="this.form.submit()">
+                          <option value="-olusturma_tarihi" {% if siralama == '-olusturma_tarihi' %}selected{% endif %}>En Yeni</option>
+                          <option value="olusturma_tarihi" {% if siralama == 'olusturma_tarihi' %}selected{% endif %}>En Eski</option>
+                          <option value="-goruntulenme" {% if siralama == '-goruntulenme' %}selected{% endif %}>En Çok Görüntülenen</option>
+                          <option value="baslik" {% if siralama == 'baslik' %}selected{% endif %}>Başlık (A-Z)</option>
+                          <option value="-baslik" {% if siralama == '-baslik' %}selected{% endif %}>Başlık (Z-A)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                      <a href="{% url 'forum:yeni_konu' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Yeni Konu Aç
+                      </a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Konular Listesi -->
+        <div class="row">
+          <div class="col-12">
+            <div class="list-group">
+              {% for konu in konular %}
+                <div class="list-group-item list-group-item-action">
+                  <div class="d-flex w-100 justify-content-between mb-1">
+                    <h5 class="mb-1">
+                      {% if konu.sabit %}
+                        <i class="fas fa-thumbtack text-warning me-1" title="Sabit Konu"></i>
+                      {% endif %}
+                      {% if konu.kapali %}
+                        <i class="fas fa-lock text-muted me-1" title="Kapalı Konu"></i>
+                      {% endif %}
+                      <a href="{% url 'forum:konu_detay' kategori_slug=konu.kategori.slug konu_slug=konu.slug %}">
+                        {{ konu.baslik }}
+                      </a>
+                    </h5>
+                    <small class="text-muted">{{ konu.olusturma_tarihi|date:"d.m.Y H:i" }}</small>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small class="text-muted">
+                        <i class="fas fa-folder-open me-1"></i> 
+                        <a href="{% url 'forum:kategori_detay' kategori_slug=konu.kategori.slug %}" class="text-decoration-none">
+                          {{ konu.kategori.baslik }}
+                        </a>
+                      </small>
+                      <span class="mx-2">•</span>
+                      <small class="text-muted">
+                        <i class="fas fa-user me-1"></i> {{ konu.yazar.username }}
+                      </small>
+                    </div>
+                    <div>
+                      <span class="badge bg-secondary me-1" title="Görüntülenme Sayısı">
+                        <i class="fas fa-eye me-1"></i> {{ konu.goruntulenme }}
+                      </span>
+                      <span class="badge bg-primary" title="Yorum Sayısı">
+                        <i class="fas fa-comment me-1"></i> {{ konu.yorum_sayisi }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <div class="alert alert-info mt-3">
+                  <i class="fas fa-info-circle me-2"></i> Henüz hiç konu bulunmuyor. İlk konuyu siz açabilirsiniz!
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sayfalama -->
+        {% if konular.has_other_pages %}
+          <div class="row mt-4">
+            <div class="col-12">
+              <nav aria-label="Sayfalama">
+                <ul class="pagination justify-content-center">
+                  {% if konular.has_previous %}
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa={{ konular.previous_page_number }}{% if siralama %}&sirala={{ siralama }}{% endif %}" aria-label="Önceki">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                  {% endif %}
+                  
+                  {% for i in konular.paginator.page_range %}
+                    {% if konular.number == i %}
+                      <li class="page-item active">
+                        <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
+                      </li>
+                    {% elif i > konular.number|add:'-3' and i < konular.number|add:'3' %}
+                      <li class="page-item">
+                        <a class="page-link" href="?sayfa={{ i }}{% if siralama %}&sirala={{ siralama }}{% endif %}">{{ i }}</a>
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                  
+                  {% if konular.has_next %}
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa={{ konular.next_page_number }}{% if siralama %}&sirala={{ siralama }}{% endif %}" aria-label="Sonraki">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                  {% endif %}
+                </ul>
+              </nav>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .list-group-item {
+      transition: all 0.2s ease;
+    }
+    
+    .list-group-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+{% endblock %} 

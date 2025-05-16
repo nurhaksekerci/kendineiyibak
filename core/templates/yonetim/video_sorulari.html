@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ video.baslik }} Soruları - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Video Soruları</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.first_name|default:request.user.username }}! "{{ video.baslik }}" videosuna ait soruları yönetebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Soru Listesi -->
+    <section class="yonetim-panel section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'modul_videolari' video.modul.id %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Videolara Dön</a>
+                <a href="{% url 'video_duzenle' video.id %}" class="btn btn-warning ms-2"><i class="fa fa-edit"></i> Videoyu Düzenle</a>
+              </div>
+              <a href="{% url 'soru_ekle' video.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Soru Ekle</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="card modern-card">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="d-flex align-items-center">
+                    <div class="category-icon me-3">
+                      <i class="fa fa-question-circle text-purple"></i>
+                    </div>
+                    <h3 class="mb-0">{{ video.modul.baslik }} > {{ video.baslik }} - Sorular</h3>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Soru ara..." id="soruArama" />
+                        <button class="btn btn-purple" type="button" id="soruAramaBtn"><i class="fas fa-search"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {% if sorular %}
+                  <div class="kategori-container">
+                    <table class="table modern-table" id="soruTablosu">
+                      <thead>
+                        <tr>
+                          <th style="width: 60px;">ID</th>
+                          <th>Soru</th>
+                          <th style="width: 120px;">Soru Türü</th>
+                          <th style="width: 100px;">Durum</th>
+                          <th style="width: 120px;">İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for soru in sorular %}
+                          <tr class="soru-satir">
+                            <td>{{ soru.id }}</td>
+                            <td>{{ soru.soru_metni|truncatechars:50 }}</td>
+                            <td>{{ soru.get_soru_tipi_display_name }}</td>
+                            <td>
+                              {% if soru.aktif %}
+                                <span class="badge bg-success rounded-pill">Aktif</span>
+                              {% else %}
+                                <span class="badge bg-danger rounded-pill">Pasif</span>
+                              {% endif %}
+                            </td>
+                            <td>
+                              <div class="d-flex">
+                                <a href="{% url 'soru_duzenle' soru.id %}" class="btn btn-warning btn-sm action-btn me-2" title="Düzenle"><i class="fa fa-edit"></i></a>
+                                <button type="button" class="btn btn-danger btn-sm action-btn" data-bs-toggle="modal" data-bs-target="#silModal-soru-{{ soru.id }}" title="Sil"><i class="fa fa-trash"></i></button>
+                              </div>
+
+                              <!-- Silme Modal -->
+                              <div class="modal fade" id="silModal-soru-{{ soru.id }}" tabindex="-1" aria-labelledby="silModalLabel-{{ soru.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="silModalLabel-{{ soru.id }}">Soru Sil</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                      <p>Bu soruyu silmek istediğinize emin misiniz?</p>
+                                      <p>
+                                        <strong>Soru:</strong> {{ soru.soru_metni }}
+                                      </p>
+                                      <p class="text-danger">Bu işlem geri alınamaz ve soruya ait tüm seçenekler de silinecektir!</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                      <form action="{% url 'soru_sil' soru.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Sil</button>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="5" class="text-center">Bu videoya ait soru bulunmamaktadır.</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Sayfalama -->
+                  <div class="pagination-container mt-4 d-flex justify-content-center">
+                    <nav aria-label="Sayfalama">
+                      <ul class="pagination" id="soruSayfalama">
+                        <li class="page-item" id="soruIlkSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="İlk Sayfa"><span aria-hidden="true">&laquo;</span></a>
+                        </li>
+                        <li class="page-item" id="soruOncekiSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Önceki"><span aria-hidden="true">&lsaquo;</span></a>
+                        </li>
+                        <!-- Sayfa numaraları burada dinamik olarak eklenecek -->
+                        <li class="page-item" id="soruSonrakiSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Sonraki"><span aria-hidden="true">&rsaquo;</span></a>
+                        </li>
+                        <li class="page-item" id="soruSonSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Son Sayfa"><span aria-hidden="true">&raquo;</span></a>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                {% else %}
+                  <div class="alert alert-info">Bu videoya ait soru bulunmamaktadır.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .yonetim-panel {
+      padding: 80px 0;
+    }
+    
+    /* Modern kart ve tablo stilleri */
+    .modern-card {
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      border: none;
+      background-color: #fff;
+    }
+    
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .text-purple {
+      color: #6f42c1;
+    }
+    
+    .btn-purple {
+      background-color: #6f42c1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .btn-purple:hover {
+      background-color: #5a35a0;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+    }
+    
+    .search-input {
+      border-radius: 5px 0 0 5px;
+      border: 1px solid #e2e2e2;
+      padding: 8px 15px;
+    }
+    
+    .modern-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+    
+    .modern-table thead th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .modern-table tbody tr {
+      transition: all 0.2s;
+    }
+    
+    .modern-table tbody tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+    
+    .modern-table tbody tr:hover {
+      background-color: #f0edfa;
+    }
+    
+    .modern-table td {
+      padding: 15px;
+      vertical-align: middle;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .kategori-container {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    /* Pagination Styling */
+    .pagination .page-item .page-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 5px;
+      font-weight: 500;
+      color: #6c5ce7;
+      background-color: #f0f0f0;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .pagination .page-item.active .page-link {
+      background-color: #6f42c1;
+      color: white;
+    }
+    
+    .pagination .page-item .page-link:hover {
+      background-color: #d8d8d8;
+      z-index: 1;
+    }
+    
+    .pagination .page-item.active .page-link:hover {
+      background-color: #6f42c1;
+    }
+    
+    .search-box .input-group {
+      width: 250px;
+    }
+    
+    .search-box .form-control {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    
+    .search-box .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    
+    /* Gizli satırlar için stil */
+    .gizli-satir {
+      display: none !important;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // SORU SAYFALAMA VE ARAMA İŞLEMLERİ
+      // Soru sayfalama değişkenleri ve işlevleri
+      const soruSatirlarHepsi = document.querySelectorAll('.soru-satir')
+      const SORU_SAYFA_BASINA = 10 // Her sayfada 10 soru gösterilecek
+      let soruMevcutSayfa = 1
+      let soruToplamSayfa = Math.ceil(soruSatirlarHepsi.length / SORU_SAYFA_BASINA)
+    
+      // Soru sayfalama elementleri
+      const soruSayfalamaContainer = document.getElementById('soruSayfalama')
+      const soruIlkSayfaBtn = document.getElementById('soruIlkSayfa')
+      const soruOncekiSayfaBtn = document.getElementById('soruOncekiSayfa')
+      const soruSonrakiSayfaBtn = document.getElementById('soruSonrakiSayfa')
+      const soruSonSayfaBtn = document.getElementById('soruSonSayfa')
+    
+      // Soru sayfa numaralarını oluştur
+      function soruSayfaNumaralariOlustur() {
+        // Önce mevcut sayfa numaralarını temizle
+        const sayfaNumaralari = soruSayfalamaContainer.querySelectorAll('.sayfa-numara')
+        sayfaNumaralari.forEach((numara) => numara.remove())
+    
+        // Sayfa numaralarını ekle (en fazla 5 sayfa gösterilecek)
+        let baslangicSayfa = Math.max(1, soruMevcutSayfa - 2)
+        let bitisSayfa = Math.min(soruToplamSayfa, baslangicSayfa + 4)
+    
+        if (bitisSayfa - baslangicSayfa < 4) {
+          baslangicSayfa = Math.max(1, bitisSayfa - 4)
+        }
+    
+        for (let i = baslangicSayfa; i <= bitisSayfa; i++) {
+          const sayfaItem = document.createElement('li')
+          sayfaItem.className = 'page-item sayfa-numara'
+          if (i === soruMevcutSayfa) {
+            sayfaItem.classList.add('active')
+            const spanElement = document.createElement('span')
+            spanElement.className = 'page-link'
+            spanElement.textContent = i
+            sayfaItem.appendChild(spanElement)
+          } else {
+            const linkElement = document.createElement('a')
+            linkElement.className = 'page-link'
+            linkElement.href = 'javascript:void(0)'
+            linkElement.textContent = i
+            linkElement.addEventListener('click', function () {
+              soruSayfayaGit(i)
+            })
+            sayfaItem.appendChild(linkElement)
+          }
+          soruSayfalamaContainer.insertBefore(sayfaItem, soruSonrakiSayfaBtn)
+        }
+      }
+    
+      // Soru satırlarını göster/gizle
+      function soruSayfalariGuncelle() {
+        const baslangicIndex = (soruMevcutSayfa - 1) * SORU_SAYFA_BASINA
+        const bitisIndex = baslangicIndex + SORU_SAYFA_BASINA
+    
+        // Önce tüm satırları gizle
+        soruSatirlarHepsi.forEach((satir) => {
+          satir.style.display = 'none'
+        })
+    
+        // Sadece mevcut sayfadaki satırları göster (filtrelenmiş varsa onları dikkate al)
+        const gosterilecekSatirlar = document.querySelectorAll('.soru-satir:not(.gizli-satir)')
+        let gosterilenSayisi = 0
+    
+        gosterilecekSatirlar.forEach((satir, index) => {
+          if (index >= baslangicIndex && index < bitisIndex) {
+            satir.style.display = ''
+            gosterilenSayisi++
+          }
+        })
+    
+        // Soru sayfalama butonlarını güncelle
+        soruIlkSayfaBtn.classList.toggle('disabled', soruMevcutSayfa === 1)
+        soruOncekiSayfaBtn.classList.toggle('disabled', soruMevcutSayfa === 1)
+        soruSonrakiSayfaBtn.classList.toggle('disabled', soruMevcutSayfa === soruToplamSayfa || gosterilenSayisi === 0)
+        soruSonSayfaBtn.classList.toggle('disabled', soruMevcutSayfa === soruToplamSayfa || gosterilenSayisi === 0)
+    
+        // Soru sayfa numaralarını güncelle
+        soruSayfaNumaralariOlustur()
+      }
+    
+      // Belirli bir soru sayfasına git
+      function soruSayfayaGit(sayfaNo) {
+        soruMevcutSayfa = sayfaNo
+        soruSayfalariGuncelle()
+      }
+    
+      // Soru arama fonksiyonu
+      function soruAra(arananMetin) {
+        arananMetin = arananMetin.toLowerCase().trim()
+    
+        soruSatirlarHepsi.forEach((satir) => {
+          const soruMetni = satir.querySelector('td:nth-child(2)').textContent.toLowerCase()
+          const soruTipi = satir.querySelector('td:nth-child(3)').textContent.toLowerCase()
+    
+          if (arananMetin === '' || soruMetni.includes(arananMetin) || soruTipi.includes(arananMetin)) {
+            satir.classList.remove('gizli-satir')
+          } else {
+            satir.classList.add('gizli-satir')
+          }
+        })
+    
+        // Toplam sayfa sayısını güncelle ve ilk sayfaya dön
+        const filtrelenmisUnsurlar = document.querySelectorAll('.soru-satir:not(.gizli-satir)')
+        soruToplamSayfa = Math.ceil(filtrelenmisUnsurlar.length / SORU_SAYFA_BASINA)
+        soruToplamSayfa = soruToplamSayfa === 0 ? 1 : soruToplamSayfa // En az 1 sayfa olsun
+        soruMevcutSayfa = 1
+    
+        // Soru sayfalarını yeniden göster
+        soruSayfalariGuncelle()
+      }
+    
+      // Soru sayfalama olaylarını ekle
+      soruIlkSayfaBtn.addEventListener('click', function () {
+        if (soruMevcutSayfa !== 1) soruSayfayaGit(1)
+      })
+    
+      soruOncekiSayfaBtn.addEventListener('click', function () {
+        if (soruMevcutSayfa > 1) soruSayfayaGit(soruMevcutSayfa - 1)
+      })
+    
+      soruSonrakiSayfaBtn.addEventListener('click', function () {
+        if (soruMevcutSayfa < soruToplamSayfa) soruSayfayaGit(soruMevcutSayfa + 1)
+      })
+    
+      soruSonSayfaBtn.addEventListener('click', function () {
+        if (soruMevcutSayfa !== soruToplamSayfa) soruSayfayaGit(soruToplamSayfa)
+      })
+    
+      // Soru arama olayını ekle
+      const soruAramaKutusu = document.getElementById('soruArama')
+      const soruAramaButonu = document.getElementById('soruAramaBtn')
+    
+      soruAramaButonu.addEventListener('click', function () {
+        soruAra(soruAramaKutusu.value)
+      })
+    
+      soruAramaKutusu.addEventListener('keyup', function (event) {
+        if (event.key === 'Enter') {
+          soruAra(soruAramaKutusu.value)
+        }
+      })
+    
+      // Sayfa yüklendiğinde ilk soru sayfasını göster
+      soruSayfalariGuncelle()
+    })
+  </script>
+{% endblock %}

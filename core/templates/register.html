@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Kayıt Ol - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content"></div>
+          </div>
+        </div>
+      </div>
+      <!--       <div class="banner-shape">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#fff" fill-opacity="1" d="M0,96L120,128C240,160,480,224,720,234.7C960,245,1200,203,1320,181.3L1440,160L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z"></path>
+      </svg>
+    </div>       -->
+    </section>
+
+    <!-- Register Section -->
+    <section class="login-page section-space">
+      <div class="container">
+        <div class="row gutter-y-50 align-items-center">
+          <div class="col-lg-6">
+            <div class="login-page__image">
+              <div class="login-page__image__inner">
+                <img src="{% static 'assets/images/auth-resim.jpg' %}" alt="register" />
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <form class="login-page__form" method="post" action="{% url 'kayit' %}">
+              {% csrf_token %}
+              <div class="login-page__form__inner">
+                <div class="login-page__form__top">
+                  <!-- <img src="{% static 'assets/images/logo.png' %}" alt="logo" width="167" class="login-page__form__logo" /> -->
+                  <h3 class="login-page__form__title">Hoş geldiniz! Hesabınızı oluşturun</h3>
+                </div>
+                <div class="login-page__form__wrapp">
+                  <div class="login-page__form__input-box">
+                    <label for="register_username" class="login-page__form__label">Telefon Numarası</label>
+                    <input style="color: gray;" type="tel" id="register_username" name="username" placeholder="Örn: 05xxxxxxxxx" pattern="(05\d{9}|5\d{9}|\+905\d{9})" required />
+                    <div class="invalid-feedback" style="display: none;">
+                      Lütfen geçerli bir Türk telefon numarası girin (05xxxxxxxxx formatında)
+                    </div>
+                  </div>
+                  <div class="login-page__form__input-box">
+                    <label for="register_fullname" class="login-page__form__label">Ad Soyad</label>
+                    <input style="color: gray;" type="text" id="register_fullname" name="fullname" placeholder="Ad Soyad" required />
+                  </div>
+                  <div class="login-page__form__input-box">
+                    <label for="register_email" class="login-page__form__label">Email (isteğe bağlı)</label>
+                    <input style="color: gray;" type="email" id="register_email" name="email" placeholder="Email" />
+                    <small class="text-muted">Bu alan boş bırakılabilir</small>
+                  </div>
+                  <div class="login-page__form__input-box">
+                    <label for="register_password" class="login-page__form__label">Şifre</label>
+                    <div class="login-page__form__input-box__inner">
+                      <input type="password" id="register_password" name="password1" placeholder="Şifrenizi girin" class="toggle-password-input" required />
+                      <i class="toggle-password-icon fa fa-fw fa-eye-slash"></i>
+                    </div>
+                  </div>
+                  <div class="login-page__form__input-box">
+                    <label for="register_password_confirm" class="login-page__form__label">Şifre Tekrarı</label>
+                    <div class="login-page__form__input-box__inner">
+                      <input type="password" id="register_password_confirm" name="password2" placeholder="Şifrenizi tekrar girin" class="toggle-password-input" required />
+                      <i class="toggle-password-icon fa fa-fw fa-eye-slash"></i>
+                    </div>
+                  </div>
+                  <div class="login-page__form__input-box login-page__form__input-box--3">
+                    <label class="login-page__form__checked-box" for="privacy-policy">
+                      <input type="checkbox" name="privacy-policy" id="privacy-policy" required />
+                      <span></span>
+                      <p style="margin-left: 40px;">
+                        <a href="#" id="privacy-policy-link">Kullanıcı sözleşmesini</a> kabul ediyorum.
+                      </p>
+                    </label>
+                    <div class="policy-error" style="display: none; color: #dc3545; margin-top: 8px; font-weight: 500;">
+                      <i class="fas fa-exclamation-triangle me-2"></i> Devam etmek için kullanıcı sözleşmesini kabul etmelisiniz.
+                    </div>
+                  </div>
+                  <div class="login-page__form__input-box login-page__form__input-box--4">
+                    <button type="submit" class="login-page__form__btn eduhive-btn eduhive-btn--normal">Kayıt Ol</button>
+                  </div>
+                </div>
+                <div class="login-page__form__bottom">
+                  <p class="login-page__form__register-text">
+                    Zaten bir hesabınız var mı? <a href="{% url 'giris' %}">Giriş yapın</a>
+                  </p>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Gizlilik Politikası Modal -->
+  <div class="privacy-policy-modal" id="privacyPolicyModal">
+    <div class="privacy-policy-modal-content">
+      <span class="privacy-policy-close">&times;</span>
+      <h2>Kullanıcı Sözleşmesi</h2>
+      <div class="pdf-container">
+        <iframe id="pdfFrame" src="{% static 'assets/doc/gizlilik-politikasi.pdf' %}" width="100%" height="700px"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #f8f5ff;
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+    }
+    
+    .login-page {
+      padding: 80px 0;
+    }
+    
+    .login-page__form {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .login-page__form__inner {
+      padding: 40px;
+    }
+    
+    .login-page__form__top {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .login-page__form__title {
+      font-size: 24px;
+      margin-top: 20px;
+      color: #333;
+    }
+    
+    .login-page__form__input-box {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .login-page__form__label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .login-page__form input[type='text'],
+    .login-page__form input[type='email'],
+    .login-page__form input[type='password'],
+    .login-page__form input[type='tel'] {
+      width: 100%;
+      height: 50px;
+      border: 1px solid #e9e9e9;
+      border-radius: 5px;
+      padding: 0 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .login-page__form input[type='text']:focus,
+    .login-page__form input[type='email']:focus,
+    .login-page__form input[type='password']:focus,
+    .login-page__form input[type='tel']:focus {
+      border-color: #6610f2;
+      box-shadow: 0 0 0 3px rgba(102, 16, 242, 0.1);
+    }
+    
+    .login-page__form__input-box--3 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .login-page__form__checked-box {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .login-page__form__checked-box input {
+      margin-right: 8px;
+    }
+    
+    .login-page__form__btn {
+      width: 100%;
+      height: 50px;
+      background-color: #6610f2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .login-page__form__btn:hover {
+      background-color: #5a0dbb;
+    }
+    
+    .login-page__form__bottom {
+      text-align: center;
+      margin-top: 30px;
+    }
+    
+    .login-page__form__register-text a {
+      color: #6610f2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .text-muted {
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+    
+    /* Gizlilik Politikası Modal Stili */
+    .privacy-policy-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .privacy-policy-modal-content {
+      background-color: #fff;
+      margin: 2% auto;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 1000px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .privacy-policy-modal-content h2 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 28px;
+    }
+    
+    .privacy-policy-close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      color: #aaa;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .privacy-policy-close:hover {
+      color: #6610f2;
+    }
+    
+    .pdf-container {
+      width: 100%;
+      height: 700px;
+      overflow: hidden;
+      border-radius: 5px;
+      border: 1px solid #e9e9e9;
+    }
+    
+    #privacy-policy-link {
+      color: #6610f2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    #privacy-policy-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Gizlilik politikası vurgulama animasyonu */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+    
+    .shake-animation {
+      animation: shake 0.6s ease-in-out;
+      border: 2px solid #dc3545;
+      border-radius: 5px;
+      padding: 5px;
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .alert {
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 15px 20px;
+      border-left: 5px solid transparent;
+    }
+    
+    .alert-danger {
+      color: #721c24;
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      border-left-color: #dc3545;
+    }
+    
+    /* Hata durumu için input stili */
+    .is-invalid {
+      border-color: #dc3545 !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+      background-repeat: no-repeat !important;
+      background-position: right calc(0.375em + 0.1875rem) center !important;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
+    
+    /* Hata mesajı stili */
+    .invalid-feedback {
+      display: none;
+      width: 100%;
+      margin-top: 0.25rem;
+      font-size: 0.875em;
+      color: #dc3545;
+    }
+    
+    /* Gizlilik politikası hata vurgusu */
+    .policy-error-highlight {
+      border: 1px solid #dc3545;
+      border-radius: 5px;
+      padding: 8px;
+      background-color: rgba(220, 53, 69, 0.05);
+    }
+    
+    .policy-error {
+      margin-top: 8px;
+      font-weight: 500;
+      color: #dc3545;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Modal elemanlarını seç
+      var modal = document.getElementById('privacyPolicyModal')
+      var link = document.getElementById('privacy-policy-link')
+      var closeBtn = document.getElementsByClassName('privacy-policy-close')[0]
+      var form = document.querySelector('.login-page__form')
+      var privacyPolicyCheckbox = document.getElementById('privacy-policy')
+      var phoneInput = document.getElementById('register_username')
+      var invalidFeedback = phoneInput.nextElementSibling
+      var policyError = document.querySelector('.policy-error')
+      
+      // Telefon numarası formatla
+      phoneInput.addEventListener('input', function (e) {
+        var input = e.target
+        var value = input.value.replace(/\D/g, '') // Sadece rakamları tut
+        
+        // Eğer ilk karakter 0 değilse ve 5 ise, başına 0 ekle
+        if (value.length > 0 && value.charAt(0) !== '0' && value.charAt(0) === '5') {
+          value = '0' + value
+        }
+        
+        // Maksimum 11 karaktere izin ver (05XXXXXXXXX)
+        if (value.length > 11) {
+          value = value.slice(0, 11)
+        }
+        
+        // Eğer girilen değer değiştiyse, input'un değerini güncelle
+        if (input.value !== value) {
+          input.value = value
+        }
+        
+        // Input değeri değiştiğinde validasyon kontrolü yap
+        var phonePattern = /^(05\d{9}|5\d{9}|\+905\d{9})$/
+        if (value && !phonePattern.test(value)) {
+          phoneInput.classList.add('is-invalid')
+          invalidFeedback.style.display = 'block'
+        } else if (value.length > 0) {
+          phoneInput.classList.remove('is-invalid')
+          invalidFeedback.style.display = 'none'
+        }
+      })
+      
+      // Telefon numarası kontrolü (input alanından çıkıldığında)
+      phoneInput.addEventListener('blur', function (e) {
+        var value = e.target.value.trim()
+        var phonePattern = /^(05\d{9}|5\d{9}|\+905\d{9})$/
+        
+        if (value && !phonePattern.test(value.replace(/\s/g, ''))) {
+          // Geçersiz telefon numarası
+          phoneInput.classList.add('is-invalid')
+          invalidFeedback.style.display = 'block'
+        } else {
+          // Geçerli telefon numarası veya boş
+          phoneInput.classList.remove('is-invalid')
+          invalidFeedback.style.display = 'none'
+        }
+      })
+    
+      // Kullanıcı sözleşmesi kontrolü - değiştiğinde uyarı göstermeyi kaldır
+      privacyPolicyCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+          policyError.style.display = 'none';
+          privacyPolicyCheckbox.parentElement.classList.remove('policy-error-highlight');
+        }
+      });
+    
+      // Form gönderildiğinde kullanıcı sözleşmesi onaylanmış mı kontrol et
+      form.addEventListener('submit', function (e) {
+        let hasError = false
+        
+        // Telefon numarası kontrolü
+        var phoneValue = phoneInput.value.trim()
+        var phonePattern = /^(05\d{9}|5\d{9}|\+905\d{9})$/
+        
+        if (!phonePattern.test(phoneValue.replace(/\s/g, ''))) {
+          e.preventDefault()
+          hasError = true
+          
+          // Telefon hatası göster
+          phoneInput.classList.add('is-invalid')
+          invalidFeedback.style.display = 'block'
+          
+          // Telefon input'unu vurgula
+          phoneInput.classList.add('shake-animation')
+          setTimeout(function() {
+            phoneInput.classList.remove('shake-animation')
+          }, 600)
+          
+          // Sayfayı telefon numarası bölümüne kaydır
+          phoneInput.scrollIntoView({behavior: 'smooth', block: 'center'})
+          phoneInput.focus()
+        }
+        
+        // Kullanıcı sözleşmesi kontrolü
+        if (!privacyPolicyCheckbox.checked) {
+          e.preventDefault()
+          hasError = true
+          
+          // Kullanıcı sözleşmesi hata mesajını göster - sadece form gönderildiğinde
+          policyError.style.display = 'block';
+          
+          // Kullanıcı sözleşmesi checkbox'ını vurgula - ama kırmızı dikdörtgen olmadan
+          privacyPolicyCheckbox.parentElement.classList.add('shake-animation')
+          setTimeout(function() {
+            privacyPolicyCheckbox.parentElement.classList.remove('shake-animation')
+          }, 600)
+          
+          // Eğer telefon hatası yoksa, sayfayı kullanıcı sözleşmesi bölümüne kaydır
+          if (!hasError) {
+            privacyPolicyCheckbox.scrollIntoView({behavior: 'smooth', block: 'center'})
+          }
+        }
+      })
+    
+      // Gizlilik politikası linkine tıklandığında modalı göster
+      link.onclick = function (e) {
+        e.preventDefault()
+        modal.style.display = 'block'
+      }
+    
+      // Kapatma düğmesine tıklandığında modalı kapat
+      closeBtn.onclick = function () {
+        modal.style.display = 'none'
+      }
+    
+      // Modal dışına tıklandığında modalı kapat
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = 'none'
+        }
+      }
+    
+      // ESC tuşuna basıldığında modalı kapat
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+          modal.style.display = 'none'
+        }
+      })
+    })
+  </script>
+{% endblock %}

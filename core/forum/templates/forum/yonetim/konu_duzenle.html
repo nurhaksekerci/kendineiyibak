@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Forum Konusu Düzenle - Yönetim Paneli
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Forum Konusu Düzenle</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- İçerik -->
+    <section class="section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- İşlem Butonları -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <a href="{% url 'forum:forum_konu_listele' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Konulara Dön</a>
+          </div>
+        </div>
+
+        <!-- Konu Form -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h4>Forum Konusu Düzenle - {{ konu.baslik }}</h4>
+              </div>
+              <div class="card-body">
+                <form method="post">
+                  {% csrf_token %}
+
+                  <div class="row mb-3">
+                    <div class="col-md-8">
+                      <label for="{{ form.baslik.id_for_label }}" class="form-label">{{ form.baslik.label }}</label>
+                      {{ form.baslik }}
+                      {% if form.baslik.errors %}
+                        <div class="invalid-feedback d-block">{{ form.baslik.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                      <label for="{{ form.kategori.id_for_label }}" class="form-label">{{ form.kategori.label }}</label>
+                      {{ form.kategori }}
+                      {% if form.kategori.errors %}
+                        <div class="invalid-feedback d-block">{{ form.kategori.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-md-12">
+                      <label for="{{ form.icerik.id_for_label }}" class="form-label">{{ form.icerik.label }}</label>
+                      {{ form.icerik }}
+                      {% if form.icerik.errors %}
+                        <div class="invalid-feedback d-block">{{ form.icerik.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        {{ form.sabit }}
+                        <label class="form-check-label" for="{{ form.sabit.id_for_label }}">{{ form.sabit.label }}</label>
+                        {% if form.sabit.errors %}
+                          <div class="invalid-feedback d-block">{{ form.sabit.errors }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted">{{ form.sabit.help_text }}</div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        {{ form.kapali }}
+                        <label class="form-check-label" for="{{ form.kapali.id_for_label }}">{{ form.kapali.label }}</label>
+                        {% if form.kapali.errors %}
+                          <div class="invalid-feedback d-block">{{ form.kapali.errors }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted">{{ form.kapali.help_text }}</div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        {{ form.aktif }}
+                        <label class="form-check-label" for="{{ form.aktif.id_for_label }}">{{ form.aktif.label }}</label>
+                        {% if form.aktif.errors %}
+                          <div class="invalid-feedback d-block">{{ form.aktif.errors }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted">{{ form.aktif.help_text }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Güncelle</button>
+                      <a href="{% url 'forum:forum_konu_listele' %}" class="btn btn-danger"><i class="fas fa-times"></i> İptal</a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Banner Tasarımı - courses.html'den alındı */
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .breadcrumb-item a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+      color: white;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  </style>
+{% endblock %}

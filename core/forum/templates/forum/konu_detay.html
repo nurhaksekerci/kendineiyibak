@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ konu.baslik }} - Forum - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">{{ konu.baslik }}</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">
+                  <span class="badge bg-light text-dark"><i class="fas fa-folder me-1"></i> {{ konu.kategori.baslik }}</span>
+                  <span class="badge bg-light text-dark ms-2"><i class="fas fa-user me-1"></i> {{ konu.yazar.fullname|default:konu.yazar.username }}</span>
+                  <span class="badge bg-light text-dark ms-2"><i class="fas fa-calendar me-1"></i> {{ konu.olusturma_tarihi|date:'d.m.Y' }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Konu İçeriği -->
+    <section class="forum-section py-5">
+      <div class="container">
+        <!-- Mesaj Bildirimleri -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Kontrol Paneli ve Navigasyon -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="forum-control d-flex justify-content-between align-items-center">
+              <div class="forum-breadcrumb">
+                <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb bg-transparent p-0 mb-0">
+                    <li class="breadcrumb-item">
+                      <a href="{% url 'forum:forum_main' %}">Forum</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                      <a href="{% url 'forum:kategori_detay' kategori_slug=kategori.slug %}">{{ kategori.baslik }}</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ konu.baslik|truncatechars:30 }}</li>
+                  </ol>
+                </nav>
+              </div>
+              <div class="forum-actions">
+                <a href="{% url 'forum:yeni_konu' %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Yeni Konu</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="row">
+          <!-- Sol Taraf: Konu ve Yorumlar -->
+          <div class="col-lg-8 mb-4 mb-lg-0">
+            <!-- Konu İçeriği -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-file-alt me-2" style="color: #6f42c1;"></i>Konu İçeriği</h4>
+                {% if request.user == konu.yazar or request.user.is_staff %}
+                  <a href="{% url 'forum:konu_duzenle' konu_id=konu.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit me-1"></i> Düzenle</a>
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="d-flex mb-3">
+                  <div class="flex-shrink-0">
+                    <div class="avatar-container">
+                      {% if konu.yazar.profile_pic %}
+                        <img src="{{ konu.yazar.profile_pic.url }}" class="rounded-circle" width="60" height="60" alt="{{ konu.yazar.username }}" />
+                      {% else %}
+                        <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                          <span class="fs-4">{{ konu.yazar.username|make_list|first|upper }}</span>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-1">{{ konu.yazar.fullname|default:konu.yazar.username }}</h5>
+                    <p class="text-muted small mb-0">
+                      <i class="fas fa-clock me-1"></i> {{ konu.olusturma_tarihi|date:'d F Y H:i' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="konu-icerik mt-3">{{ konu.icerik|linebreaks }}</div>
+
+                <hr />
+
+                <div class="konu-footer d-flex justify-content-between align-items-center">
+                  <div class="konu-meta">
+                    <span class="badge bg-light text-dark me-2"><i class="fas fa-eye me-1"></i> {{ konu.goruntulenme }} görüntülenme</span>
+                    <span class="badge bg-light text-dark"><i class="fas fa-comment-alt me-1"></i> {{ konu.yorum_sayisi }} yorum</span>
+                  </div>
+                  <div class="konu-actions">
+                    {% if request.user.is_authenticated %}
+                      <button class="btn btn-sm btn-outline-primary begeni-butonu" data-konu-id="{{ konu.id }}">
+                        <i class="{% if 'konu' in kullanici_begenileri %}
+                            
+                            
+                            
+                            
+                            
+                            
+                            fas
+
+
+
+
+
+
+                          {% else %}
+                            
+                            
+                            
+                            
+                            
+                            
+                            far
+
+
+
+
+
+
+                          {% endif %} fa-heart me-1">
+
+                        </i>
+                        <span class="begeni-sayisi">{{ konu.begeniler.count }}</span>
+                      </button>
+                    {% else %}
+                      <span class="badge bg-light text-dark"><i class="far fa-heart me-1"></i> {{ konu.begeniler.count }} beğeni</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Yorumlar -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-comments me-2" style="color: #6f42c1;"></i>Yorumlar ({{ konu.yorum_sayisi }})</h4>
+              </div>
+              <div class="card-body p-0">
+                {% if yorumlar %}
+                  <div class="list-group list-group-flush">
+                    {% for yorum in yorumlar %}
+                      <div class="list-group-item p-3" id="yorum-{{ yorum.id }}">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0">
+                            <div class="avatar-container">
+                              {% if yorum.yazar.profile_pic %}
+                                <img src="{{ yorum.yazar.profile_pic.url }}" class="rounded-circle" width="45" height="45" alt="{{ yorum.yazar.username }}" />
+                              {% else %}
+                                <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                  <span class="fs-5">{{ yorum.yazar.username|make_list|first|upper }}</span>
+                                </div>
+                              {% endif %}
+                            </div>
+                          </div>
+                          <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                              <div>
+                                <h6 class="mb-1">{{ yorum.yazar.fullname|default:yorum.yazar.username }}</h6>
+                                <p class="text-muted small mb-2">
+                                  <i class="fas fa-clock me-1"></i> {{ yorum.olusturma_tarihi|date:'d F Y H:i' }}
+                                </p>
+                              </div>
+                              <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                                <ul class="dropdown-menu">
+                                  <li>
+                                    <button class="dropdown-item yanit-toggle" data-yorum-id="{{ yorum.id }}"><i class="fas fa-reply me-2"></i> Yanıtla</button>
+                                  </li>
+                                  {% if request.user == yorum.yazar or request.user.is_staff %}
+                                    <li>
+                                      <a href="{% url 'forum:yorum_duzenle' yorum_id=yorum.id %}" class="dropdown-item"><i class="fas fa-edit me-2"></i> Düzenle</a>
+                                    </li>
+                                    <li>
+                                      <a href="{% url 'forum:yorum_sil' yorum_id=yorum.id %}" class="dropdown-item text-danger"><i class="fas fa-trash-alt me-2"></i> Sil</a>
+                                    </li>
+                                  {% endif %}
+                                </ul>
+                              </div>
+                            </div>
+
+                            <div class="yorum-icerik mb-2">{{ yorum.icerik|linebreaks }}</div>
+
+                            <div class="yorum-footer d-flex align-items-center">
+                              {% if request.user.is_authenticated %}
+                                <button class="btn btn-sm btn-link text-muted begeni-butonu p-0" data-yorum-id="{{ yorum.id }}">
+                                  <i class="{% if 'yorum_'|add:yorum.id|stringformat:'i' in kullanici_begenileri %}
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      fas
+
+
+
+
+
+
+                                    {% else %}
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      far
+
+
+
+
+
+
+                                    {% endif %} fa-heart me-1">
+
+                                  </i>
+                                  <span class="begeni-sayisi">{{ yorum.begeniler.count }}</span>
+                                </button>
+                              {% else %}
+                                <span class="text-muted small"><i class="far fa-heart me-1"></i> {{ yorum.begeniler.count }} beğeni</span>
+                              {% endif %}
+                            </div>
+
+                            <!-- Yanıt Formu (başlangıçta gizli) -->
+                            <div class="yanit-form-container mt-3" id="yanit-form-{{ yorum.id }}" style="display: none;">
+                              {% if request.user.is_authenticated %}
+                                <form method="post" action="{% url 'forum:konu_detay' kategori_slug=kategori.slug konu_slug=konu.slug %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="ust_yorum_id" value="{{ yorum.id }}" />
+                                  <div class="form-group mb-3">
+                                    <textarea name="yorum_icerik" class="form-control" rows="3" placeholder="Yanıtınızı yazın..."></textarea>
+                                  </div>
+                                  <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-2 yanit-iptal" data-yorum-id="{{ yorum.id }}">İptal</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Yanıtla</button>
+                                  </div>
+                                </form>
+                              {% else %}
+                                <div class="alert alert-info">
+                                  Yorum yapabilmek için <a href="{% url 'giris' %}">giriş yapmalısınız</a>.
+                                </div>
+                              {% endif %}
+                            </div>
+
+                            <!-- Alt Yorumlar -->
+                            {% if yorum.alt_yorumlar.exists %}
+                              <div class="alt-yorumlar mt-3">
+                                {% for alt_yorum in yorum.alt_yorumlar.all %}
+                                  <div class="alt-yorum p-2 border-start border-3 ps-3 mb-2" id="yorum-{{ alt_yorum.id }}">
+                                    <div class="d-flex">
+                                      <div class="flex-shrink-0">
+                                        <div class="avatar-container">
+                                          {% if alt_yorum.yazar.profile_pic %}
+                                            <img src="{{ alt_yorum.yazar.profile_pic.url }}" class="rounded-circle" width="35" height="35" alt="{{ alt_yorum.yazar.username }}" />
+                                          {% else %}
+                                            <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                              <span class="fs-6">{{ alt_yorum.yazar.username|make_list|first|upper }}</span>
+                                            </div>
+                                          {% endif %}
+                                        </div>
+                                      </div>
+                                      <div class="flex-grow-1 ms-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                          <div>
+                                            <h6 class="mb-0 fs-6">{{ alt_yorum.yazar.fullname|default:alt_yorum.yazar.username }}</h6>
+                                            <p class="text-muted small mb-1">
+                                              <i class="fas fa-clock me-1"></i> {{ alt_yorum.olusturma_tarihi|date:'d F Y H:i' }}
+                                            </p>
+                                          </div>
+                                          {% if request.user == alt_yorum.yazar or request.user.is_staff %}
+                                            <a href="{% url 'forum:yorum_duzenle' yorum_id=alt_yorum.id %}" class="btn btn-sm btn-link text-muted p-0"><i class="fas fa-edit"></i></a>
+                                          {% endif %}
+                                        </div>
+
+                                        <div class="yorum-icerik mb-1">{{ alt_yorum.icerik|linebreaks }}</div>
+
+                                        <div class="yorum-footer d-flex align-items-center">
+                                          {% if request.user.is_authenticated %}
+                                            <button class="btn btn-sm btn-link text-muted begeni-butonu p-0" data-yorum-id="{{ alt_yorum.id }}">
+                                              <i class="{% if 'yorum_'|add:alt_yorum.id|stringformat:'i' in kullanici_begenileri %}
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  fas
+
+
+
+
+
+
+                                                {% else %}
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  far
+
+
+
+
+
+
+                                                {% endif %} fa-heart me-1">
+
+                                              </i>
+                                              <span class="begeni-sayisi">{{ alt_yorum.begeniler.count }}</span>
+                                            </button>
+                                          {% else %}
+                                            <span class="text-muted small"><i class="far fa-heart me-1"></i> {{ alt_yorum.begeniler.count }} beğeni</span>
+                                          {% endif %}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="p-4 text-center">
+                    <p class="mb-0">Bu konuya henüz yorum yapılmamış. İlk yorumu yapan siz olun!</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Yorum Yapma Formu -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-reply me-2" style="color: #6f42c1;"></i>Yorum Ekle</h4>
+              </div>
+              <div class="card-body">
+                {% if konu.kapali %}
+                  <div class="alert alert-warning">
+                    <i class="fas fa-lock me-2"></i> Bu konu yorumlara kapatılmıştır.
+                  </div>
+                {% elif request.user.is_authenticated %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                      <textarea name="yorum_icerik" class="form-control" rows="5" placeholder="Yorumunuzu yazın..."></textarea>
+                    </div>
+                    <div class="d-grid">
+                      <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i> Yorum Gönder</button>
+                    </div>
+                  </form>
+                {% else %}
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Yorum yapabilmek için <a href="{% url 'giris' %}">giriş yapmalısınız</a>.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ Taraf: Yan Panel -->
+          <div class="col-lg-4">
+            <!-- Yazar Bilgisi -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-user me-2" style="color: #6f42c1;"></i>Konu Sahibi</h4>
+              </div>
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="flex-shrink-0">
+                    {% if konu.yazar.profile_pic %}
+                      <img src="{{ konu.yazar.profile_pic.url }}" class="rounded-circle" width="80" height="80" alt="{{ konu.yazar.username }}" />
+                    {% else %}
+                      <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <span class="fs-3">{{ konu.yazar.username|make_list|first|upper }}</span>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-1">{{ konu.yazar.fullname|default:konu.yazar.username }}</h5>
+                    <p class="text-muted mb-0">
+                      <i class="fas fa-user-circle me-1"></i> Üye
+                    </p>
+                  </div>
+                </div>
+                <hr />
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>Konu Sayısı</span>
+                    <span class="badge bg-primary rounded-pill">{{ konu.yazar.forum_konulari.count }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>Yorum Sayısı</span>
+                    <span class="badge bg-primary rounded-pill">{{ konu.yazar.forum_yorumlari.count }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>Katılım Tarihi</span>
+                    <span>{{ konu.yazar.date_joined|date:'d.m.Y' }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Kategori Bilgileri -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-folder me-2" style="color: #6f42c1;"></i>Kategori</h4>
+              </div>
+              <div class="card-body">
+                <h5 class="mb-2">{{ kategori.baslik }}</h5>
+                <p class="mb-3">{{ kategori.aciklama }}</p>
+                <a href="{% url 'forum:kategori_detay' kategori_slug=kategori.slug %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-right me-1"></i> Kategoriye Git</a>
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Forum Stilleri */
+    .page-banner {
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 100px 0 120px;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .badge.bg-primary {
+      background-color: #6f42c1 !important;
+    }
+    
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .forum-section h5 {
+      color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary:hover {
+      background-color: #5a32a3;
+      border-color: #5a32a3;
+    }
+    
+    .alt-yorumlar {
+      border-left: 3px solid #f0f0f0;
+      padding-left: 15px;
+    }
+    
+    .avatar-placeholder {
+      font-weight: bold;
+    }
+    
+    .btn-link {
+      color: #6f42c1;
+      text-decoration: none;
+    }
+    
+    .btn-link:hover {
+      color: #5a32a3;
+    }
+    
+    .alt-yorum {
+      border-color: #e9ecef !important;
+      background-color: #f8f9fa;
+      border-radius: 0.25rem;
+    }
+  </style>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Sayfa yüklendiğinde localStorage'dan beğeni durumlarını kontrol et
+      const begeniBtnleri = document.querySelectorAll('.begeni-butonu')
+      
+      begeniBtnleri.forEach(function (btn) {
+        const konuId = btn.dataset.konuId
+        const yorumId = btn.dataset.yorumId
+        const icon = btn.querySelector('i')
+        
+        // LocalStorage'den beğeni durumunu kontrol et
+        if ((konuId && window.localStorage.getItem('konu_begeni_' + konuId) === 'true') || 
+            (yorumId && window.localStorage.getItem('yorum_begeni_' + yorumId) === 'true')) {
+          // Eğer bu öğe beğenilmişse
+          icon.classList.remove('far')
+          icon.classList.add('fas')
+          icon.classList.add('text-danger')
+        }
+      })
+    
+      // Yanıt formlarını göster/gizle
+      const yanitToggles = document.querySelectorAll('.yanit-toggle')
+      const yanitIptals = document.querySelectorAll('.yanit-iptal')
+    
+      yanitToggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+          const yorumId = this.dataset.yorumId
+          const formContainer = document.getElementById('yanit-form-' + yorumId)
+          formContainer.style.display = 'block'
+        })
+      })
+    
+      yanitIptals.forEach(function (iptal) {
+        iptal.addEventListener('click', function () {
+          const yorumId = this.dataset.yorumId
+          const formContainer = document.getElementById('yanit-form-' + yorumId)
+          formContainer.style.display = 'none'
+        })
+      })
+    
+      // Beğeni işlemleri
+      begeniBtnleri.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const konuId = this.dataset.konuId
+          const yorumId = this.dataset.yorumId
+          const icon = this.querySelector('i')
+          const sayacEl = this.querySelector('.begeni-sayisi')
+    
+          fetch('{% url "forum:begeni_ekle" %}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: konuId ? 'konu_id=' + konuId + '&tur=like' : 'yorum_id=' + yorumId + '&tur=like'
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === 'added' || data.status === 'changed') {
+                icon.classList.remove('far')
+                icon.classList.add('fas')
+                icon.classList.add('text-danger')
+                
+                // Eğer bu bir yorum beğenisiyse, kullanıcının beğendiği yorumları içeren listeye ekle
+                if (yorumId) {
+                  window.localStorage.setItem('yorum_begeni_' + yorumId, 'true')
+                } else if (konuId) {
+                  window.localStorage.setItem('konu_begeni_' + konuId, 'true')
+                }
+              } else if (data.status === 'removed') {
+                icon.classList.remove('fas')
+                icon.classList.remove('text-danger')
+                icon.classList.add('far')
+                
+                // Kullanıcının beğendiği yorumlar listesinden çıkar
+                if (yorumId) {
+                  window.localStorage.removeItem('yorum_begeni_' + yorumId)
+                } else if (konuId) {
+                  window.localStorage.removeItem('konu_begeni_' + konuId)
+                }
+              }
+    
+              // Beğeni sayısını güncelle
+              if (data.tur === 'like') {
+                sayacEl.textContent = data.like_count
+              }
+            })
+            .catch((error) => console.error('Hata:', error))
+        })
+      })
+    
+      // CSRF Token için yardımcı fonksiyon
+      function getCookie(name) {
+        let cookieValue = null
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';')
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim()
+            if (cookie.substring(0, name.length + 1) === name + '=') {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+              break
+            }
+          }
+        }
+        return cookieValue
+      }
+    })
+  </script>
+{% endblock %}

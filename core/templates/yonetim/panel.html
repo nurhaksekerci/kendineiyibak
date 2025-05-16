@@ -1,0 +1,2572 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Yönetim Paneli</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.fullname|default:request.user.username }}! Eğitim içeriklerini ve kullanıcıları yönetebileceğiniz merkezi kontrol paneli.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Yönetim Paneli İçeriği -->
+    <section class="yonetim-panel section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- İstatistikler -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#istatistikler-collapse" data-bs-toggle="collapse" aria-expanded="true" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-chart-pie me-2"></i>Genel İstatistikler</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse show" id="istatistikler-collapse">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="dashboard-card bg-primary text-white">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-users fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content">
+                          <h2>{{ kullanici_sayisi }}</h2>
+                          <p>Kullanıcı</p>
+                          <small>Son hafta: {{ son_hafta_kullanici_sayisi }}</small>
+                          <br />
+                          <small>Aktif: {{ aktif_kullanici_sayisi }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="dashboard-card bg-success text-white">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-book fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content">
+                          <h2>{{ modul_sayisi }}</h2>
+                          <p>Modül</p>
+                          <small>{{ aktif_modul_sayisi }} aktif</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="dashboard-card bg-info text-white">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-play-circle fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content">
+                          <h2>{{ video_sayisi }}</h2>
+                          <p>Video</p>
+                          <small>Toplam süre: {{ toplam_video_suresi }}</small>
+                          <br />
+                          <small>Tüm izlenmeler: {{ toplam_izlenme }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <div class="dashboard-card bg-warning text-white">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-question-circle fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content">
+                          <h2>{{ soru_sayisi }}</h2>
+                          <p>Soru</p>
+                          <small>Çoktan seçmeli: {{ coktan_secmeli_soru_sayisi }}</small>
+                          <small>Metin: {{ metin_soru_sayisi }}</small>
+                          <br />
+                          <small>Doğru yanlış: {{ dogru_yanlis_soru_sayisi }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mt-4">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-user-tie fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ egitmen_sayisi }}</h2>
+                          <p>Eğitmen</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-tag fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ kategoriler.count }}</h2>
+                          <p>Kategori</p>
+                          <small>Aktif kategoriler: {{ aktif_kategori_sayisi }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-check-circle fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ tamamlanan_toplam }}</h2>
+                          <p>Tamamlanan İçerik</p>
+                          <small>Video: {{ tamamlanan_video }}</small>
+                          <br />
+                          <small>Modül: {{ tamamlanan_modul }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Forum İstatistikleri -->
+                  <div class="row mt-4">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #3F51B5 0%, #2196F3 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-comments fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ forum_kategori_sayisi|default:'0' }}</h2>
+                          <p>Forum Kategorisi</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #E91E63 0%, #F44336 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-clipboard-list fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ forum_konu_sayisi|default:'0' }}</h2>
+                          <p>Forum Konusu</p>
+                          <small>Son hafta: {{ son_hafta_forum_konu_sayisi|default:'0' }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                      <div class="dashboard-card" style="background: linear-gradient(135deg, #00BCD4 0%, #03A9F4 100%);">
+                        <div class="dashboard-card-icon">
+                          <i class="fa fa-reply fa-3x"></i>
+                        </div>
+                        <div class="dashboard-card-content text-white">
+                          <h2>{{ forum_yorum_sayisi|default:'0' }}</h2>
+                          <p>Forum Yorumu</p>
+                          <small>Son hafta: {{ son_hafta_forum_yorum_sayisi|default:'0' }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kullanıcı Yönetimi -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#kullanicilar-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-users me-2"></i>Kullanıcı Yönetimi</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="kullanicilar-collapse">
+                <div class="card-body">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <i class="fa fa-user-plus fa-3x text-primary"></i>
+                      </div>
+                      <div>
+                        <p class="mb-0 lead">
+                          Sistemde <strong>{{ kullanici_sayisi }}</strong> kayıtlı kullanıcı bulunmaktadır.
+                        </p>
+                        <p class="text-muted mb-0">Kullanıcıları görüntüleyebilir, arayabilir ve detaylarını inceleyebilirsiniz.</p>
+                      </div>
+                    </div>
+                    <div>
+                      <a href="{% url 'kullanici_listesi' %}" class="btn btn-primary"><i class="fa fa-search me-1"></i> Kullanıcı Ara</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kategoriler -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#kategoriler-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-tags me-2"></i>Kategoriler</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="kategoriler-collapse">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-4">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Kategori ara..." id="kategoriArama" />
+                        <button class="btn btn-light btn-clear" type="button" title="Temizle" data-input="kategoriArama"><i class="fas fa-times"></i></button>
+                        <button class="btn btn-purple" type="button" id="kategoriAramaBtn"><i class="fas fa-search"></i></button>
+                      </div>
+                    </div>
+                    <div class="btn-group">
+                      <a href="{% url 'kategori_ekle' %}" class="btn btn-purple d-flex align-items-center me-3"><i class="fa fa-plus me-2"></i> Yeni Kategori</a>
+                      <button type="button" class="btn btn-secondary btn-sm" id="tumKategorileriSec"><i class="fas fa-check-square me-1"></i> Tümünü Seç</button>
+                      <button type="button" class="btn btn-danger btn-sm" id="seciliKategorileriSil" disabled><i class="fas fa-trash me-1"></i> Seçilenleri Sil</button>
+                    </div>
+                  </div>
+
+                  {% if kategoriler %}
+                    <div class="kategori-container">
+                      <!-- Kategoriler tablosu başlıkları -->
+                      <table class="table modern-table table-hover" id="kategoriTablosu">
+                        <thead>
+                          <tr>
+                            <th>
+                              <input type="checkbox" id="tumKategorileriSec" class="checkAll" data-target="kategoriSec" />
+                            </th>
+                            <th class="sortable-column asc" data-sort="id">
+                              ID <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="ad">
+                              Kategori Adı <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="durum">
+                              Durum <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th>İşlemler</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for kategori in kategoriler %}
+                            <tr class="kategori-satir">
+                              <td>
+                                <div class="form-check">
+                                  <input class="form-check-input kategori-checkbox" type="checkbox" value="{{ kategori.id }}" />
+                                </div>
+                              </td>
+                              <td>{{ kategori.id }}</td>
+                              <td>{{ kategori.baslik }}</td>
+                              <td>
+                                {% if kategori.aktif %}
+                                  <span class="badge bg-success rounded-pill">Aktif</span>
+                                {% else %}
+                                  <span class="badge bg-danger rounded-pill">Pasif</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="d-flex">
+                                  <a href="{% url 'kategori_duzenle' kategori.id %}" class="btn btn-warning btn-sm action-btn me-2"><i class="fa fa-edit"></i></a>
+                                  <button type="button" class="btn btn-danger btn-sm action-btn sil-btn" data-bs-toggle="modal" data-bs-target="#silModal" data-id="{{ kategori.id }}" data-baslik="{{ kategori.baslik }}" data-tip="kategori" data-url="{% url 'kategori_sil' kategori.id %}" data-uyari="Bu işlem geri alınamaz ve kategoriye bağlı tüm modüller de silinecektir!"><i class="fa fa-trash"></i></button>
+                                </div>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      <!-- Arama Sonucu Bulunamadı Mesajı -->
+                      <div id="kategoriSonucBulunamadi" class="alert alert-info mt-3 d-none">
+                        <div class="d-flex align-items-center">
+                          <i class="fas fa-search-minus me-3 fa-2x text-info"></i>
+                          <div>
+                            <h5 class="alert-heading">Sonuç Bulunamadı</h5>
+                            <p class="mb-0">Arama kriterlerinize uygun kategori bulunamadı. Lütfen farklı bir arama terimi deneyin veya yeni bir kategori ekleyin.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Sayfalama -->
+                      <div class="pagination-container mt-4 d-flex justify-content-between align-items-center">
+                        <div class="sayfa-bilgisi">
+                          <span id="kategoriSayfaBilgisi">Gösterilen: 1-10 / Toplam: {{ kategoriler|length }}</span>
+                        </div>
+                        <nav aria-label="Sayfalama">
+                          <ul class="pagination" id="kategoriSayfalama">
+                            <li class="page-item disabled" id="kategoriIlkSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="İlk Sayfa"><span aria-hidden="true">&laquo;</span></a>
+                            </li>
+                            <li class="page-item disabled" id="kategoriOncekiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Önceki"><span aria-hidden="true">&lsaquo;</span></a>
+                            </li>
+                            <!-- Sayfa numaraları burada dinamik olarak eklenecek -->
+                            <li class="page-item" id="kategoriSonrakiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Sonraki"><span aria-hidden="true">&rsaquo;</span></a>
+                            </li>
+                            <li class="page-item" id="kategoriSonSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Son Sayfa"><span aria-hidden="true">&raquo;</span></a>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Henüz kategori bulunmamaktadır. "Yeni Kategori" butonuna tıklayarak ekleyebilirsiniz.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modüller -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#moduller-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-cubes me-2"></i>Modüller</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="moduller-collapse">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-4">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Modül ara..." id="modulArama" />
+                        <button class="btn btn-light btn-clear" type="button" title="Temizle" data-input="modulArama"><i class="fas fa-times"></i></button>
+                        <button class="btn btn-purple" type="button" id="modulAramaBtn"><i class="fas fa-search"></i></button>
+                      </div>
+                    </div>
+                    <div class="btn-group">
+                      <a href="{% url 'modul_ekle' %}" class="btn btn-purple d-flex align-items-center me-3"><i class="fa fa-plus me-2"></i> Yeni Modül</a>
+                      <button type="button" class="btn btn-secondary btn-sm" id="tumModulleriSec"><i class="fas fa-check-square me-1"></i> Tümünü Seç</button>
+                      <button type="button" class="btn btn-danger btn-sm" id="seciliModulleriSil" disabled><i class="fas fa-trash me-1"></i> Seçilenleri Sil</button>
+                    </div>
+                  </div>
+
+                  {% if moduller %}
+                    <div class="kategori-container">
+                      <!-- Modüller tablosu başlıkları -->
+                      <table class="table modern-table table-hover" id="modulTablosu">
+                        <thead>
+                          <tr>
+                            <th style="width: 40px;">
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tumModullerCheckbox" />
+                              </div>
+                            </th>
+                            <th style="width: 60px;" class="sortable-column" data-sort="id">
+                              ID <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="ad">
+                              Modül Adı <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="kategori">
+                              Kategori <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th style="width: 120px;" class="sortable-column" data-sort="video">
+                              Video Sayısı <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th style="width: 100px;" class="sortable-column" data-sort="durum">
+                              Durum <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th style="width: 150px;">İşlemler</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for modul in moduller %}
+                            <tr class="modul-satir">
+                              <td>
+                                <div class="form-check">
+                                  <input class="form-check-input modul-checkbox" type="checkbox" value="{{ modul.id }}" />
+                                </div>
+                              </td>
+                              <td>{{ modul.id }}</td>
+                              <td>{{ modul.baslik }}</td>
+                              <td>{{ modul.kategori.baslik }}</td>
+                              <td>{{ modul.video_sayisi }}</td>
+                              <td>
+                                {% if modul.aktif %}
+                                  <span class="badge bg-success rounded-pill">Aktif</span>
+                                {% else %}
+                                  <span class="badge bg-danger rounded-pill">Pasif</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="d-flex">
+                                  <a href="{% url 'modul_videolari' modul.id %}" class="btn btn-info btn-sm action-btn me-2" title="Videolar"><i class="fa fa-video"></i></a>
+                                  <a href="{% url 'modul_duzenle' modul.id %}" class="btn btn-warning btn-sm action-btn me-2" title="Düzenle"><i class="fa fa-edit"></i></a>
+                                  <button type="button" class="btn btn-danger btn-sm action-btn sil-btn" data-bs-toggle="modal" data-bs-target="#silModal" data-id="{{ modul.id }}" data-baslik="{{ modul.baslik }}" data-tip="modül" data-url="{% url 'modul_sil' modul.id %}" data-uyari="Bu işlem geri alınamaz ve modüle bağlı tüm videolar ve sorular da silinecektir!"><i class="fa fa-trash"></i></button>
+                                </div>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      <!-- Arama Sonucu Bulunamadı Mesajı -->
+                      <div id="modulSonucBulunamadi" class="alert alert-info mt-3 d-none">
+                        <div class="d-flex align-items-center">
+                          <i class="fas fa-search-minus me-3 fa-2x text-info"></i>
+                          <div>
+                            <h5 class="alert-heading">Sonuç Bulunamadı</h5>
+                            <p class="mb-0">Arama kriterlerinize uygun modül bulunamadı. Lütfen farklı bir arama terimi deneyin veya yeni bir modül ekleyin.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Sayfalama -->
+                      <div class="pagination-container mt-4 d-flex justify-content-between align-items-center">
+                        <div class="sayfa-bilgisi">
+                          <span id="modulSayfaBilgisi">Gösterilen: 1-10 / Toplam: {{ moduller|length }}</span>
+                        </div>
+                        <nav aria-label="Sayfalama">
+                          <ul class="pagination" id="modulSayfalama">
+                            <li class="page-item" id="modulIlkSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="İlk Sayfa"><span aria-hidden="true">&laquo;</span></a>
+                            </li>
+                            <li class="page-item" id="modulOncekiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Önceki"><span aria-hidden="true">&lsaquo;</span></a>
+                            </li>
+                            <!-- Sayfa numaraları burada dinamik olarak eklenecek -->
+                            <li class="page-item" id="modulSonrakiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Sonraki"><span aria-hidden="true">&rsaquo;</span></a>
+                            </li>
+                            <li class="page-item" id="modulSonSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Son Sayfa"><span aria-hidden="true">&raquo;</span></a>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Henüz modül bulunmamaktadır. "Yeni Modül" butonuna tıklayarak ekleyebilirsiniz.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eğitmenler -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#egitmenler-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-user-tie me-2"></i>Eğitmenler</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="egitmenler-collapse">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-4">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Eğitmen ara..." id="egitmenArama" />
+                        <button class="btn btn-light btn-clear" type="button" title="Temizle" data-input="egitmenArama"><i class="fas fa-times"></i></button>
+                        <button class="btn btn-purple" type="button" id="egitmenAramaBtn"><i class="fas fa-search"></i></button>
+                      </div>
+                    </div>
+                    <div class="btn-group">
+                      <a href="{% url 'egitmen_ekle' %}" class="btn btn-purple d-flex align-items-center me-3"><i class="fa fa-plus me-2"></i> Yeni Eğitmen</a>
+                      <button type="button" class="btn btn-secondary btn-sm" id="tumEgitmenleriSec"><i class="fas fa-check-square me-1"></i> Tümünü Seç</button>
+                      <button type="button" class="btn btn-danger btn-sm" id="seciliEgitmenleriSil" disabled><i class="fas fa-trash me-1"></i> Seçilenleri Sil</button>
+                    </div>
+                  </div>
+
+                  {% if egitmenler %}
+                    <div class="kategori-container">
+                      <!-- Eğitmenler tablosu başlıkları -->
+                      <table class="table modern-table table-hover" id="egitmenTablosu">
+                        <thead>
+                          <tr>
+                            <th style="width: 40px;">
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tumEgitmenlerCheckbox" />
+                              </div>
+                            </th>
+                            <th style="width: 60px;" class="sortable-column" data-sort="id">
+                              ID <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="ad">
+                              Ad Soyad <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="unvan">
+                              Unvan <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="sortable-column" data-sort="email">
+                              E-posta <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th style="width: 100px;" class="sortable-column" data-sort="durum">
+                              Durum <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th style="width: 120px;">İşlemler</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for egitmen in egitmenler %}
+                            <tr class="egitmen-satir">
+                              <td>
+                                <div class="form-check">
+                                  <input class="form-check-input egitmen-checkbox" type="checkbox" value="{{ egitmen.id }}" />
+                                </div>
+                              </td>
+                              <td>{{ egitmen.id }}</td>
+                              <td>{{ egitmen.ad_soyad }}</td>
+                              <td>
+                                {% if egitmen.unvan %}
+                                  {{ egitmen.unvan }}
+                                {% else %}
+                                  -
+                                {% endif %}
+                              </td>
+                              <td>{{ egitmen.email|default:'-' }}</td>
+                              <td>
+                                {% if egitmen.aktif %}
+                                  <span class="badge bg-success rounded-pill">Aktif</span>
+                                {% else %}
+                                  <span class="badge bg-danger rounded-pill">Pasif</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="d-flex">
+                                  <a href="{% url 'egitmen_duzenle' egitmen.id %}" class="btn btn-warning btn-sm action-btn me-2" title="Düzenle"><i class="fa fa-edit"></i></a>
+                                  <button type="button" class="btn btn-danger btn-sm action-btn sil-btn" data-bs-toggle="modal" data-bs-target="#silModal" data-id="{{ egitmen.id }}" data-baslik="{{ egitmen.unvan }} {{ egitmen.ad_soyad }}" data-tip="eğitmen" data-url="{% url 'egitmen_sil' egitmen.id %}" data-uyari="Bu işlem geri alınamaz!"><i class="fa fa-trash"></i></button>
+                                </div>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      <!-- Arama Sonucu Bulunamadı Mesajı -->
+                      <div id="egitmenSonucBulunamadi" class="alert alert-info mt-3 d-none">
+                        <div class="d-flex align-items-center">
+                          <i class="fas fa-search-minus me-3 fa-2x text-info"></i>
+                          <div>
+                            <h5 class="alert-heading">Sonuç Bulunamadı</h5>
+                            <p class="mb-0">Arama kriterlerinize uygun eğitmen bulunamadı. Lütfen farklı bir arama terimi deneyin veya yeni bir eğitmen ekleyin.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Sayfalama -->
+                      <div class="pagination-container mt-4 d-flex justify-content-between align-items-center">
+                        <div class="sayfa-bilgisi">
+                          <span id="egitmenSayfaBilgisi">Gösterilen: 1-10 / Toplam: {{ egitmenler|length }}</span>
+                        </div>
+                        <nav aria-label="Sayfalama">
+                          <ul class="pagination" id="egitmenSayfalama">
+                            <li class="page-item" id="egitmenIlkSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="İlk Sayfa"><span aria-hidden="true">&laquo;</span></a>
+                            </li>
+                            <li class="page-item" id="egitmenOncekiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Önceki"><span aria-hidden="true">&lsaquo;</span></a>
+                            </li>
+                            <!-- Sayfa numaraları burada dinamik olarak eklenecek -->
+                            <li class="page-item" id="egitmenSonrakiSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Sonraki"><span aria-hidden="true">&rsaquo;</span></a>
+                            </li>
+                            <li class="page-item" id="egitmenSonSayfa">
+                              <a class="page-link" href="javascript:void(0)" aria-label="Son Sayfa"><span aria-hidden="true">&raquo;</span></a>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Henüz eğitmen bulunmamaktadır. "Yeni Eğitmen" butonuna tıklayarak ekleyebilirsiniz.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tüm Kategorileri Silme Modal -->
+        <div class="modal fade" id="tumKategorileriSilModal" tabindex="-1" aria-labelledby="tumKategorileriSilModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="tumKategorileriSilModalLabel">Tüm Kategorileri Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>Tüm kategorileri silmek istediğinize emin misiniz?</p>
+                <p class="text-danger fw-bold">DİKKAT: Bu işlem geri alınamaz ve tüm kategorilere bağlı modüller, videolar ve sorular da silinecektir!</p>
+                <div class="alert alert-danger">
+                  <h6 class="fw-bold">Silme işlemi aşağıdaki tüm verileri kalıcı olarak yok edecektir:</h6>
+                  <ul>
+                    <li>Sistemdeki tüm eğitim kategorileri</li>
+                    <li>Tüm modüller ve bu modüllere ait videolar</li>
+                    <li>Tüm sorular ve kullanıcı cevapları</li>
+                    <li>Kullanıcıların bu içeriklerle ilgili ilerleme kayıtları</li>
+                  </ul>
+                  <p class="mb-0">Bu işlem geri alınamaz ve veri kaybına neden olacaktır!</p>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form action="#" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Tümünü Sil</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tek Kayıt Silme Modal -->
+        <div class="modal fade" id="silModal" tabindex="-1" aria-labelledby="silModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="silModalLabel">Kayıt Silinecek</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Dinamik olarak içerik eklenecek -->
+              </div>
+              <div class="modal-footer">
+                <!-- Form ve butonlar JavaScript tarafından dinamik olarak eklenecek -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metinsel Soru Değerlendirme -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#metinsel-sorular-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-comments me-2"></i>Metinsel Soru Değerlendirme</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="metinsel-sorular-collapse">
+                <div class="card-body">
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <i class="fa fa-question-circle fa-3x text-primary"></i>
+                      </div>
+                      <div>
+                        <p class="mb-0 lead">Sistem kullanıcılarının verdiği metinsel yanıtları değerlendirebilirsiniz.</p>
+                        <p class="text-muted mb-0">Yanıtlanmamış sorular listesi aşağıda gösterilmektedir.</p>
+                      </div>
+                    </div>
+                    <div>
+                      <a href="{% url 'metinsel_sorular' %}" class="btn btn-primary"><i class="fa fa-tasks me-1"></i> Tüm Metinsel Soruları Görüntüle</a>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Kullanıcı</th>
+                          <th>Soru</th>
+                          <th>Cevap</th>
+                          <th>Gönderilme Tarihi</th>
+                          <th>Durum</th>
+                          <th>İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% if degerlendirilmeyen_metinsel_sorular %}
+                          {% for soru in degerlendirilmeyen_metinsel_sorular %}
+                            <tr>
+                              <td>{{ soru.id }}</td>
+                              <td>
+                                <a href="{% url 'kullanici_detay' soru.kullanici.id %}" class="text-decoration-none">{{ soru.kullanici.fullname|default:soru.kullanici.username }}</a>
+                              </td>
+                              <td>{{ soru.soru.soru_metni|truncatechars:50 }}</td>
+                              <td>{{ soru.secilen_secenek.secenek_metni|truncatechars:50 }}</td>
+                              <td>{{ soru.cevaplama_tarihi|date:'d.m.Y H:i' }}</td>
+                              <td>
+                                <span class="badge bg-warning">Değerlendirilmedi</span>
+                              </td>
+                              <td>
+                                <a href="{% url 'metinsel_soru_degerlendir' soru.id %}" class="btn btn-sm btn-primary"><i class="fa fa-check"></i> Değerlendir</a>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        {% else %}
+                          <tr>
+                            <td colspan="7" class="text-center py-4">
+                              <div class="alert alert-info mb-0">
+                                <i class="fa fa-info-circle me-2"></i> Değerlendirilmeyi bekleyen metinsel soru bulunmamaktadır.
+                              </div>
+                            </td>
+                          </tr>
+                        {% endif %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {% if degerlendirilmeyen_metinsel_sorular %}
+                    <div class="text-end mt-3">
+                      <a href="{% url 'metinsel_sorular' %}" class="btn btn-outline-primary"><i class="fa fa-list me-2"></i> Tüm Metinsel Soruları Görüntüle</a>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- İçerik Yönetimi -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#icerik-collapse" data-bs-toggle="collapse" aria-expanded="false" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-cubes me-2"></i>İçerik Yönetimi</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse" id="icerik-collapse">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <a href="{% url 'kategori_ekle' %}" class="text-decoration-none">
+                        <div class="dashboard-box h-100">
+                          <div class="dashboard-box-icon purple">
+                            <i class="fa fa-tag fa-2x"></i>
+                          </div>
+                          <div class="dashboard-box-content">
+                            <h3>{{ kategoriler.count }}</h3>
+                            <p>Kategoriler</p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <a href="{% url 'modul_ekle' %}" class="text-decoration-none">
+                        <div class="dashboard-box h-100">
+                          <div class="dashboard-box-icon blue">
+                            <i class="fa fa-book fa-2x"></i>
+                          </div>
+                          <div class="dashboard-box-content">
+                            <h3>{{ moduller.count }}</h3>
+                            <p>Modüller</p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <a href="{% url 'egitmen_ekle' %}" class="text-decoration-none">
+                        <div class="dashboard-box h-100">
+                          <div class="dashboard-box-icon green">
+                            <i class="fa fa-user-tie fa-2x"></i>
+                          </div>
+                          <div class="dashboard-box-content">
+                            <h3>{{ egitmenler.count }}</h3>
+                            <p>Eğitmenler</p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                      <a href="{% url 'yonetim_aktivite_listesi' %}" class="text-decoration-none">
+                        <div class="dashboard-box h-100">
+                          <div class="dashboard-box-icon orange">
+                            <i class="fa fa-clipboard-list fa-2x"></i>
+                          </div>
+                          <div class="dashboard-box-content">
+                            <h3>Aktiviteler</h3>
+                            <p>Haftalık Aktiviteler</p>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forum Yönetimi -->
+        <div class="row mb-5">
+          <div class="col-md-12">
+            <div class="card dashboard-overview">
+              <div class="card-header">
+                <h4 class="mb-0">
+                  <a href="#forum-collapse" data-bs-toggle="collapse" aria-expanded="true" class="d-flex align-items-center justify-content-between">
+                    <span style="color: white;"><i class="fa fa-comments me-2"></i>Forum Yönetimi</span>
+                    <i style="color: white;" class="fa fa-chevron-down"></i>
+                  </a>
+                </h4>
+              </div>
+              <div class="collapse show" id="forum-collapse">
+                <div class="card-body">
+                  <div class="row g-4">
+                    <!-- Forum Kategorileri -->
+                    <div class="col-lg-6 col-md-6">
+                      <div class="forum-card bg-white rounded shadow-sm h-100 p-0">
+                        <div class="forum-card-header d-flex align-items-center">
+                          <div class="icon-container bg-primary text-white">
+                            <i class="fas fa-list-alt"></i>
+                          </div>
+                          <h5 class="mb-0 ms-3">Forum Kategorileri</h5>
+                        </div>
+                        <div class="forum-card-body p-4">
+                          <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="stats">
+                              <span class="h3 mb-0 fw-bold">{{ forum_kategori_sayisi|default:'0' }}</span>
+                              <span class="text-muted ms-2">toplam kategori</span>
+                            </div>
+                          </div>
+                          <p class="text-muted mb-4">Kategorileri yönetin, yeni kategoriler ekleyin veya düzenleyin.</p>
+                          <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'forum:forum_kategori_listele' %}" class="btn btn-outline-primary"><i class="fas fa-list me-2"></i>Kategorileri Listele</a>
+                            <a href="{% url 'forum:forum_kategori_ekle' %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Yeni Kategori</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Forum Konuları -->
+                    <div class="col-lg-6 col-md-6">
+                      <div class="forum-card bg-white rounded shadow-sm h-100 p-0">
+                        <div class="forum-card-header d-flex align-items-center">
+                          <div class="icon-container bg-info text-white">
+                            <i class="fas fa-clipboard-list"></i>
+                          </div>
+                          <h5 class="mb-0 ms-3">Forum Konuları</h5>
+                        </div>
+                        <div class="forum-card-body p-4">
+                          <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="stats">
+                              <span class="h3 mb-0 fw-bold">{{ forum_konu_sayisi|default:'0' }}</span>
+                              <span class="text-muted ms-2">toplam konu</span>
+                            </div>
+                            <span class="badge bg-info text-white">Son 7 gün: {{ son_hafta_forum_konu_sayisi|default:'0' }}</span>
+                          </div>
+                          <p class="text-muted mb-4">Tüm konuları görüntüleyin, düzenleyin veya yeni konu ekleyin.</p>
+                          <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'forum:forum_konu_listele' %}" class="btn btn-outline-info"><i class="fas fa-list me-2"></i>Konuları Listele</a>
+                            <a href="{% url 'forum:forum_konu_ekle' %}" class="btn btn-info text-white"><i class="fas fa-plus me-2"></i>Yeni Konu</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Forum Yorumları -->
+                    <div class="col-lg-6 col-md-6">
+                      <div class="forum-card bg-white rounded shadow-sm h-100 p-0">
+                        <div class="forum-card-header d-flex align-items-center">
+                          <div class="icon-container bg-warning text-white">
+                            <i class="fas fa-comments"></i>
+                          </div>
+                          <h5 class="mb-0 ms-3">Forum Yorumları</h5>
+                        </div>
+                        <div class="forum-card-body p-4">
+                          <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="stats">
+                              <span class="h3 mb-0 fw-bold">{{ forum_yorum_sayisi|default:'0' }}</span>
+                              <span class="text-muted ms-2">toplam yorum</span>
+                            </div>
+                            <span class="badge bg-warning text-white">Son 7 gün: {{ son_hafta_forum_yorum_sayisi|default:'0' }}</span>
+                          </div>
+                          <p class="text-muted mb-4">Yorumları yönetin, uygunsuz içerikleri kaldırın veya düzenleyin.</p>
+                          <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'forum:forum_yorum_listele' %}" class="btn btn-warning text-white"><i class="fas fa-list me-2"></i>Yorumları Listele</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Forum İstatistikleri -->
+                    <div class="col-lg-6 col-md-6">
+                      <div class="forum-card bg-white rounded shadow-sm h-100 p-0">
+                        <div class="forum-card-header d-flex align-items-center">
+                          <div class="icon-container bg-success text-white">
+                            <i class="fas fa-chart-line"></i>
+                          </div>
+                          <h5 class="mb-0 ms-3">Forum İstatistikleri</h5>
+                        </div>
+                        <div class="forum-card-body p-4">
+                          <div class="mb-3">
+                            <div class="progress-info d-flex justify-content-between mb-1">
+                              <span>Konular</span>
+                              <span class="text-primary">{{ forum_konu_sayisi|default:'0' }}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                              <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <div class="progress-info d-flex justify-content-between mb-1">
+                              <span>Yorumlar</span>
+                              <span class="text-warning">{{ forum_yorum_sayisi|default:'0' }}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                              <div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <div class="progress-info d-flex justify-content-between mb-1">
+                              <span>Son 7 Gün Aktivite</span>
+                              <span class="text-success">{{ son_hafta_forum_aktivite|default:'0' }}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                              <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                            </div>
+                          </div>
+                          <a href="{% url 'forum:forum_main' %}" target="_blank" class="btn btn-outline-success mt-3"><i class="fas fa-external-link-alt me-2"></i>Forum'a Git</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .page-banner h1 {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    
+    .yonetim-panel {
+      padding: 50px 0;
+      background-color: #f9fafc;
+    }
+    
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+      border: none;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transform: translateY(-3px);
+    }
+    
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      padding: 18px 20px;
+      font-weight: 600;
+    }
+    
+    .dashboard-overview .card-header {
+      background-color: #6610f2;
+      color: white;
+      border-bottom: 1px solid #5e0ae7;
+    }
+    
+    .bg-purple {
+      background-color: #6610f2 !important;
+    }
+    
+    .table th,
+    .table td {
+      vertical-align: middle;
+      padding: 12px 15px;
+    }
+    
+    .table thead th {
+      font-weight: 600;
+      border-bottom-width: 1px;
+    }
+    
+    .dashboard-card {
+      display: flex;
+      border-radius: 8px;
+      padding: 25px;
+      height: 100%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dashboard-card-icon {
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .dashboard-card-content {
+      flex: 1;
+    }
+    
+    .dashboard-card-content h2 {
+      font-size: 2.5rem;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .dashboard-card-content p {
+      margin-bottom: 0;
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    /* Forum Yönetimi stiller */
+    #forum-collapse .card {
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    #forum-collapse .card-header {
+      border-radius: 16px 16px 0 0;
+      padding: 16px 20px;
+    }
+    
+    #forum-collapse .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    #forum-collapse .btn-lg {
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 12px 20px;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    #forum-collapse .btn-lg:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    #forum-collapse .stat-item {
+      padding: 10px 0;
+      border-bottom: 1px dashed #e9ecef;
+    }
+    
+    #forum-collapse .stat-item:last-child {
+      border-bottom: none;
+    }
+    
+    #forum-collapse .stat-label {
+      font-weight: 500;
+      font-size: 1.05rem;
+    }
+    
+    #forum-collapse .badge {
+      font-weight: 600;
+    }
+    
+    .btn-group .btn {
+      margin-right: 5px;
+    }
+    
+    .btn-group .btn:last-child {
+      margin-right: 0;
+    }
+    
+    /* Mobil Uyumluluk */
+    @media (max-width: 767px) {
+      #forum-collapse .btn-lg {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+    
+      #forum-collapse .stat-label {
+        font-size: 0.9rem;
+      }
+    
+      #forum-collapse .badge {
+        font-size: 0.8rem !important;
+        padding: 5px 10px !important;
+      }
+    }
+    
+    .forum-card {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: none;
+      transition: all 0.3s ease;
+    }
+    
+    .forum-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .forum-card-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+    }
+    
+    .icon-container {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .forum-card-body {
+      position: relative;
+    }
+    
+    .btn-outline-primary,
+    .btn-outline-info,
+    .btn-outline-warning,
+    .btn-outline-success {
+      border-width: 1.5px;
+      font-weight: 500;
+    }
+    
+    .progress {
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .progress-bar {
+      border-radius: 10px;
+    }
+    
+    .stats .h3 {
+      color: #333;
+      font-weight: 700;
+    }
+    
+    @media (max-width: 767px) {
+      .forum-card-body {
+        padding: 15px !important;
+      }
+    
+      .d-flex.flex-wrap {
+        flex-direction: column;
+        width: 100%;
+      }
+    
+      .d-flex.flex-wrap .btn {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    $(document).ready(function () {
+      // Kategorileri sayfalama için değişkenler
+      const kategoriSayfaBasinaAdet = 10 // Her sayfada gösterilecek kategori sayısı
+      let kategoriAktifSayfa = 1
+      let filtrelenmisKategoriler = []
+      let tumKategoriler = []
+    
+      // Modüller için değişkenler
+      const modulSayfaBasinaAdet = 10
+      let modulAktifSayfa = 1
+      let filtrelenmisModuller = []
+      let tumModuller = []
+    
+      // Eğitmenler için değişkenler
+      const egitmenSayfaBasinaAdet = 10
+      let egitmenAktifSayfa = 1
+      let filtrelenmisEgitmenler = []
+      let tumEgitmenler = []
+    
+      // Tablodaki tüm kategorileri al
+      $('.kategori-satir').each(function () {
+        tumKategoriler.push($(this))
+      })
+    
+      // Tablodaki tüm modülleri al
+      $('.modul-satir').each(function () {
+        tumModuller.push($(this))
+      })
+    
+      // Tablodaki tüm eğitmenleri al
+      $('.egitmen-satir').each(function () {
+        tumEgitmenler.push($(this))
+      })
+    
+      // İlk yüklemede içerikleri sayfalandır
+      filtrelenmisKategoriler = tumKategoriler
+      filtrelenmisModuller = tumModuller
+      filtrelenmisEgitmenler = tumEgitmenler
+    
+      kategoriSayfalamaGuncelle()
+      modulSayfalamaGuncelle()
+      egitmenSayfalamaGuncelle()
+    
+      // Kategorileri sayfalama fonksiyonu
+      function kategoriSayfalamaGuncelle() {
+        // Tüm kategorileri gizle
+        $('.kategori-satir').hide()
+    
+        // Aktif sayfadaki kategorileri göster
+        const baslangic = (kategoriAktifSayfa - 1) * kategoriSayfaBasinaAdet
+        const bitis = baslangic + kategoriSayfaBasinaAdet
+    
+        // Filtrelenmiş kategorilerin ilgili kısmını göster
+        for (let i = baslangic; i < bitis && i < filtrelenmisKategoriler.length; i++) {
+          filtrelenmisKategoriler[i].show()
+        }
+    
+        // Sayfa bilgisini güncelle
+        const gosterilenBaslangic = filtrelenmisKategoriler.length > 0 ? baslangic + 1 : 0
+        const gosterilenBitis = Math.min(bitis, filtrelenmisKategoriler.length)
+        $('#kategoriSayfaBilgisi').text(`Gösterilen: ${gosterilenBaslangic}-${gosterilenBitis} / Toplam: ${filtrelenmisKategoriler.length}`)
+    
+        // Sayfalama bağlantılarını güncelle
+        kategoriSayfalariniGuncelle()
+    
+        // Eğer filtrelenmiş sonuç yoksa "sonuç bulunamadı" mesajını göster
+        if (filtrelenmisKategoriler.length === 0) {
+          $('#kategoriSonucBulunamadi').removeClass('d-none')
+        } else {
+          $('#kategoriSonucBulunamadi').addClass('d-none')
+        }
+      }
+    
+      // Sayfalama bağlantılarını güncelleme
+      function kategoriSayfalariniGuncelle() {
+        const toplamSayfa = Math.ceil(filtrelenmisKategoriler.length / kategoriSayfaBasinaAdet)
+    
+        // Sayfa numaralarını temizle
+        const sayfalamaUl = $('#kategoriSayfalama')
+        sayfalamaUl.find('li.sayfa-numarasi').remove()
+    
+        // Sayfa numaralarını ekle
+        // Toplam sayfa 7'den azsa tüm sayfaları göster
+        if (toplamSayfa <= 7) {
+          for (let i = 1; i <= toplamSayfa; i++) {
+            const sayfaItem = $('<li>')
+              .addClass('page-item sayfa-numarasi')
+              .toggleClass('active', i === kategoriAktifSayfa)
+    
+            const sayfaLink = $('<a>')
+              .addClass('page-link')
+              .attr('href', 'javascript:void(0)')
+              .text(i)
+              .on('click', function () {
+                kategoriAktifSayfa = i
+                kategoriSayfalamaGuncelle()
+              })
+    
+            sayfaItem.append(sayfaLink)
+            sayfaItem.insertBefore($('#kategoriSonrakiSayfa'))
+          }
+        } else {
+          // Toplam sayfa 7'den fazlaysa ellipsis (...) kullan
+          // İlk sayfa ve aktif sayfanın etrafındaki sayfaları göster
+    
+          // İlk sayfa
+          ekleNumaraButonu(1)
+    
+          // Ellipsis veya numaralar
+          if (kategoriAktifSayfa <= 3) {
+            // Aktif sayfa başlardaysa: 1 2 3 4 5 ... 20
+            for (let i = 2; i <= 5; i++) {
+              ekleNumaraButonu(i)
+            }
+            ekleEllipsis()
+          } else if (kategoriAktifSayfa >= toplamSayfa - 2) {
+            // Aktif sayfa sonlardaysa: 1 ... 16 17 18 19 20
+            ekleEllipsis()
+            for (let i = toplamSayfa - 4; i < toplamSayfa; i++) {
+              ekleNumaraButonu(i)
+            }
+          } else {
+            // Aktif sayfa ortadaysa: 1 ... 7 8 9 ... 20
+            ekleEllipsis()
+            for (let i = kategoriAktifSayfa - 1; i <= kategoriAktifSayfa + 1; i++) {
+              ekleNumaraButonu(i)
+            }
+            ekleEllipsis()
+          }
+    
+          // Son sayfa
+          ekleNumaraButonu(toplamSayfa)
+        }
+    
+        // İlk ve önceki butonların durumunu güncelle
+        $('#kategoriIlkSayfa, #kategoriOncekiSayfa').toggleClass('disabled', kategoriAktifSayfa === 1)
+    
+        // Sonraki ve son butonların durumunu güncelle
+        $('#kategoriSonrakiSayfa, #kategoriSonSayfa').toggleClass('disabled', kategoriAktifSayfa === toplamSayfa || toplamSayfa === 0)
+    
+        // Sayfalama butonlarına tıklama olayları
+        $('#kategoriIlkSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              kategoriAktifSayfa = 1
+              kategoriSayfalamaGuncelle()
+            }
+          })
+    
+        $('#kategoriOncekiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              kategoriAktifSayfa--
+              kategoriSayfalamaGuncelle()
+            }
+          })
+    
+        $('#kategoriSonrakiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              kategoriAktifSayfa++
+              kategoriSayfalamaGuncelle()
+            }
+          })
+    
+        $('#kategoriSonSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              kategoriAktifSayfa = toplamSayfa
+              kategoriSayfalamaGuncelle()
+            }
+          })
+    
+        // Sayfa numarası butonu ekleme yardımcı fonksiyonu
+        function ekleNumaraButonu(numara) {
+          const sayfaItem = $('<li>')
+            .addClass('page-item sayfa-numarasi')
+            .toggleClass('active', numara === kategoriAktifSayfa)
+    
+          const sayfaLink = $('<a>')
+            .addClass('page-link')
+            .attr('href', 'javascript:void(0)')
+            .text(numara)
+            .on('click', function () {
+              kategoriAktifSayfa = numara
+              kategoriSayfalamaGuncelle()
+            })
+    
+          sayfaItem.append(sayfaLink)
+          sayfaItem.insertBefore($('#kategoriSonrakiSayfa'))
+        }
+    
+        // Ellipsis ekleme yardımcı fonksiyonu
+        function ekleEllipsis() {
+          const ellipsisItem = $('<li>').addClass('page-item disabled sayfa-numarasi')
+          const ellipsisLink = $('<a>').addClass('page-link').attr('href', 'javascript:void(0)').html('&hellip;')
+    
+          ellipsisItem.append(ellipsisLink)
+          ellipsisItem.insertBefore($('#kategoriSonrakiSayfa'))
+        }
+      }
+    
+      // Modülleri sayfalama fonksiyonu
+      function modulSayfalamaGuncelle() {
+        // Tüm modülleri gizle
+        $('.modul-satir').hide()
+    
+        // Aktif sayfadaki modülleri göster
+        const baslangic = (modulAktifSayfa - 1) * modulSayfaBasinaAdet
+        const bitis = baslangic + modulSayfaBasinaAdet
+    
+        // Filtrelenmiş modüllerin ilgili kısmını göster
+        for (let i = baslangic; i < bitis && i < filtrelenmisModuller.length; i++) {
+          filtrelenmisModuller[i].show()
+        }
+    
+        // Sayfa bilgisini güncelle
+        const gosterilenBaslangic = filtrelenmisModuller.length > 0 ? baslangic + 1 : 0
+        const gosterilenBitis = Math.min(bitis, filtrelenmisModuller.length)
+        $('#modulSayfaBilgisi').text(`Gösterilen: ${gosterilenBaslangic}-${gosterilenBitis} / Toplam: ${filtrelenmisModuller.length}`)
+    
+        // Sayfalama bağlantılarını güncelle
+        modulSayfalariniGuncelle()
+    
+        // Eğer filtrelenmiş sonuç yoksa "sonuç bulunamadı" mesajını göster
+        if (filtrelenmisModuller.length === 0) {
+          $('#modulSonucBulunamadi').removeClass('d-none')
+        } else {
+          $('#modulSonucBulunamadi').addClass('d-none')
+        }
+      }
+    
+      // Modül sayfalama bağlantılarını güncelleme
+      function modulSayfalariniGuncelle() {
+        const toplamSayfa = Math.ceil(filtrelenmisModuller.length / modulSayfaBasinaAdet)
+    
+        // Sayfa numaralarını temizle
+        const sayfalamaUl = $('#modulSayfalama')
+        sayfalamaUl.find('li.sayfa-numarasi').remove()
+    
+        // Sayfa numaralarını ekle
+        // Toplam sayfa 7'den azsa tüm sayfaları göster
+        if (toplamSayfa <= 7) {
+          for (let i = 1; i <= toplamSayfa; i++) {
+            const sayfaItem = $('<li>')
+              .addClass('page-item sayfa-numarasi')
+              .toggleClass('active', i === modulAktifSayfa)
+    
+            const sayfaLink = $('<a>')
+              .addClass('page-link')
+              .attr('href', 'javascript:void(0)')
+              .text(i)
+              .on('click', function () {
+                modulAktifSayfa = i
+                modulSayfalamaGuncelle()
+              })
+    
+            sayfaItem.append(sayfaLink)
+            sayfaItem.insertBefore($('#modulSonrakiSayfa'))
+          }
+        } else {
+          // Toplam sayfa 7'den fazlaysa ellipsis (...) kullan
+          // İlk sayfa ve aktif sayfanın etrafındaki sayfaları göster
+    
+          // İlk sayfa
+          ekleModulNumaraButonu(1)
+    
+          // Ellipsis veya numaralar
+          if (modulAktifSayfa <= 3) {
+            // Aktif sayfa başlardaysa: 1 2 3 4 5 ... 20
+            for (let i = 2; i <= 5; i++) {
+              ekleModulNumaraButonu(i)
+            }
+            ekleModulEllipsis()
+          } else if (modulAktifSayfa >= toplamSayfa - 2) {
+            // Aktif sayfa sonlardaysa: 1 ... 16 17 18 19 20
+            ekleModulEllipsis()
+            for (let i = toplamSayfa - 4; i < toplamSayfa; i++) {
+              ekleModulNumaraButonu(i)
+            }
+          } else {
+            // Aktif sayfa ortadaysa: 1 ... 7 8 9 ... 20
+            ekleModulEllipsis()
+            for (let i = modulAktifSayfa - 1; i <= modulAktifSayfa + 1; i++) {
+              ekleModulNumaraButonu(i)
+            }
+            ekleModulEllipsis()
+          }
+    
+          // Son sayfa
+          ekleModulNumaraButonu(toplamSayfa)
+        }
+    
+        // İlk ve önceki butonların durumunu güncelle
+        $('#modulIlkSayfa, #modulOncekiSayfa').toggleClass('disabled', modulAktifSayfa === 1)
+    
+        // Sonraki ve son butonların durumunu güncelle
+        $('#modulSonrakiSayfa, #modulSonSayfa').toggleClass('disabled', modulAktifSayfa === toplamSayfa || toplamSayfa === 0)
+    
+        // Sayfalama butonlarına tıklama olayları
+        $('#modulIlkSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              modulAktifSayfa = 1
+              modulSayfalamaGuncelle()
+            }
+          })
+    
+        $('#modulOncekiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              modulAktifSayfa--
+              modulSayfalamaGuncelle()
+            }
+          })
+    
+        $('#modulSonrakiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              modulAktifSayfa++
+              modulSayfalamaGuncelle()
+            }
+          })
+    
+        $('#modulSonSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              modulAktifSayfa = toplamSayfa
+              modulSayfalamaGuncelle()
+            }
+          })
+    
+        // Sayfa numarası butonu ekleme yardımcı fonksiyonu
+        function ekleModulNumaraButonu(numara) {
+          const sayfaItem = $('<li>')
+            .addClass('page-item sayfa-numarasi')
+            .toggleClass('active', numara === modulAktifSayfa)
+    
+          const sayfaLink = $('<a>')
+            .addClass('page-link')
+            .attr('href', 'javascript:void(0)')
+            .text(numara)
+            .on('click', function () {
+              modulAktifSayfa = numara
+              modulSayfalamaGuncelle()
+            })
+    
+          sayfaItem.append(sayfaLink)
+          sayfaItem.insertBefore($('#modulSonrakiSayfa'))
+        }
+    
+        // Ellipsis ekleme yardımcı fonksiyonu
+        function ekleModulEllipsis() {
+          const ellipsisItem = $('<li>').addClass('page-item disabled sayfa-numarasi')
+          const ellipsisLink = $('<a>').addClass('page-link').attr('href', 'javascript:void(0)').html('&hellip;')
+    
+          ellipsisItem.append(ellipsisLink)
+          ellipsisItem.insertBefore($('#modulSonrakiSayfa'))
+        }
+      }
+    
+      // Eğitmenleri sayfalama fonksiyonu
+      function egitmenSayfalamaGuncelle() {
+        // Tüm eğitmenleri gizle
+        $('.egitmen-satir').hide()
+    
+        // Aktif sayfadaki eğitmenleri göster
+        const baslangic = (egitmenAktifSayfa - 1) * egitmenSayfaBasinaAdet
+        const bitis = baslangic + egitmenSayfaBasinaAdet
+    
+        // Filtrelenmiş eğitmenlerin ilgili kısmını göster
+        for (let i = baslangic; i < bitis && i < filtrelenmisEgitmenler.length; i++) {
+          filtrelenmisEgitmenler[i].show()
+        }
+    
+        // Sayfa bilgisini güncelle
+        const gosterilenBaslangic = filtrelenmisEgitmenler.length > 0 ? baslangic + 1 : 0
+        const gosterilenBitis = Math.min(bitis, filtrelenmisEgitmenler.length)
+        $('#egitmenSayfaBilgisi').text(`Gösterilen: ${gosterilenBaslangic}-${gosterilenBitis} / Toplam: ${filtrelenmisEgitmenler.length}`)
+    
+        // Sayfalama bağlantılarını güncelle
+        egitmenSayfalariniGuncelle()
+    
+        // Eğer filtrelenmiş sonuç yoksa "sonuç bulunamadı" mesajını göster
+        if (filtrelenmisEgitmenler.length === 0) {
+          $('#egitmenSonucBulunamadi').removeClass('d-none')
+        } else {
+          $('#egitmenSonucBulunamadi').addClass('d-none')
+        }
+      }
+    
+      // Eğitmen sayfalama bağlantılarını güncelleme
+      function egitmenSayfalariniGuncelle() {
+        const toplamSayfa = Math.ceil(filtrelenmisEgitmenler.length / egitmenSayfaBasinaAdet)
+    
+        // Sayfa numaralarını temizle
+        const sayfalamaUl = $('#egitmenSayfalama')
+        sayfalamaUl.find('li.sayfa-numarasi').remove()
+    
+        // Sayfa numaralarını ekle
+        // Toplam sayfa 7'den azsa tüm sayfaları göster
+        if (toplamSayfa <= 7) {
+          for (let i = 1; i <= toplamSayfa; i++) {
+            const sayfaItem = $('<li>')
+              .addClass('page-item sayfa-numarasi')
+              .toggleClass('active', i === egitmenAktifSayfa)
+    
+            const sayfaLink = $('<a>')
+              .addClass('page-link')
+              .attr('href', 'javascript:void(0)')
+              .text(i)
+              .on('click', function () {
+                egitmenAktifSayfa = i
+                egitmenSayfalamaGuncelle()
+              })
+    
+            sayfaItem.append(sayfaLink)
+            sayfaItem.insertBefore($('#egitmenSonrakiSayfa'))
+          }
+        } else {
+          // Toplam sayfa 7'den fazlaysa ellipsis (...) kullan
+          // İlk sayfa ve aktif sayfanın etrafındaki sayfaları göster
+    
+          // İlk sayfa
+          ekleEgitmenNumaraButonu(1)
+    
+          // Ellipsis veya numaralar
+          if (egitmenAktifSayfa <= 3) {
+            // Aktif sayfa başlardaysa: 1 2 3 4 5 ... 20
+            for (let i = 2; i <= 5; i++) {
+              ekleEgitmenNumaraButonu(i)
+            }
+            ekleEgitmenEllipsis()
+          } else if (egitmenAktifSayfa >= toplamSayfa - 2) {
+            // Aktif sayfa sonlardaysa: 1 ... 16 17 18 19 20
+            ekleEgitmenEllipsis()
+            for (let i = toplamSayfa - 4; i < toplamSayfa; i++) {
+              ekleEgitmenNumaraButonu(i)
+            }
+          } else {
+            // Aktif sayfa ortadaysa: 1 ... 7 8 9 ... 20
+            ekleEgitmenEllipsis()
+            for (let i = egitmenAktifSayfa - 1; i <= egitmenAktifSayfa + 1; i++) {
+              ekleEgitmenNumaraButonu(i)
+            }
+            ekleEgitmenEllipsis()
+          }
+    
+          // Son sayfa
+          ekleEgitmenNumaraButonu(toplamSayfa)
+        }
+    
+        // İlk ve önceki butonların durumunu güncelle
+        $('#egitmenIlkSayfa, #egitmenOncekiSayfa').toggleClass('disabled', egitmenAktifSayfa === 1)
+    
+        // Sonraki ve son butonların durumunu güncelle
+        $('#egitmenSonrakiSayfa, #egitmenSonSayfa').toggleClass('disabled', egitmenAktifSayfa === toplamSayfa || toplamSayfa === 0)
+    
+        // Sayfalama butonlarına tıklama olayları
+        $('#egitmenIlkSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              egitmenAktifSayfa = 1
+              egitmenSayfalamaGuncelle()
+            }
+          })
+    
+        $('#egitmenOncekiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              egitmenAktifSayfa--
+              egitmenSayfalamaGuncelle()
+            }
+          })
+    
+        $('#egitmenSonrakiSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              egitmenAktifSayfa++
+              egitmenSayfalamaGuncelle()
+            }
+          })
+    
+        $('#egitmenSonSayfa')
+          .off('click')
+          .on('click', function () {
+            if (!$(this).hasClass('disabled')) {
+              egitmenAktifSayfa = toplamSayfa
+              egitmenSayfalamaGuncelle()
+            }
+          })
+    
+        // Sayfa numarası butonu ekleme yardımcı fonksiyonu
+        function ekleEgitmenNumaraButonu(numara) {
+          const sayfaItem = $('<li>')
+            .addClass('page-item sayfa-numarasi')
+            .toggleClass('active', numara === egitmenAktifSayfa)
+    
+          const sayfaLink = $('<a>')
+            .addClass('page-link')
+            .attr('href', 'javascript:void(0)')
+            .text(numara)
+            .on('click', function () {
+              egitmenAktifSayfa = numara
+              egitmenSayfalamaGuncelle()
+            })
+    
+          sayfaItem.append(sayfaLink)
+          sayfaItem.insertBefore($('#egitmenSonrakiSayfa'))
+        }
+    
+        // Ellipsis ekleme yardımcı fonksiyonu
+        function ekleEgitmenEllipsis() {
+          const ellipsisItem = $('<li>').addClass('page-item disabled sayfa-numarasi')
+          const ellipsisLink = $('<a>').addClass('page-link').attr('href', 'javascript:void(0)').html('&hellip;')
+    
+          ellipsisItem.append(ellipsisLink)
+          ellipsisItem.insertBefore($('#egitmenSonrakiSayfa'))
+        }
+      }
+    
+      // Kategori arama işlevi güncellendi
+      $('#kategoriArama').on('keyup', function () {
+        const aramaTermi = $(this).val().trim().toLowerCase()
+        aramaUygula(aramaTermi)
+      })
+    
+      // Arama butonuna tıklama
+      $('#kategoriAramaBtn').on('click', function () {
+        const aramaTermi = $('#kategoriArama').val().trim().toLowerCase()
+        aramaUygula(aramaTermi)
+      })
+    
+      // Temizleme butonu güncellendi
+      $('.btn-clear[data-input="kategoriArama"]').on('click', function () {
+        $('#kategoriArama').val('')
+        aramaUygula('')
+      })
+    
+      // Arama fonksiyonu
+      function aramaUygula(aramaTermi) {
+        if (aramaTermi.length >= 2) {
+          // Belirli sütunlarda arama yap
+          filtrelenmisKategoriler = []
+    
+          tumKategoriler.forEach(function (item) {
+            const id = $(item).find('td').eq(1).text().trim()
+            const kategoriAdi = $(item).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            const durumText = $(item).find('td').eq(3).find('.badge').text().trim().toLocaleLowerCase('tr')
+    
+            // Arama terimini Türkçe aksanlardan arındırmak için yardımcı fonksiyon
+            const normalizeText = (text) => {
+              return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            }
+    
+            const normalizeTermi = normalizeText(aramaTermi)
+            const normalizeKategori = normalizeText(kategoriAdi)
+    
+            // ID'de arama
+            if (id.indexOf(aramaTermi) > -1) {
+              filtrelenmisKategoriler.push(item)
+            }
+            // Kategori adında arama (Türkçe karakter destekli)
+            else if (kategoriAdi.indexOf(aramaTermi) > -1 || normalizeKategori.indexOf(normalizeTermi) > -1) {
+              filtrelenmisKategoriler.push(item)
+            }
+            // Durum metninde arama
+            else if (durumText.indexOf(aramaTermi) > -1) {
+              filtrelenmisKategoriler.push(item)
+            }
+          })
+        } else {
+          // Arama terimi 2 karakterden azsa tüm kategorileri göster
+          filtrelenmisKategoriler = tumKategoriler
+        }
+    
+        // Filtrelenen verilere şu anki sıralamayı uygula
+        uygulanmisSiralamaYenile()
+    
+        // Aktif sayfayı sıfırla ve sayfalamayı güncelle
+        kategoriAktifSayfa = 1
+        kategoriSayfalamaGuncelle()
+      }
+    
+      // Mevcut sıralamayı yeniden uygula
+      function uygulanmisSiralamaYenile() {
+        if (filtrelenmisKategoriler.length <= 1) return // Sıralamaya gerek yok
+    
+        const aktifSutun = $('.sortable-column.asc, .sortable-column.desc')
+        if (aktifSutun.length === 0) return // Aktif sıralama yok
+    
+        const sortType = aktifSutun.data('sort')
+        const sortDirection = aktifSutun.hasClass('asc') ? 'asc' : 'desc'
+    
+        filtrelenmisKategoriler.sort(function (a, b) {
+          let valueA, valueB
+    
+          if (sortType === 'id') {
+            // ID için sayısal sıralama
+            valueA = parseInt($(a).find('td').eq(1).text().trim(), 10)
+            valueB = parseInt($(b).find('td').eq(1).text().trim(), 10)
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+          } else if (sortType === 'ad') {
+            // Kategori adı için metinsel sıralama
+            valueA = $(a).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'durum') {
+            // Durum için "Aktif"/"Pasif" sıralaması
+            valueA = $(a).find('td').eq(3).find('.badge').text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(3).find('.badge').text().trim().toLocaleLowerCase('tr')
+          }
+    
+          // Metinsel sıralama için Türkçe localeCompare kullan
+          if (sortType !== 'id') {
+            return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+          }
+    
+          return 0 // ID için buraya gelmeyecek
+        })
+      }
+    
+      // Silme modalı için dinamik içerik ayarlama
+      $('.sil-btn').on('click', function () {
+        var id = $(this).data('id')
+        var baslik = $(this).data('baslik')
+        var tip = $(this).data('tip')
+        var url = $(this).data('url')
+        var uyari = $(this).data('uyari')
+    
+        $('#silModal .modal-body').html('<p><strong>' + baslik + '</strong> isimli ' + tip + ' silinecek. Bu işlem geri alınamaz!</p>' + '<p class="text-danger">' + (uyari || '') + '</p>')
+    
+        $('#silModal .modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>' + '<form action="' + url + '" method="post">' + '{% csrf_token %}' + '<button type="submit" class="btn btn-danger">Sil</button>' + '</form>')
+      })
+    
+      // Kategori işlemleri
+      $('#tumKategorilerCheckbox').on('change', function () {
+        $('.kategori-checkbox').prop('checked', $(this).is(':checked'))
+        updateDeleteButtonState('.kategori-checkbox', '#seciliKategorileriSil')
+      })
+    
+      $('.kategori-checkbox').on('change', function () {
+        updateDeleteButtonState('.kategori-checkbox', '#seciliKategorileriSil')
+    
+        // Eğer tüm checkbox'lar seçiliyse, "Tümünü Seç" checkbox'ını da seç
+        if ($('.kategori-checkbox:checked').length === $('.kategori-checkbox').length) {
+          $('#tumKategorilerCheckbox').prop('checked', true)
+        } else {
+          $('#tumKategorilerCheckbox').prop('checked', false)
+        }
+      })
+    
+      // Tümünü Seç butonu için işlev
+      $('#tumKategorileriSec').on('click', function () {
+        var checkedAll = $('.kategori-checkbox:checked').length === $('.kategori-checkbox').length
+        $('.kategori-checkbox').prop('checked', !checkedAll)
+        $('#tumKategorilerCheckbox').prop('checked', !checkedAll)
+        updateDeleteButtonState('.kategori-checkbox', '#seciliKategorileriSil')
+      })
+    
+      // Seçilenleri Sil butonu için işlev
+      $('#seciliKategorileriSil').on('click', function () {
+        if ($(this).is(':disabled')) return
+    
+        var ids = []
+        $('.kategori-checkbox:checked').each(function () {
+          ids.push($(this).val())
+        })
+    
+        if (ids.length > 0 && confirm('Seçilen kategorileri silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+          // Şimdilik sayfayı yenileme ile gösterelim
+          var form = $('<form action="/yonetim/kategoriler/toplu-sil/" method="post"></form>')
+    
+          // Her bir kategori ID'si için ayrı bir input oluştur
+          ids.forEach(function (id) {
+            form.append('<input type="hidden" name="seciliKategoriler" value="' + id + '">')
+          })
+    
+          form.append('<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">')
+          $('body').append(form)
+          form.submit()
+        }
+      })
+    
+      // Modül işlemleri
+      $('#tumModullerCheckbox').on('change', function () {
+        $('.modul-checkbox').prop('checked', $(this).is(':checked'))
+        updateDeleteButtonState('.modul-checkbox', '#seciliModulleriSil')
+      })
+    
+      $('.modul-checkbox').on('change', function () {
+        updateDeleteButtonState('.modul-checkbox', '#seciliModulleriSil')
+    
+        if ($('.modul-checkbox:checked').length === $('.modul-checkbox').length) {
+          $('#tumModullerCheckbox').prop('checked', true)
+        } else {
+          $('#tumModullerCheckbox').prop('checked', false)
+        }
+      })
+    
+      // Tümünü Seç butonu için işlev
+      $('#tumModulleriSec').on('click', function () {
+        var checkedAll = $('.modul-checkbox:checked').length === $('.modul-checkbox').length
+        $('.modul-checkbox').prop('checked', !checkedAll)
+        $('#tumModullerCheckbox').prop('checked', !checkedAll)
+        updateDeleteButtonState('.modul-checkbox', '#seciliModulleriSil')
+      })
+    
+      // Seçilenleri Sil butonu için işlev
+      $('#seciliModulleriSil').on('click', function () {
+        if ($(this).is(':disabled')) return
+    
+        var ids = []
+        $('.modul-checkbox:checked').each(function () {
+          ids.push($(this).val())
+        })
+    
+        if (ids.length > 0 && confirm('Seçilen modülleri silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+          var form = $('<form action="/yonetim/moduller/toplu-sil/" method="post"></form>')
+    
+          // Her bir modül ID'si için ayrı bir input oluştur
+          ids.forEach(function (id) {
+            form.append('<input type="hidden" name="seciliModuller" value="' + id + '">')
+          })
+    
+          form.append('<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">')
+          $('body').append(form)
+          form.submit()
+        }
+      })
+    
+      // Eğitmen işlemleri
+      $('#tumEgitmenlerCheckbox').on('change', function () {
+        $('.egitmen-checkbox').prop('checked', $(this).is(':checked'))
+        updateDeleteButtonState('.egitmen-checkbox', '#seciliEgitmenleriSil')
+      })
+    
+      $('.egitmen-checkbox').on('change', function () {
+        updateDeleteButtonState('.egitmen-checkbox', '#seciliEgitmenleriSil')
+    
+        if ($('.egitmen-checkbox:checked').length === $('.egitmen-checkbox').length) {
+          $('#tumEgitmenlerCheckbox').prop('checked', true)
+        } else {
+          $('#tumEgitmenlerCheckbox').prop('checked', false)
+        }
+      })
+    
+      // Tümünü Seç butonu için işlev
+      $('#tumEgitmenleriSec').on('click', function () {
+        var checkedAll = $('.egitmen-checkbox:checked').length === $('.egitmen-checkbox').length
+        $('.egitmen-checkbox').prop('checked', !checkedAll)
+        $('#tumEgitmenlerCheckbox').prop('checked', !checkedAll)
+        updateDeleteButtonState('.egitmen-checkbox', '#seciliEgitmenleriSil')
+      })
+    
+      // Seçilenleri Sil butonu için işlev
+      $('#seciliEgitmenleriSil').on('click', function () {
+        if ($(this).is(':disabled')) return
+    
+        var ids = []
+        $('.egitmen-checkbox:checked').each(function () {
+          ids.push($(this).val())
+        })
+    
+        if (ids.length > 0 && confirm('Seçilen eğitmenleri silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+          var form = $('<form action="/yonetim/egitmenler/toplu-sil/" method="post"></form>')
+    
+          // Her bir eğitmen ID'si için ayrı bir input oluştur
+          ids.forEach(function (id) {
+            form.append('<input type="hidden" name="seciliEgitmenler" value="' + id + '">')
+          })
+    
+          form.append('<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">')
+          $('body').append(form)
+          form.submit()
+        }
+      })
+    
+      // Temizleme butonu işlevselliği
+      $('.btn-clear').on('click', function () {
+        var inputId = $(this).data('input')
+        $('#' + inputId)
+          .val('')
+          .focus()
+      })
+    
+      // Yardımcı fonksiyonlar
+      function updateDeleteButtonState(checkboxSelector, buttonSelector) {
+        var checkedCount = $(checkboxSelector + ':checked').length
+        $(buttonSelector).prop('disabled', checkedCount === 0)
+      }
+    
+      // Panel collapse açılış/kapanış hatırlama
+      $('.collapse').on('shown.bs.collapse hidden.bs.collapse', function () {
+        var id = $(this).attr('id')
+        localStorage.setItem(id, $(this).hasClass('show'))
+      })
+    
+      // Önceki durumları yükle
+      $('.collapse').each(function () {
+        var id = $(this).attr('id')
+        var state = localStorage.getItem(id)
+    
+        if (state === 'true') {
+          $(this).addClass('show')
+        } else if (state === 'false') {
+          $(this).removeClass('show')
+        }
+      })
+    
+      // Arama inputlarına odaklandığında ilgili collapse açma
+      $('#kategoriArama, #modulArama, #egitmenArama').on('focus', function () {
+        var collapseId
+        var inputId = $(this).attr('id')
+    
+        if (inputId === 'kategoriArama') collapseId = '#kategoriler-collapse'
+        else if (inputId === 'modulArama') collapseId = '#moduller-collapse'
+        else if (inputId === 'egitmenArama') collapseId = '#egitmenler-collapse'
+    
+        if (collapseId && !$(collapseId).hasClass('show')) {
+          $(collapseId).collapse('show')
+        }
+      })
+    
+      // CSS stilleri ekle
+      $('<style>', {
+        html: `
+                                                              .sortable-column.asc .fa-sort,
+                                                              .sortable-column.desc .fa-sort {
+                                                                opacity: 1 !important;
+                                                                color: #6610f2 !important;
+                                                                transition: transform 0.3s;
+                                                              }
+                                                              .sortable-column.asc .fa-sort {
+                                                                transform: rotate(0);
+                                                              }
+                                                              .sortable-column.desc .fa-sort {
+                                                                transform: rotate(180deg);
+                                                              }
+                                                              .sortable-column {
+                                                                position: relative;
+                                                              }
+                                                              .sortable-column:after {
+                                                                content: '';
+                                                                position: absolute;
+                                                                bottom: 0;
+                                                                left: 0;
+                                                                width: 100%;
+                                                                height: 2px;
+                                                                background-color: transparent;
+                                                                transition: background-color 0.2s;
+                                                              }
+                                                              .sortable-column.asc:after, 
+                                                              .sortable-column.desc:after {
+                                                                background-color: #6610f2;
+                                                              }
+                                                            `
+      }).appendTo('head')
+    
+      // Sütun başlıklarını daha belirgin hale getirmek için stil ekle
+      $('.sortable-column')
+        .css({
+          cursor: 'pointer',
+          position: 'relative',
+          'user-select': 'none',
+          'background-color': '#f8f9fa',
+          transition: 'background-color 0.2s'
+        })
+        .hover(
+          function () {
+            $(this).css('background-color', '#e9ecef')
+          },
+          function () {
+            $(this).css('background-color', '#f8f9fa')
+          }
+        )
+    
+      // Sıralama ikonları için stil
+      $('.sortable-column .fa-sort').css({
+        'margin-left': '5px',
+        opacity: '0.5',
+        transition: 'transform 0.3s, opacity 0.3s'
+      })
+    
+      // Sütun başlıklarına tıklama ile sıralama
+      $('.sortable-column').on('click', function () {
+        const table = $(this).closest('table')
+        const sortType = $(this).data('sort')
+        const isAsc = $(this).hasClass('asc')
+    
+        // Tablonun tipini belirle
+        const tableType = table.attr('id')
+    
+        // Önce mevcut sıralamayı temizle
+        table.find('.sortable-column').removeClass('asc desc').find('.fa-sort').css('opacity', '0.5').css('transform', 'rotate(0)')
+    
+        // Yeni sıralama yönünü ayarla
+        if (isAsc) {
+          $(this).addClass('desc').removeClass('asc')
+          $(this).find('.fa-sort').css('opacity', '1').css('transform', 'rotate(180deg)')
+        } else {
+          $(this).addClass('asc').removeClass('desc')
+          $(this).find('.fa-sort').css('opacity', '1').css('transform', 'rotate(0)')
+        }
+    
+        // Hangi tablo için sıralama yapılacağını belirle
+        if (tableType === 'kategoriTablosu') {
+          // Kategoriler için sıralama
+          const sortDirection = $(this).hasClass('asc') ? 'asc' : 'desc'
+          const rows = $('.kategori-satir').get() // DOM elementlerini al
+    
+          rows.sort(function (rowA, rowB) {
+            let valueA, valueB
+    
+            // Sütun tipine göre değer alma stratejisi belirlenir
+            if (sortType === 'id') {
+              // ID için sayısal sıralama
+              valueA = parseInt($(rowA).find('td').eq(1).text().trim(), 10)
+              valueB = parseInt($(rowB).find('td').eq(1).text().trim(), 10)
+              return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+            } else if (sortType === 'ad') {
+              // Kategori adı için metinsel sıralama
+              valueA = $(rowA).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'durum') {
+              // Durum için "Aktif"/"Pasif" sıralaması
+              valueA = $(rowA).find('td').eq(3).find('.badge').text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(3).find('.badge').text().trim().toLocaleLowerCase('tr')
+            }
+    
+            // Metinsel sıralama için Türkçe collator kullan
+            if (sortType !== 'id') {
+              return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+            }
+    
+            return 0 // ID için buraya gelmeyecek
+          })
+    
+          // Sıralanmış satırları tabloya yerleştir
+          const tbody = table.find('tbody')
+          $.each(rows, function (index, row) {
+            tbody.append(row)
+          })
+    
+          // Sıralanan satırları sayfalama için tumKategoriler'e yerleştir
+          tumKategoriler = []
+          $.each(rows, function (index, row) {
+            tumKategoriler.push($(row))
+          })
+    
+          // Eğer aktif bir arama varsa, arama sonuçlarını filtrele
+          const searchTerm = $('#kategoriArama').val().trim().toLowerCase()
+          if (searchTerm.length >= 2) {
+            aramaUygula(searchTerm)
+          } else {
+            filtrelenmisKategoriler = tumKategoriler
+            kategoriAktifSayfa = 1
+            kategoriSayfalamaGuncelle()
+          }
+        } else if (tableType === 'modulTablosu') {
+          // Modüller için sıralama
+          const sortDirection = $(this).hasClass('asc') ? 'asc' : 'desc'
+          const rows = $('.modul-satir').get() // DOM elementlerini al
+    
+          rows.sort(function (rowA, rowB) {
+            let valueA, valueB
+    
+            // Sütun tipine göre değer alma stratejisi belirlenir
+            if (sortType === 'id') {
+              // ID için sayısal sıralama
+              valueA = parseInt($(rowA).find('td').eq(1).text().trim(), 10)
+              valueB = parseInt($(rowB).find('td').eq(1).text().trim(), 10)
+              return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+            } else if (sortType === 'ad') {
+              // Modül adı için metinsel sıralama
+              valueA = $(rowA).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'kategori') {
+              // Kategori adı için metinsel sıralama
+              valueA = $(rowA).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'video') {
+              // Video sayısı için sayısal sıralama
+              valueA = parseInt($(rowA).find('td').eq(4).text().trim(), 10)
+              valueB = parseInt($(rowB).find('td').eq(4).text().trim(), 10)
+              return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+            } else if (sortType === 'durum') {
+              // Durum için "Aktif"/"Pasif" sıralaması
+              valueA = $(rowA).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+            }
+    
+            // Metinsel sıralama için Türkçe collator kullan
+            if (sortType !== 'id' && sortType !== 'video') {
+              return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+            }
+    
+            return 0 // sayısal değerler için buraya gelmeyecek
+          })
+    
+          // Sıralanmış satırları tabloya yerleştir
+          const tbody = table.find('tbody')
+          $.each(rows, function (index, row) {
+            tbody.append(row)
+          })
+    
+          // Sıralanan satırları sayfalama için tumModuller'e yerleştir
+          tumModuller = []
+          $.each(rows, function (index, row) {
+            tumModuller.push($(row))
+          })
+    
+          // Eğer aktif bir arama varsa, arama sonuçlarını filtrele
+          const searchTerm = $('#modulArama').val().trim().toLowerCase()
+          if (searchTerm.length >= 2) {
+            modulAramaUygula(searchTerm)
+          } else {
+            filtrelenmisModuller = tumModuller
+            modulAktifSayfa = 1
+            modulSayfalamaGuncelle()
+          }
+        } else if (tableType === 'egitmenTablosu') {
+          // Eğitmenler için sıralama
+          const sortDirection = $(this).hasClass('asc') ? 'asc' : 'desc'
+          const rows = $('.egitmen-satir').get() // DOM elementlerini al
+    
+          rows.sort(function (rowA, rowB) {
+            let valueA, valueB
+    
+            // Sütun tipine göre değer alma stratejisi belirlenir
+            if (sortType === 'id') {
+              // ID için sayısal sıralama
+              valueA = parseInt($(rowA).find('td').eq(1).text().trim(), 10)
+              valueB = parseInt($(rowB).find('td').eq(1).text().trim(), 10)
+              return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+            } else if (sortType === 'ad') {
+              // Ad Soyad için metinsel sıralama
+              valueA = $(rowA).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'unvan') {
+              // Unvan için metinsel sıralama
+              valueA = $(rowA).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'email') {
+              // Email için metinsel sıralama
+              valueA = $(rowA).find('td').eq(4).text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(4).text().trim().toLocaleLowerCase('tr')
+            } else if (sortType === 'durum') {
+              // Durum için "Aktif"/"Pasif" sıralaması
+              valueA = $(rowA).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+              valueB = $(rowB).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+            }
+    
+            // Metinsel sıralama için Türkçe collator kullan
+            if (sortType !== 'id') {
+              return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+            }
+    
+            return 0 // ID için buraya gelmeyecek
+          })
+    
+          // Sıralanmış satırları tabloya yerleştir
+          const tbody = table.find('tbody')
+          $.each(rows, function (index, row) {
+            tbody.append(row)
+          })
+    
+          // Sıralanan satırları sayfalama için tumEgitmenler'e yerleştir
+          tumEgitmenler = []
+          $.each(rows, function (index, row) {
+            tumEgitmenler.push($(row))
+          })
+    
+          // Eğer aktif bir arama varsa, arama sonuçlarını filtrele
+          const searchTerm = $('#egitmenArama').val().trim().toLowerCase()
+          if (searchTerm.length >= 2) {
+            egitmenAramaUygula(searchTerm)
+          } else {
+            filtrelenmisEgitmenler = tumEgitmenler
+            egitmenAktifSayfa = 1
+            egitmenSayfalamaGuncelle()
+          }
+        }
+      })
+    
+      // Modül arama işlevi güncellendi
+      $('#modulArama').on('keyup', function () {
+        const aramaTermi = $(this).val().trim().toLowerCase()
+        modulAramaUygula(aramaTermi)
+      })
+    
+      // Modül arama butonuna tıklama
+      $('#modulAramaBtn').on('click', function () {
+        const aramaTermi = $('#modulArama').val().trim().toLowerCase()
+        modulAramaUygula(aramaTermi)
+      })
+    
+      // Modül temizleme butonu
+      $('.btn-clear[data-input="modulArama"]').on('click', function () {
+        $('#modulArama').val('')
+        modulAramaUygula('')
+      })
+    
+      // Modül arama fonksiyonu
+      function modulAramaUygula(aramaTermi) {
+        if (aramaTermi.length >= 2) {
+          // Belirli sütunlarda arama yap
+          filtrelenmisModuller = []
+    
+          tumModuller.forEach(function (item) {
+            const id = $(item).find('td').eq(1).text().trim()
+            const modulAdi = $(item).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            const kategori = $(item).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            const videoSayisi = $(item).find('td').eq(4).text().trim()
+            const durumText = $(item).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+    
+            // Arama terimini Türkçe aksanlardan arındırmak için yardımcı fonksiyon
+            const normalizeText = (text) => {
+              return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            }
+    
+            const normalizeTermi = normalizeText(aramaTermi)
+            const normalizeModulAdi = normalizeText(modulAdi)
+            const normalizeKategori = normalizeText(kategori)
+    
+            // ID'de arama
+            if (id.indexOf(aramaTermi) > -1) {
+              filtrelenmisModuller.push(item)
+            }
+            // Modül adında arama (Türkçe karakter destekli)
+            else if (modulAdi.indexOf(aramaTermi) > -1 || normalizeModulAdi.indexOf(normalizeTermi) > -1) {
+              filtrelenmisModuller.push(item)
+            }
+            // Kategori adında arama
+            else if (kategori.indexOf(aramaTermi) > -1 || normalizeKategori.indexOf(normalizeTermi) > -1) {
+              filtrelenmisModuller.push(item)
+            }
+            // Video sayısında arama
+            else if (videoSayisi.indexOf(aramaTermi) > -1) {
+              filtrelenmisModuller.push(item)
+            }
+            // Durum metninde arama
+            else if (durumText.indexOf(aramaTermi) > -1) {
+              filtrelenmisModuller.push(item)
+            }
+          })
+        } else {
+          // Arama terimi 2 karakterden azsa tüm modülleri göster
+          filtrelenmisModuller = tumModuller
+        }
+    
+        // Filtrelenen verilere şu anki sıralamayı uygula
+        modulUygulanmisSiralamaYenile()
+    
+        // Aktif sayfayı sıfırla ve sayfalamayı güncelle
+        modulAktifSayfa = 1
+        modulSayfalamaGuncelle()
+      }
+    
+      // Mevcut modül sıralamasını yeniden uygula
+      function modulUygulanmisSiralamaYenile() {
+        if (filtrelenmisModuller.length <= 1) return // Sıralamaya gerek yok
+    
+        const aktifSutun = $('#modulTablosu .sortable-column.asc, #modulTablosu .sortable-column.desc')
+        if (aktifSutun.length === 0) return // Aktif sıralama yok
+    
+        const sortType = aktifSutun.data('sort')
+        const sortDirection = aktifSutun.hasClass('asc') ? 'asc' : 'desc'
+    
+        filtrelenmisModuller.sort(function (a, b) {
+          let valueA, valueB
+    
+          if (sortType === 'id') {
+            // ID için sayısal sıralama
+            valueA = parseInt($(a).find('td').eq(1).text().trim(), 10)
+            valueB = parseInt($(b).find('td').eq(1).text().trim(), 10)
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+          } else if (sortType === 'ad') {
+            // Modül adı için metinsel sıralama
+            valueA = $(a).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'kategori') {
+            // Kategori için metinsel sıralama
+            valueA = $(a).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'video') {
+            // Video sayısı için sayısal sıralama
+            valueA = parseInt($(a).find('td').eq(4).text().trim(), 10)
+            valueB = parseInt($(b).find('td').eq(4).text().trim(), 10)
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+          } else if (sortType === 'durum') {
+            // Durum için "Aktif"/"Pasif" sıralaması
+            valueA = $(a).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+          }
+    
+          // Metinsel sıralama için Türkçe localeCompare kullan
+          if (sortType !== 'id' && sortType !== 'video') {
+            return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+          }
+    
+          return 0 // ID ve video sayısı için buraya gelmeyecek
+        })
+      }
+    
+      // Eğitmen arama işlevi güncellendi
+      $('#egitmenArama').on('keyup', function () {
+        const aramaTermi = $(this).val().trim().toLowerCase()
+        egitmenAramaUygula(aramaTermi)
+      })
+    
+      // Eğitmen arama butonuna tıklama
+      $('#egitmenAramaBtn').on('click', function () {
+        const aramaTermi = $('#egitmenArama').val().trim().toLowerCase()
+        egitmenAramaUygula(aramaTermi)
+      })
+    
+      // Eğitmen temizleme butonu
+      $('.btn-clear[data-input="egitmenArama"]').on('click', function () {
+        $('#egitmenArama').val('')
+        egitmenAramaUygula('')
+      })
+    
+      // Eğitmen arama fonksiyonu
+      function egitmenAramaUygula(aramaTermi) {
+        if (aramaTermi.length >= 2) {
+          // Belirli sütunlarda arama yap
+          filtrelenmisEgitmenler = []
+    
+          tumEgitmenler.forEach(function (item) {
+            const id = $(item).find('td').eq(1).text().trim()
+            const adSoyad = $(item).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            const unvan = $(item).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            const email = $(item).find('td').eq(4).text().trim().toLocaleLowerCase('tr')
+            const durumText = $(item).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+    
+            // Arama terimini Türkçe aksanlardan arındırmak için yardımcı fonksiyon
+            const normalizeText = (text) => {
+              return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            }
+    
+            const normalizeTermi = normalizeText(aramaTermi)
+            const normalizeAdSoyad = normalizeText(adSoyad)
+            const normalizeUnvan = normalizeText(unvan)
+    
+            // ID'de arama
+            if (id.indexOf(aramaTermi) > -1) {
+              filtrelenmisEgitmenler.push(item)
+            }
+            // Ad Soyad'da arama (Türkçe karakter destekli)
+            else if (adSoyad.indexOf(aramaTermi) > -1 || normalizeAdSoyad.indexOf(normalizeTermi) > -1) {
+              filtrelenmisEgitmenler.push(item)
+            }
+            // Unvan'da arama
+            else if (unvan.indexOf(aramaTermi) > -1 || normalizeUnvan.indexOf(normalizeTermi) > -1) {
+              filtrelenmisEgitmenler.push(item)
+            }
+            // Email'de arama
+            else if (email.indexOf(aramaTermi) > -1) {
+              filtrelenmisEgitmenler.push(item)
+            }
+            // Durum metninde arama
+            else if (durumText.indexOf(aramaTermi) > -1) {
+              filtrelenmisEgitmenler.push(item)
+            }
+          })
+        } else {
+          // Arama terimi 2 karakterden azsa tüm eğitmenleri göster
+          filtrelenmisEgitmenler = tumEgitmenler
+        }
+    
+        // Filtrelenen verilere şu anki sıralamayı uygula
+        egitmenUygulanmisSiralamaYenile()
+    
+        // Aktif sayfayı sıfırla ve sayfalamayı güncelle
+        egitmenAktifSayfa = 1
+        egitmenSayfalamaGuncelle()
+      }
+    
+      // Mevcut eğitmen sıralamasını yeniden uygula
+      function egitmenUygulanmisSiralamaYenile() {
+        if (filtrelenmisEgitmenler.length <= 1) return // Sıralamaya gerek yok
+    
+        const aktifSutun = $('#egitmenTablosu .sortable-column.asc, #egitmenTablosu .sortable-column.desc')
+        if (aktifSutun.length === 0) return // Aktif sıralama yok
+    
+        const sortType = aktifSutun.data('sort')
+        const sortDirection = aktifSutun.hasClass('asc') ? 'asc' : 'desc'
+    
+        filtrelenmisEgitmenler.sort(function (a, b) {
+          let valueA, valueB
+    
+          if (sortType === 'id') {
+            // ID için sayısal sıralama
+            valueA = parseInt($(a).find('td').eq(1).text().trim(), 10)
+            valueB = parseInt($(b).find('td').eq(1).text().trim(), 10)
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA
+          } else if (sortType === 'ad') {
+            // Ad Soyad için metinsel sıralama
+            valueA = $(a).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(2).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'unvan') {
+            // Unvan için metinsel sıralama
+            valueA = $(a).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(3).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'email') {
+            // Email için metinsel sıralama
+            valueA = $(a).find('td').eq(4).text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(4).text().trim().toLocaleLowerCase('tr')
+          } else if (sortType === 'durum') {
+            // Durum için "Aktif"/"Pasif" sıralaması
+            valueA = $(a).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+            valueB = $(b).find('td').eq(5).find('.badge').text().trim().toLocaleLowerCase('tr')
+          }
+    
+          // Metinsel sıralama için Türkçe localeCompare kullan
+          if (sortType !== 'id') {
+            return sortDirection === 'asc' ? valueA.localeCompare(valueB, 'tr', { sensitivity: 'base' }) : valueB.localeCompare(valueA, 'tr', { sensitivity: 'base' })
+          }
+    
+          return 0 // ID için buraya gelmeyecek
+        })
+      }
+    })
+  </script>
+{% endblock %}

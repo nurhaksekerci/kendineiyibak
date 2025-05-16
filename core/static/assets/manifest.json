@@ -1,0 +1,20 @@
+{
+  "name": "Kendine İyi Bak",
+  "short_name": "Kendine İyi Bak",
+  "icons": [
+    {
+      "src": "images/kendine_iyi_bak_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/kendine_iyi_bak_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#6f42c1",
+  "theme_color": "#6f42c1"
+} 

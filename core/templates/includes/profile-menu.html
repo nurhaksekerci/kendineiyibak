@@ -1,0 +1,22 @@
+<div class="profile-menu">
+  <a href="{% url 'profil' %}" class="profile-menu__item {% if not request.resolver_match.url_name or request.resolver_match.url_name == 'profil' %}active{% endif %}">
+    <i class="fas fa-user"></i> Profilim
+  </a>
+  <a href="{% url 'mesajlar' %}" class="profile-menu__item {% if request.resolver_match.url_name == 'mesajlar' or request.resolver_match.url_name == 'mesaj_detay' or request.resolver_match.url_name == 'yeni_mesaj' %}active{% endif %}">
+    <i class="fas fa-envelope"></i> Mesajlar
+    {% if request.user.okunmayan_mesaj_sayisi > 0 %}
+      <span class="badge badge-danger">{{ request.user.okunmayan_mesaj_sayisi }}</span>
+    {% endif %}
+  </a>
+  <a href="{% url 'gorusme_listesi' %}" class="profile-menu__item {% if request.resolver_match.url_name == 'gorusme_listesi' or request.resolver_match.url_name == 'gorusme_detay' %}active{% endif %}">
+    <i class="fas fa-video"></i> Görüntülü Görüşmeler
+  </a>
+  <a href="{% url 'aktivite_listesi' %}" class="profile-menu__item {% if request.resolver_match.url_name == 'aktivite_listesi' or request.resolver_match.url_name == 'aktivite_detay' %}active{% endif %}">
+    <i class="fas fa-clipboard-list"></i> Haftalık Aktiviteler
+  </a>
+  {% if user.is_staff or user.is_superuser %}
+    <a href="{% url 'yonetim_paneli' %}" class="profile-menu__item {% if request.resolver_match.url_name == 'yonetim_paneli' %}active{% endif %}">
+      <i class="fas fa-cog"></i> Yönetim Paneli
+    </a>
+  {% endif %}
+</div> 

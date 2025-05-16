@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load video_filters %}
+
+{% block title %}
+  Video Ekle - {{ modul.baslik }} - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Video Ekle</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.first_name|default:request.user.username }}! "{{ modul.baslik }}" modülüne yeni bir video ekleyebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Ekleme Formu -->
+    <section class="yonetim-form section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Video Bilgileri</h4>
+                <a href="{% url 'modul_videolari' modul.id %}" class="btn btn-secondary btn-sm"><i class="fa fa-arrow-left"></i> Geri Dön</a>
+              </div>
+              <div class="card-body">
+                <form method="post" action="{% url 'modul_video_ekle' modul.id %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  <div class="mb-3">
+                    <label for="baslik" class="form-label fw-bold">Video Başlığı <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="baslik" name="baslik" required />
+                    <div class="form-text text-danger">Bu alan zorunludur.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="aciklama" class="form-label">Açıklama</label>
+                    <textarea class="form-control" id="aciklama" name="aciklama" rows="3"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="video_url" class="form-label">Video URL</label>
+                    <input type="text" class="form-control" id="video_url" name="video_url" />
+                    <div class="form-text">YouTube URL'sini girin. Normal Youtube linki ekleyebilirsiniz (Örn: https://www.youtube.com/watch?v=VIDEO_ID)</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="video_dosya" class="form-label">Video Dosyası</label>
+                    <input type="file" class="form-control" id="video_dosya" name="video_dosya" accept="video/*" />
+                    <div class="form-text">MP4 formatında dosya yükleyebilirsiniz. URL veya dosyadan birini seçmelisiniz.</div>
+                  </div>
+
+                  <div class="alert alert-danger border-danger border-2 shadow-sm">
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+                      <div>
+                        <strong class="fs-5">ÖNEMLİ UYARI:</strong><br>
+                        <span>Video URL veya video dosyası eklenmelidir, ikisi birden eklenemez. YouTube videoları için süreyi manuel olarak girmeniz gerekmektedir. Sistem YouTube video süresini otomatik olarak algılayamıyor.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Video Süresi <span class="text-danger">*</span></label>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="sure_saat" name="sure_saat" value="0" min="0" required>
+                          <span class="input-group-text">saat</span>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="sure_dakika" name="sure_dakika" value="0" min="0" max="59" required>
+                          <span class="input-group-text">dakika</span>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="sure_saniye" name="sure_saniye" value="0" min="0" max="59" required>
+                          <span class="input-group-text">saniye</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-text text-danger">Bu alan zorunludur. Videonun süresini saat, dakika ve saniye olarak girin.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="resim" class="form-label">Kapak Resmi</label>
+                    <input type="file" class="form-control" id="resim" name="resim" accept="image/*" />
+                    <div class="form-text">Video için bir kapak resmi yükleyin. Önerilen boyut: 800x450 piksel.</div>
+                  </div>
+
+                  <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="aktif" name="aktif" checked />
+                    <label class="form-check-label" for="aktif">Aktif</label>
+                    <div class="form-text">Video aktif olarak işaretlenirse kullanıcılar tarafından görüntülenebilir.</div>
+                  </div>
+
+                  <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Video Oluştur</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .yonetim-form {
+      padding: 80px 0;
+    }
+    
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+    
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      padding: 15px 20px;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    
+    .form-control:focus {
+      border-color: #6610f2;
+      box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25);
+    }
+  </style>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const videoFileInput = document.getElementById('video_dosya')
+      const sureSaatInput = document.getElementById('sure_saat')
+      const sureDakikaInput = document.getElementById('sure_dakika')
+      const sureSaniyeInput = document.getElementById('sure_saniye')
+      const videoUrlInput = document.getElementById('video_url')
+    
+      // Video dosyası ve URL arasında geçiş yapma
+      function toggleVideoInputs() {
+        if (videoUrlInput.value.trim() !== '') {
+          videoFileInput.disabled = true;
+          videoFileInput.classList.add('bg-light');
+          videoFileInput.parentElement.querySelector('.form-text').innerHTML = '<span class="text-warning">YouTube linki girildiği için video dosyası seçilemez.</span>';
+        } else if (videoFileInput.files.length > 0) {
+          videoUrlInput.disabled = true;
+          videoUrlInput.classList.add('bg-light');
+          videoUrlInput.parentElement.querySelector('.form-text').innerHTML = '<span class="text-warning">Video dosyası seçildiği için YouTube linki girilemez.</span>';
+        } else {
+          videoFileInput.disabled = false;
+          videoUrlInput.disabled = false;
+          videoFileInput.classList.remove('bg-light');
+          videoFileInput.classList.remove('bg-light');
+          videoFileInput.parentElement.querySelector('.form-text').innerHTML = 'MP4 formatında dosya yükleyebilirsiniz. URL veya dosyadan birini seçmelisiniz.';
+          videoUrlInput.parentElement.querySelector('.form-text').innerHTML = 'YouTube URL\'sini girin. Normal Youtube linki ekleyebilirsiniz (Örn: https://www.youtube.com/watch?v=VIDEO_ID)';
+        }
+      }
+      
+      videoUrlInput.addEventListener('input', toggleVideoInputs);
+      videoFileInput.addEventListener('change', toggleVideoInputs);
+    
+      // Video dosyası değiştiğinde süreyi otomatik doldur
+      videoFileInput.addEventListener('change', function (e) {
+        const file = e.target.files[0]
+        if (file && file.type.startsWith('video/')) {
+          // Geçici bir video elementi oluştur
+          const video = document.createElement('video')
+          video.preload = 'metadata'
+    
+          video.onloadedmetadata = function () {
+            // Video süresini al (saniye cinsinden)
+            const duration = Math.round(video.duration)
+    
+            // Saat, dakika ve saniye olarak ayır
+            const hours = Math.floor(duration / 3600)
+            const minutes = Math.floor((duration % 3600) / 60)
+            const seconds = duration % 60
+    
+            // Form alanlarını doldur
+            sureSaatInput.value = hours
+            sureDakikaInput.value = minutes
+            sureSaniyeInput.value = seconds
+    
+            // URL'i serbest bırak
+            URL.revokeObjectURL(video.src)
+          }
+    
+          // Video dosyasını yükle
+          video.src = URL.createObjectURL(file)
+        }
+      })
+    
+      // Form gönderimi öncesi kontrol
+      document.querySelector('form').addEventListener('submit', function(e) {
+        // Süre kontrolü
+        const saat = parseInt(sureSaatInput.value) || 0;
+        const dakika = parseInt(sureDakikaInput.value) || 0;
+        const saniye = parseInt(sureSaniyeInput.value) || 0;
+        
+        if (saat === 0 && dakika === 0 && saniye === 0) {
+          e.preventDefault();
+          alert('Lütfen video süresini girin. Süre 0 olamaz.');
+          return false;
+        }
+        
+        // Video kaynağı kontrolü
+        if (videoUrlInput.value.trim() === '' && videoFileInput.files.length === 0) {
+          e.preventDefault();
+          alert('Lütfen bir YouTube video URL\'si girin veya bir video dosyası seçin.');
+          return false;
+        }
+        
+        return true;
+      });
+    
+      // YouTube URL'sini embed formatına dönüştürme
+      videoUrlInput.addEventListener('blur', function () {
+        const url = this.value.trim()
+        if (url.includes('youtube.com/watch?v=')) {
+          // Normal YouTube URL formatı (https://www.youtube.com/watch?v=VIDEO_ID)
+          const videoId = url.split('v=')[1].split('&')[0]
+          this.value = `https://www.youtube.com/embed/${videoId}`
+        } else if (url.includes('youtu.be/')) {
+          // Kısa YouTube URL formatı (https://youtu.be/VIDEO_ID)
+          const videoId = url.split('youtu.be/')[1].split('?')[0]
+          this.value = `https://www.youtube.com/embed/${videoId}`
+        }
+      })
+    })
+  </script>
+{% endblock %}

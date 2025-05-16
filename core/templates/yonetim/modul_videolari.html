@@ -1,0 +1,507 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load video_filters %}
+
+{% block title %}
+  {{ modul.baslik }} Videoları - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Modül Videoları</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.first_name|default:request.user.username }}! "{{ modul.baslik }}" modülüne ait videoları yönetebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Listesi -->
+    <section class="yonetim-panel section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'yonetim_paneli' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Yönetim Paneline Dön</a>
+                <a href="{% url 'modul_duzenle' modul.id %}" class="btn btn-warning ms-2"><i class="fa fa-edit"></i> Modülü Düzenle</a>
+              </div>
+              <a href="{% url 'modul_video_ekle' modul.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Video Ekle</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="card modern-card">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="d-flex align-items-center">
+                    <div class="category-icon me-3">
+                      <i class="fa fa-video text-purple"></i>
+                    </div>
+                    <h3 class="mb-0">{{ modul.kategori.baslik }} > {{ modul.baslik }} - Videolar</h3>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Video ara..." id="videoArama" />
+                        <button class="btn btn-purple" type="button" id="videoAramaBtn"><i class="fas fa-search"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {% if videolar %}
+                  <div class="kategori-container">
+                    <table class="table modern-table" id="videoTablosu">
+                      <thead>
+                        <tr>
+                          <th style="width: 60px;">ID</th>
+                          <th style="width: 100px;">Resim</th>
+                          <th>Başlık</th>
+                          <th style="width: 80px;">Süre</th>
+                          <th style="width: 100px;">Soru Sayısı</th>
+                          <th style="width: 100px;">Durum</th>
+                          <th style="width: 200px;">İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for video in videolar %}
+                          <tr class="video-satir">
+                            <td>{{ video.id }}</td>
+                            <td>
+                              {% if video.thumbnail_image %}
+                                <img src="{{ video.thumbnail_image.url }}" alt="{{ video.baslik }}" width="50" height="50" class="img-thumbnail" />
+                              {% elif video.thumbnail_url %}
+                                <img src="{{ video.thumbnail_url }}" alt="{{ video.baslik }}" width="50" height="50" class="img-thumbnail" />
+                              {% else %}
+                                <div class="bg-light text-center" style="width: 50px; height: 50px; line-height: 50px;">
+                                  <i class="fa fa-video text-muted"></i>
+                                </div>
+                              {% endif %}
+                            </td>
+                            <td>{{ video.baslik }}</td>
+                            <td>{{ video.sure|format_duration }}</td>
+                            <td>{{ video.sorular.count }}</td>
+                            <td>
+                              {% if video.aktif %}
+                                <span class="badge bg-success rounded-pill">Aktif</span>
+                              {% else %}
+                                <span class="badge bg-danger rounded-pill">Pasif</span>
+                              {% endif %}
+                            </td>
+                            <td>
+                              <div class="d-flex">
+                                <a href="{% url 'video_sorulari' video.id %}" class="btn btn-info btn-sm action-btn me-2" title="Sorular"><i class="fa fa-question-circle"></i></a>
+                                <a href="{% url 'video_duzenle' video.id %}" class="btn btn-warning btn-sm action-btn me-2" title="Düzenle"><i class="fa fa-edit"></i></a>
+                                <button type="button" class="btn btn-danger btn-sm action-btn" data-bs-toggle="modal" data-bs-target="#silModal-video-{{ video.id }}" title="Sil"><i class="fa fa-trash"></i></button>
+                              </div>
+
+                              <!-- Silme Modal -->
+                              <div class="modal fade" id="silModal-video-{{ video.id }}" tabindex="-1" aria-labelledby="silModalLabel-{{ video.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="silModalLabel-{{ video.id }}">Video Sil</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                      <p>"{{ video.baslik }}" videosunu silmek istediğinize emin misiniz?</p>
+                                      <p class="text-danger">Bu işlem geri alınamaz ve videoya ait tüm sorular da silinecektir!</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                      <form action="{% url 'video_sil' video.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Sil</button>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="7" class="text-center">Bu modüle ait video bulunmamaktadır.</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Sayfalama -->
+                  <div class="pagination-container mt-4 d-flex justify-content-center">
+                    <nav aria-label="Sayfalama">
+                      <ul class="pagination" id="videoSayfalama">
+                        <li class="page-item" id="videoIlkSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="İlk Sayfa"><span aria-hidden="true">&laquo;</span></a>
+                        </li>
+                        <li class="page-item" id="videoOncekiSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Önceki"><span aria-hidden="true">&lsaquo;</span></a>
+                        </li>
+                        <!-- Sayfa numaraları burada dinamik olarak eklenecek -->
+                        <li class="page-item" id="videoSonrakiSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Sonraki"><span aria-hidden="true">&rsaquo;</span></a>
+                        </li>
+                        <li class="page-item" id="videoSonSayfa">
+                          <a class="page-link" href="javascript:void(0)" aria-label="Son Sayfa"><span aria-hidden="true">&raquo;</span></a>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                {% else %}
+                  <div class="alert alert-info">Bu modüle ait video bulunmamaktadır.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .yonetim-panel {
+      padding: 80px 0;
+    }
+    
+    /* Modern kart ve tablo stilleri */
+    .modern-card {
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      border: none;
+      background-color: #fff;
+    }
+    
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .text-purple {
+      color: #6f42c1;
+    }
+    
+    .btn-purple {
+      background-color: #6f42c1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .btn-purple:hover {
+      background-color: #5a35a0;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+    }
+    
+    .search-input {
+      border-radius: 5px 0 0 5px;
+      border: 1px solid #e2e2e2;
+      padding: 8px 15px;
+    }
+    
+    .modern-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+    
+    .modern-table thead th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .modern-table tbody tr {
+      transition: all 0.2s;
+    }
+    
+    .modern-table tbody tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+    
+    .modern-table tbody tr:hover {
+      background-color: #f0edfa;
+    }
+    
+    .modern-table td {
+      padding: 15px;
+      vertical-align: middle;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .kategori-container {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    /* Pagination Styling */
+    .pagination .page-item .page-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 5px;
+      font-weight: 500;
+      color: #6c5ce7;
+      background-color: #f0f0f0;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .pagination .page-item.active .page-link {
+      background-color: #6f42c1;
+      color: white;
+    }
+    
+    .pagination .page-item .page-link:hover {
+      background-color: #d8d8d8;
+      z-index: 1;
+    }
+    
+    .pagination .page-item.active .page-link:hover {
+      background-color: #6f42c1;
+    }
+    
+    .search-box .input-group {
+      width: 250px;
+    }
+    
+    .search-box .form-control {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    
+    .search-box .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    
+    /* Gizli satırlar için stil */
+    .gizli-satir {
+      display: none !important;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // VIDEO SAYFALAMA VE ARAMA İŞLEMLERİ
+      // Video sayfalama değişkenleri ve işlevleri
+      const videoSatirlarHepsi = document.querySelectorAll('.video-satir')
+      const VIDEO_SAYFA_BASINA = 10 // Her sayfada 10 video gösterilecek
+      let videoMevcutSayfa = 1
+      let videoToplamSayfa = Math.ceil(videoSatirlarHepsi.length / VIDEO_SAYFA_BASINA)
+    
+      // Video sayfalama elementleri
+      const videoSayfalamaContainer = document.getElementById('videoSayfalama')
+      const videoIlkSayfaBtn = document.getElementById('videoIlkSayfa')
+      const videoOncekiSayfaBtn = document.getElementById('videoOncekiSayfa')
+      const videoSonrakiSayfaBtn = document.getElementById('videoSonrakiSayfa')
+      const videoSonSayfaBtn = document.getElementById('videoSonSayfa')
+    
+      // Video sayfa numaralarını oluştur
+      function videoSayfaNumaralariOlustur() {
+        // Önce mevcut sayfa numaralarını temizle
+        const sayfaNumaralari = videoSayfalamaContainer.querySelectorAll('.sayfa-numara')
+        sayfaNumaralari.forEach((numara) => numara.remove())
+    
+        // Sayfa numaralarını ekle (en fazla 5 sayfa gösterilecek)
+        let baslangicSayfa = Math.max(1, videoMevcutSayfa - 2)
+        let bitisSayfa = Math.min(videoToplamSayfa, baslangicSayfa + 4)
+    
+        if (bitisSayfa - baslangicSayfa < 4) {
+          baslangicSayfa = Math.max(1, bitisSayfa - 4)
+        }
+    
+        for (let i = baslangicSayfa; i <= bitisSayfa; i++) {
+          const sayfaItem = document.createElement('li')
+          sayfaItem.className = 'page-item sayfa-numara'
+          if (i === videoMevcutSayfa) {
+            sayfaItem.classList.add('active')
+            const spanElement = document.createElement('span')
+            spanElement.className = 'page-link'
+            spanElement.textContent = i
+            sayfaItem.appendChild(spanElement)
+          } else {
+            const linkElement = document.createElement('a')
+            linkElement.className = 'page-link'
+            linkElement.href = 'javascript:void(0)'
+            linkElement.textContent = i
+            linkElement.addEventListener('click', function () {
+              videoSayfayaGit(i)
+            })
+            sayfaItem.appendChild(linkElement)
+          }
+          videoSayfalamaContainer.insertBefore(sayfaItem, videoSonrakiSayfaBtn)
+        }
+      }
+    
+      // Video satırlarını göster/gizle
+      function videoSayfalariGuncelle() {
+        const baslangicIndex = (videoMevcutSayfa - 1) * VIDEO_SAYFA_BASINA
+        const bitisIndex = baslangicIndex + VIDEO_SAYFA_BASINA
+    
+        // Önce tüm satırları gizle
+        videoSatirlarHepsi.forEach((satir) => {
+          satir.style.display = 'none'
+        })
+    
+        // Sadece mevcut sayfadaki satırları göster (filtrelenmiş varsa onları dikkate al)
+        const gosterilecekSatirlar = document.querySelectorAll('.video-satir:not(.gizli-satir)')
+        let gosterilenSayisi = 0
+    
+        gosterilecekSatirlar.forEach((satir, index) => {
+          if (index >= baslangicIndex && index < bitisIndex) {
+            satir.style.display = ''
+            gosterilenSayisi++
+          }
+        })
+    
+        // Video sayfalama butonlarını güncelle
+        videoIlkSayfaBtn.classList.toggle('disabled', videoMevcutSayfa === 1)
+        videoOncekiSayfaBtn.classList.toggle('disabled', videoMevcutSayfa === 1)
+        videoSonrakiSayfaBtn.classList.toggle('disabled', videoMevcutSayfa === videoToplamSayfa || gosterilenSayisi === 0)
+        videoSonSayfaBtn.classList.toggle('disabled', videoMevcutSayfa === videoToplamSayfa || gosterilenSayisi === 0)
+    
+        // Video sayfa numaralarını güncelle
+        videoSayfaNumaralariOlustur()
+      }
+    
+      // Belirli bir video sayfasına git
+      function videoSayfayaGit(sayfaNo) {
+        videoMevcutSayfa = sayfaNo
+        videoSayfalariGuncelle()
+      }
+    
+      // Video arama fonksiyonu
+      function videoAra(arananMetin) {
+        arananMetin = arananMetin.toLowerCase().trim()
+    
+        videoSatirlarHepsi.forEach((satir) => {
+          const videoBaslik = satir.querySelector('td:nth-child(3)').textContent.toLowerCase()
+    
+          if (arananMetin === '' || videoBaslik.includes(arananMetin)) {
+            satir.classList.remove('gizli-satir')
+          } else {
+            satir.classList.add('gizli-satir')
+          }
+        })
+    
+        // Toplam sayfa sayısını güncelle ve ilk sayfaya dön
+        const filtrelenmisUnsurlar = document.querySelectorAll('.video-satir:not(.gizli-satir)')
+        videoToplamSayfa = Math.ceil(filtrelenmisUnsurlar.length / VIDEO_SAYFA_BASINA)
+        videoToplamSayfa = videoToplamSayfa === 0 ? 1 : videoToplamSayfa // En az 1 sayfa olsun
+        videoMevcutSayfa = 1
+    
+        // Video sayfalarını yeniden göster
+        videoSayfalariGuncelle()
+      }
+    
+      // Video sayfalama olaylarını ekle
+      videoIlkSayfaBtn.addEventListener('click', function () {
+        if (videoMevcutSayfa !== 1) videoSayfayaGit(1)
+      })
+    
+      videoOncekiSayfaBtn.addEventListener('click', function () {
+        if (videoMevcutSayfa > 1) videoSayfayaGit(videoMevcutSayfa - 1)
+      })
+    
+      videoSonrakiSayfaBtn.addEventListener('click', function () {
+        if (videoMevcutSayfa < videoToplamSayfa) videoSayfayaGit(videoMevcutSayfa + 1)
+      })
+    
+      videoSonSayfaBtn.addEventListener('click', function () {
+        if (videoMevcutSayfa !== videoToplamSayfa) videoSayfayaGit(videoToplamSayfa)
+      })
+    
+      // Video arama olayını ekle
+      const videoAramaKutusu = document.getElementById('videoArama')
+      const videoAramaButonu = document.getElementById('videoAramaBtn')
+    
+      videoAramaButonu.addEventListener('click', function () {
+        videoAra(videoAramaKutusu.value)
+      })
+    
+      videoAramaKutusu.addEventListener('keyup', function (event) {
+        if (event.key === 'Enter') {
+          videoAra(videoAramaKutusu.value)
+        }
+      })
+    
+      // Sayfa yüklendiğinde ilk video sayfasını göster
+      videoSayfalariGuncelle()
+    })
+  </script>
+{% endblock %}

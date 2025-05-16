@@ -1,0 +1,655 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load video_filters %}
+
+{% block title %}
+  {{ modul.baslik }} - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <div class="page-title text-center">
+                <h1></h1>
+                <div class="breadcrumb-wrapper">
+                  <a href="{% url 'index' %}"></a>
+                  <span class="separator"></span>
+                  <a href="{% url 'courses' %}"></a>
+                  <span class="separator"></span>
+                  <span class="current"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modül Detay -->
+    <section class="modul-detay py-5">
+      <div class="container">
+        <!-- Modül Başlık ve Özet Bilgiler -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <div class="modul-hero card border-0 shadow-sm overflow-hidden">
+              <div class="card-body p-0">
+                <div class="row g-0">
+                  <div class="col-lg-4 modul-thumbnail-col">
+                    <div class="modul-thumbnail h-100">
+                      {% if modul.resim %}
+                        <img src="{{ modul.resim.url }}" alt="{{ modul.baslik }}" class="img-fluid h-100 w-100 object-fit-cover" />
+                      {% elif modul.videolar.first.get_thumbnail %}
+                        <img src="{{ modul.videolar.first.get_thumbnail }}" alt="{{ modul.baslik }}" class="img-fluid h-100 w-100 object-fit-cover" />
+                      {% else %}
+                        <div class="placeholder-thumbnail d-flex align-items-center justify-content-center h-100">
+                          <i class="fas fa-play-circle fa-4x text-light"></i>
+                        </div>
+                      {% endif %}
+                      <div class="modul-overlay">
+                        <div class="modul-stats">
+                          <div class="stat-item">
+                            <i class="fas fa-play-circle"></i>
+                            <span>{{ modul.video_sayisi }} Video</span>
+                          </div>
+                          <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ modul.toplam_sure|format_duration }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-8">
+                    <div class="modul-info p-4 p-lg-5">
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="modul-title mb-0">{{ modul.baslik }}</h1>
+                        <span class="badge {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                            
+                            bg-success
+
+                          {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                            
+                            bg-warning
+
+                          {% else %}
+                            
+                            bg-secondary
+
+                          {% endif %} rounded-pill px-3 py-2">
+                          {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                            <i class="fas fa-check-circle me-1"></i> Tamamlandı
+                          {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                            <i class="fas fa-spinner me-1"></i> Devam Ediyor
+                          {% else %}
+                            <i class="fas fa-hourglass-start me-1"></i> Başlanmadı
+                          {% endif %}
+                        </span>
+                      </div>
+
+                      <div class="modul-meta d-flex flex-wrap align-items-center mb-4">
+                        {% if modul.egitmen %}
+                          <div class="me-4 mb-2 d-flex align-items-center">
+                            <div class="meta-icon me-2">
+                              <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                              <span class="meta-label d-block">Eğitmen</span>
+                              <span class="meta-value">{{ modul.egitmen.ad_soyad }}</span>
+                            </div>
+                          </div>
+                        {% endif %}
+                        <div class="me-4 mb-2 d-flex align-items-center">
+                          <div class="meta-icon me-2">
+                            <i class="fas fa-layer-group"></i>
+                          </div>
+                          <div>
+                            <span class="meta-label d-block">Kategori</span>
+                            <span class="meta-value">{{ modul.kategori.baslik }}</span>
+                          </div>
+                        </div>
+                        <div class="mb-2 d-flex align-items-center">
+                          <div class="meta-icon me-2">
+                            <i class="fas fa-calendar-alt"></i>
+                          </div>
+                          <div>
+                            <span class="meta-label d-block">Eklenme Tarihi</span>
+                            <span class="meta-value">{{ modul.olusturma_tarihi|date:'d.m.Y' }}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="modul-progress mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <h6 class="mb-0">İlerleme Durumu</h6>
+                          <span class="progress-text">{{ ilerleme.ilerleme_yuzdesi }}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px; border-radius: 5px; background-color: #f0f0f0;">
+                          <div class="progress-bar" role="progressbar" style="width: {{ ilerleme.ilerleme_yuzdesi }}%; background-color: #6f42c1; border-radius: 5px;" aria-valuenow="{{ ilerleme.ilerleme_yuzdesi }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                      </div>
+
+                      <div class="modul-description mb-4">
+                        <p>{{ modul.aciklama }}</p>
+                      </div>
+
+                      <div class="modul-actions">
+                        {% if ilerleme.ilerleme_yuzdesi < 100 and videolar %}
+                          <a href="{% url 'video_izle' videolar.0.id %}" class="btn rounded-pill px-4" style="background-color: #6f42c1; color: white;"><i class="fas fa-play me-2"></i> Eğitime Başla</a>
+                        {% elif ilerleme.ilerleme_yuzdesi == 100 and videolar %}
+                          <a href="{% url 'video_izle' videolar.0.id %}" class="btn btn-outline-secondary rounded-pill px-4" style="color: #6f42c1; border-color: #6f42c1;"><i class="fas fa-redo me-2"></i> Tekrar İzle</a>
+                        {% endif %}
+                        <a href="{% url 'courses' %}" class="btn btn-outline-secondary rounded-pill px-4 ms-2"><i class="fas fa-arrow-left me-2"></i> Tüm Eğitimler</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Video Listesi -->
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-list me-2" style="color: #6f42c1;"></i>Video Listesi</h4>
+                <span class="badge rounded-pill" style="background-color: #6f42c1;">{{ modul.video_sayisi }} Video</span>
+              </div>
+              <div class="card-body p-0">
+                {% if videolar %}
+                  <div class="video-list">
+                    {% for video in videolar %}
+                      {% if video.id in erisim_izni_olan_videolar %}
+                        <a href="{% url 'video_izle' video.id %}" class="video-item d-flex align-items-center p-3 border-bottom" style="text-decoration: none; transition: all 0.3s ease;">
+                          <div class="video-number rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; background-color: #f8f5ff; color: #6f42c1; font-weight: 600;">{{ forloop.counter }}</div>
+                          <div class="video-thumbnail-small me-3 rounded overflow-hidden" style="width: 100px; height: 60px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                            {% if video.get_thumbnail %}
+                              <img src="{{ video.get_thumbnail }}" alt="{{ video.baslik }}" class="w-100 h-100 object-fit-cover" />
+                            {% else %}
+                              <div class="placeholder-thumbnail-small d-flex align-items-center justify-content-center w-100 h-100" style="background-color: #6f42c1;">
+                                <i class="fas fa-play text-white"></i>
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div class="video-info flex-grow-1">
+                            <h5 class="video-title mb-1" style="font-size: 1.1rem; color: #333; font-weight: 600;">{{ video.baslik }}</h5>
+                            <p class="video-desc mb-0 text-muted small">{{ video.aciklama|truncatechars:80 }}</p>
+                          </div>
+                          <div class="video-meta d-flex flex-column align-items-end ms-3">
+                            <span class="video-duration badge bg-light text-dark mb-2" style="font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">{{ video.sure|format_duration }}</span>
+                            {% if video.id in izlenen_videolar %}
+                              <span class="video-status badge bg-success" style="font-size: 0.8rem;"><i class="fas fa-check me-1"></i> İzlendi</span>
+                            {% else %}
+                              <span class="video-status badge bg-secondary" style="font-size: 0.8rem;"><i class="fas fa-clock me-1"></i> İzlenmedi</span>
+                            {% endif %}
+                          </div>
+                        </a>
+                      {% else %}
+                        <div class="video-item d-flex align-items-center p-3 border-bottom locked-video" style="background-color: #f9f9fa;">
+                          <div class="video-number rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; color: #aaa;">{{ forloop.counter }}</div>
+                          <div class="video-thumbnail-small me-3 position-relative rounded overflow-hidden" style="width: 100px; height: 60px;">
+                            {% if video.get_thumbnail %}
+                              <img src="{{ video.get_thumbnail }}" alt="{{ video.baslik }}" class="w-100 h-100 object-fit-cover opacity-50" />
+                            {% else %}
+                              <div class="placeholder-thumbnail-small d-flex align-items-center justify-content-center w-100 h-100 opacity-50" style="background-color: #6f42c1;">
+                                <i class="fas fa-play text-white"></i>
+                              </div>
+                            {% endif %}
+                            <div class="lock-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.4); backdrop-filter: blur(2px);">
+                              <i class="fas fa-lock text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></i>
+                            </div>
+                          </div>
+                          <div class="video-info flex-grow-1">
+                            <h5 class="video-title mb-1 text-muted" style="font-size: 1.1rem; font-weight: 500;">{{ video.baslik }}</h5>
+                            <p class="video-desc mb-0 text-muted small">{{ video.aciklama|truncatechars:80 }}</p>
+                          </div>
+                          <div class="video-meta d-flex flex-column align-items-end ms-3">
+                            <span class="video-duration badge bg-light text-dark mb-2" style="font-size: 0.8rem;">{{ video.sure|format_duration }}</span>
+                            <span class="video-status badge bg-warning" style="font-size: 0.8rem;"><i class="fas fa-lock me-1"></i> Kilitli</span>
+                          </div>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                    <h5>Bu modülde henüz video bulunmamaktadır</h5>
+                    <p class="text-muted">Videolar eklendiğinde burada listelenecektir.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Yan Panel -->
+          <div class="col-lg-4">
+            <!-- Eğitmen Bilgileri -->
+            {% if modul.egitmen %}
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fas fa-user-tie me-2" style="color: #6f42c1;"></i>Eğitmen</h4>
+                </div>
+                <div class="card-body">
+                  <div class="instructor-profile text-center mb-3">
+                    <div class="instructor-avatar mx-auto mb-3">
+                      {% if modul.egitmen.profil_resmi %}
+                        <img src="{{ modul.egitmen.profil_resmi.url }}" alt="{{ modul.egitmen.ad_soyad }}" class="img-fluid rounded-circle" style="width: 120px; height: 120px; object-fit: cover; box-shadow: 0 5px 15px rgba(111, 66, 193, 0.1);" />
+                      {% else %}
+                        <div class="avatar-circle" style="background-color: #f8f5ff; box-shadow: 0 5px 15px rgba(111, 66, 193, 0.1);">
+                          <i class="fas fa-user-tie fa-2x" style="color: #6f42c1;"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <h5 class="instructor-name" style="font-weight: 600;">{{ modul.egitmen.ad_soyad }}</h5>
+                  </div>
+                  {% if modul.egitmen.ozgecmis %}
+                    <div class="instructor-bio">
+                      <p>{{ modul.egitmen.ozgecmis|truncatewords:50 }}</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Modül Bilgileri -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-2" style="color: #6f42c1;"></i>Modül Bilgileri</h4>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush module-info-list">
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><i class="fas fa-layer-group me-2" style="color: #6f42c1;"></i> Kategori</span>
+                    <span class="badge bg-light text-dark rounded-pill">{{ modul.kategori.baslik }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><i class="fas fa-play-circle me-2" style="color: #6f42c1;"></i> Video Sayısı</span>
+                    <span class="badge bg-light text-dark rounded-pill">{{ modul.video_sayisi }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><i class="fas fa-clock me-2" style="color: #6f42c1;"></i> Toplam Süre</span>
+                    <span class="badge bg-light text-dark rounded-pill">{{ modul.toplam_sure|format_duration }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><i class="fas fa-calendar-alt me-2" style="color: #6f42c1;"></i> Eklenme Tarihi</span>
+                    <span class="badge bg-light text-dark rounded-pill">{{ modul.olusturma_tarihi|date:'d.m.Y' }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><i class="fas fa-chart-line me-2" style="color: #6f42c1;"></i> İlerleme</span>
+                    <span class="badge {% if ilerleme.tamamlandi %}
+                        
+                        
+                        
+                        
+                        bg-success
+
+
+
+
+                      {% else %}
+                        
+                        
+                        
+                        
+                        bg-warning
+
+
+
+
+                      {% endif %} rounded-pill">
+                      {{ ilerleme.ilerleme_yuzdesi }}%
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bilgilendirme Kartı -->
+            <div class="card border-0 shadow-sm mt-4">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-2" style="color: #6f42c1;"></i>Bilgilendirme</h4>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-info mb-0 alert-dismissible fade show" style="background-color: #f0f7ff; border-color: #cce5ff; color: #0c63e4;">
+                  <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Sıralı İzleme</h5>
+                  <p>Bu modüldeki videoları sırayla izlemeniz gerekmektedir. Bir videoyu tamamlamadan bir sonraki videoya erişemezsiniz.</p>
+                  <hr />
+                  <p class="mb-0">Kilitli videoları açmak için önceki videoları izlemelisiniz.</p>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #f8f5ff;
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+    }
+    
+    .page-title h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    
+    .breadcrumb-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .breadcrumb-wrapper a,
+    .breadcrumb-wrapper span {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .breadcrumb-wrapper a {
+      text-decoration: none;
+    }
+    
+    .breadcrumb-wrapper a:hover {
+      color: #6f42c1;
+    }
+    
+    .breadcrumb-wrapper .separator {
+      margin: 0 10px;
+    }
+    
+    .breadcrumb-wrapper .current {
+      color: #6f42c1;
+      font-weight: 500;
+    }
+    
+    .modul-hero {
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .modul-thumbnail-col {
+      position: relative;
+      background-color: transparent;
+    }
+    
+    .modul-thumbnail {
+      position: relative;
+      background-color: transparent;
+      min-height: 300px;
+      overflow: hidden;
+    }
+    
+    .modul-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .modul-hero:hover .modul-thumbnail img {
+      transform: scale(1.05);
+    }
+    
+    .placeholder-thumbnail {
+      background: linear-gradient(135deg, #6f42c1 0%, #7952b3 100%);
+      min-height: 300px;
+    }
+    
+    .modul-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+    
+    .modul-stats {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+    
+    .stat-item i {
+      margin-right: 5px;
+    }
+    
+    .modul-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #333;
+    }
+    
+    .modul-meta {
+      color: #666;
+    }
+    
+    .meta-icon {
+      width: 36px;
+      height: 36px;
+      background-color: #f8f5ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6f42c1;
+    }
+    
+    .meta-label {
+      font-size: 0.8rem;
+      color: #999;
+    }
+    
+    .meta-value {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .progress {
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .video-list {
+      max-height: 600px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #d4d4d4 #f5f5f5;
+    }
+    
+    .video-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .video-list::-webkit-scrollbar-track {
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    
+    .video-list::-webkit-scrollbar-thumb {
+      background-color: #d4d4d4;
+      border-radius: 4px;
+    }
+    
+    .video-list::-webkit-scrollbar-thumb:hover {
+      background-color: #c0c0c0;
+    }
+    
+    .video-item {
+      color: #333;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+    
+    .video-item:hover {
+      background-color: #f9f5ff;
+      border-left: 3px solid #6f42c1;
+    }
+    
+    .video-number {
+      width: 35px;
+      height: 35px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .video-thumbnail-small {
+      overflow: hidden;
+      background-color: #f0f0f0;
+      transition: all 0.3s ease;
+    }
+    
+    .video-item:hover .video-thumbnail-small {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .video-title {
+      transition: color 0.3s ease;
+    }
+    
+    .video-item:hover .video-title {
+      color: #6f42c1 !important;
+    }
+    
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      background-color: #f8f5ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6f42c1;
+      margin: 0 auto;
+      transition: all 0.3s ease;
+    }
+    
+    .card {
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(111, 66, 193, 0.1) !important;
+    }
+    
+    .card-header {
+      border-radius: 12px 12px 0 0 !important;
+      border-bottom: 1px solid #f0f0f0;
+      background-color: white;
+    }
+    
+    .module-info-list .list-group-item {
+      border-left: none;
+      border-right: none;
+      padding-top: 14px;
+      padding-bottom: 14px;
+      transition: all 0.2s ease;
+    }
+    
+    .module-info-list .list-group-item:hover {
+      background-color: #f9f5ff;
+    }
+    
+    .module-info-list .list-group-item:first-child {
+      border-top: none;
+    }
+    
+    .module-info-list .list-group-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Kilitli video stilleri */
+    .locked-video {
+      position: relative;
+      background-color: #f9f9f9;
+      cursor: not-allowed;
+      border-left: 3px solid #e0e0e0 !important;
+    }
+    
+    .lock-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      z-index: 2;
+    }
+    
+    .lock-overlay i {
+      font-size: 1.2rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .alert-info {
+      border-radius: 10px;
+    }
+    
+    @media (max-width: 991px) {
+      .modul-thumbnail {
+        min-height: 250px;
+      }
+    
+      .placeholder-thumbnail {
+        min-height: 250px;
+      }
+    
+      .modul-title {
+        font-size: 1.5rem;
+      }
+    
+      .video-item {
+        flex-wrap: wrap;
+      }
+    
+      .video-meta {
+        width: 100%;
+        flex-direction: row !important;
+        justify-content: space-between;
+        margin-top: 10px;
+        margin-left: 62px !important;
+      }
+    
+      .video-duration {
+        margin-bottom: 0 !important;
+      }
+    }
+  </style>
+{% endblock %}

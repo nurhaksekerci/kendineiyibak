@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Konu Onaylama - Forum Yönetimi
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Konu Onaylama</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Onay bekleyen konuları bu sayfadan onaylayabilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <!-- Başlık -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0 text-primary"><i class="fas fa-check-circle me-2"></i> Konu Onaylama</h1>
+            <div>
+              <a href="{% url 'forum:forum_konu_onay_listesi' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Listeye Dön</a>
+            </div>
+          </div>
+
+          <!-- Uyarı Mesajları -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <!-- Konu Bilgileri -->
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">{{ konu.baslik }}</h5>
+              <div class="small text-muted mt-1">
+                <span>{{ konu.yazar.fullname }} tarafından {{ konu.olusturma_tarihi|date:'d.m.Y H:i' }} tarihinde oluşturuldu</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <h6 class="fw-bold">Kategori:</h6>
+                <p>{{ konu.kategori.baslik }}</p>
+              </div>
+              <div>
+                <h6 class="fw-bold">Konu İçeriği:</h6>
+                <div class="p-3 bg-light rounded">{{ konu.icerik|linebreaks }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Onay Formu -->
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">Konu Onayı</h5>
+            </div>
+            <div class="card-body">
+              <form method="post">
+                {% csrf_token %}
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i> Bu konuyu onaylamak istediğinizden emin misiniz? Onaylandıktan sonra tüm kullanıcılar bu konuyu görebilecektir.
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                  <a href="{% url 'forum:forum_konu_onay_listesi' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i> Vazgeç</a>
+                  <button type="submit" class="btn btn-success"><i class="fas fa-check me-1"></i> Konuyu Onayla</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .badge {
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+    
+    .btn-group .btn {
+      margin-right: 5px;
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Mesajlar - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Mesajlar</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Mesajlarınızı görüntüleyin ve yönetin.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mesajlar Section -->
+    <section class="message-section py-5">
+      <div class="container">
+        <!-- Mesaj Kontrol Paneli -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="message-control d-flex justify-content-between align-items-center">
+              <div class="message-stats">
+                <h5 class="mb-0">
+                  {% if okunmayan_mesaj_sayisi > 0 %}
+                    <span class="badge bg-danger rounded-pill me-2">{{ okunmayan_mesaj_sayisi }}</span>
+                  {% endif %}Mesajlar
+                </h5>
+              </div>
+              <div class="message-actions">
+                <a href="{% url 'yeni_mesaj' %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Yeni Mesaj</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mesaj Listesi -->
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+              <!-- Mesaj Sekmeleri -->
+              <div class="card-header bg-white p-0">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="incoming-tab" data-bs-toggle="tab" data-bs-target="#incoming" type="button" role="tab" aria-controls="incoming" aria-selected="true">
+                      Gelen Kutusu{% if okunmayan_mesaj_sayisi > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-2">{{ okunmayan_mesaj_sayisi }}</span>
+                      {% endif %}
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab" aria-controls="sent" aria-selected="false">Gönderilen Mesajlar</button>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Mesaj İçerikleri -->
+              <div class="card-body">
+                <div class="tab-content">
+                  <!-- Gelen Kutusu -->
+                  <div class="tab-pane fade show active" id="incoming" role="tabpanel" aria-labelledby="incoming-tab">
+                    <div class="d-flex justify-content-end mb-3">
+                      <a href="{% url 'mesajlar_gelen_temizle' %}" class="btn btn-danger btn-sm" onclick="return confirm('Gelen kutunuzdaki tüm mesajları silmek istediğinizden emin misiniz?')">
+                        <i class="fas fa-trash me-1"></i> Gelen Kutusunu Temizle
+                      </a>
+                    </div>
+                    {% if gelen_mesajlar %}
+                      <div class="table-responsive">
+                        <table class="table table-hover message-table">
+                          <thead>
+                            <tr>
+                              <th>Durum</th>
+                              <th>Gönderen</th>
+                              <th>Konu</th>
+                              <th>Tarih</th>
+                              <th>İşlemler</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for mesaj in gelen_mesajlar %}
+                              <tr class="{% if not mesaj.okundu %}message-unread{% endif %}">
+                                <td>
+                                  {% if not mesaj.okundu %}
+                                    <span class="badge bg-primary">Yeni</span>
+                                  {% else %}
+                                    <span class="badge bg-light text-dark">Okundu</span>
+                                  {% endif %}
+                                </td>
+                                <td>{{ mesaj.gonderen.fullname|default:mesaj.gonderen.username }}</td>
+                                <td>
+                                  <a href="{% url 'mesaj_detay' mesaj_id=mesaj.id %}" class="message-subject fw-bold">{{ mesaj.konu }}</a>
+                                </td>
+                                <td>{{ mesaj.olusturma_tarihi|date:'d.m.Y H:i' }}</td>
+                                <td>
+                                  <a href="{% url 'mesaj_detay' mesaj_id=mesaj.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                                  <a href="{% url 'mesaj_cevapla' mesaj_id=mesaj.id %}" class="btn btn-sm btn-outline-success"><i class="fas fa-reply"></i></a>
+                                  <a href="{% url 'mesaj_sil' mesaj_id=mesaj.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu mesajı silmek istediğinizden emin misiniz?')"><i class="fas fa-trash"></i></a>
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Sayfalama ve Mesaj Sayısı -->
+                      <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="mesaj-sayisi">
+                          <p class="text-muted mb-0">
+                            Toplam <strong>{{ toplam_gelen_mesaj }}</strong> mesaj{% if gelen_mesajlar.paginator.num_pages > 1 %}
+                              ({{ gelen_mesajlar.paginator.count }} mesajın {{ gelen_mesajlar.start_index }}-{{ gelen_mesajlar.end_index }} arası gösteriliyor)
+                            {% endif %}
+                          </p>
+                        </div>
+                      </div>
+
+                      <!-- Sayfalama -->
+                      {% if gelen_mesajlar.has_other_pages %}
+                        <nav class="mt-3">
+                          <ul class="pagination justify-content-center">
+                            {% if gelen_mesajlar.has_previous %}
+                              <li class="page-item">
+                                <a class="page-link" href="?gelen_sayfa=1" aria-label="İlk"><span aria-hidden="true">&laquo;&laquo;</span></a>
+                              </li>
+                              <li class="page-item">
+                                <a class="page-link" href="?gelen_sayfa={{ gelen_mesajlar.previous_page_number }}" aria-label="Önceki"><span aria-hidden="true">&laquo;</span></a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled">
+                                <span class="page-link">&laquo;&laquo;</span>
+                              </li>
+                              <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                              </li>
+                            {% endif %}
+
+                            {% for num in gelen_mesajlar.paginator.page_range %}
+                              {% if gelen_mesajlar.number == num %}
+                                <li class="page-item active">
+                                  <span class="page-link">{{ num }}</span>
+                                </li>
+                              {% elif num > gelen_mesajlar.number|add:'-3' and num < gelen_mesajlar.number|add:'3' %}
+                                <li class="page-item">
+                                  <a class="page-link" href="?gelen_sayfa={{ num }}">{{ num }}</a>
+                                </li>
+                              {% elif num == 1 or num == gelen_mesajlar.paginator.num_pages %}
+                                <li class="page-item">
+                                  <a class="page-link" href="?gelen_sayfa={{ num }}">{{ num }}</a>
+                                </li>
+                              {% elif num == gelen_mesajlar.number|add:'-3' or num == gelen_mesajlar.number|add:'3' %}
+                                <li class="page-item disabled">
+                                  <span class="page-link">...</span>
+                                </li>
+                              {% endif %}
+                            {% endfor %}
+
+                            {% if gelen_mesajlar.has_next %}
+                              <li class="page-item">
+                                <a class="page-link" href="?gelen_sayfa={{ gelen_mesajlar.next_page_number }}" aria-label="Sonraki"><span aria-hidden="true">&raquo;</span></a>
+                              </li>
+                              <li class="page-item">
+                                <a class="page-link" href="?gelen_sayfa={{ gelen_mesajlar.paginator.num_pages }}" aria-label="Son"><span aria-hidden="true">&raquo;&raquo;</span></a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                              </li>
+                              <li class="page-item disabled">
+                                <span class="page-link">&raquo;&raquo;</span>
+                              </li>
+                            {% endif %}
+                          </ul>
+                        </nav>
+                      {% endif %}
+                    {% else %}
+                      <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Gelen kutunuzda hiç mesaj bulunmamaktadır.
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Gönderilen Mesajlar -->
+                  <div class="tab-pane fade" id="sent" role="tabpanel" aria-labelledby="sent-tab">
+                    <div class="d-flex justify-content-end mb-3">
+                      <a href="{% url 'mesajlar_gonderilen_temizle' %}" class="btn btn-danger btn-sm" onclick="return confirm('Gönderilen tüm mesajları silmek istediğinizden emin misiniz?')">
+                        <i class="fas fa-trash me-1"></i> Gönderilen Mesajları Temizle
+                      </a>
+                    </div>
+                    {% if gonderilen_mesajlar %}
+                      <div class="table-responsive">
+                        <table class="table table-hover message-table">
+                          <thead>
+                            <tr>
+                              <th>Durum</th>
+                              <th>Alıcı</th>
+                              <th>Konu</th>
+                              <th>Tarih</th>
+                              <th>İşlemler</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for mesaj in gonderilen_mesajlar %}
+                              <tr>
+                                <td>
+                                  {% if mesaj.durum == 'bekliyor' %}
+                                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                                  {% elif mesaj.durum == 'cevaplandi' %}
+                                    <span class="badge bg-success">Cevaplandı</span>
+                                  {% elif mesaj.durum == 'kapatildi' %}
+                                    <span class="badge bg-secondary">Kapatıldı</span>
+                                  {% endif %}
+                                </td>
+                                <td>{{ mesaj.alici.fullname|default:mesaj.alici.username }}</td>
+                                <td>
+                                  <a href="{% url 'mesaj_detay' mesaj_id=mesaj.id %}" class="message-subject fw-bold">{{ mesaj.konu }}</a>
+                                </td>
+                                <td>{{ mesaj.olusturma_tarihi|date:'d.m.Y H:i' }}</td>
+                                <td>
+                                  <a href="{% url 'mesaj_detay' mesaj_id=mesaj.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                                  <a href="{% url 'mesaj_sil' mesaj_id=mesaj.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu mesajı silmek istediğinizden emin misiniz?')"><i class="fas fa-trash"></i></a>
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Sayfalama ve Mesaj Sayısı -->
+                      <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="mesaj-sayisi">
+                          <p class="text-muted mb-0">
+                            Toplam <strong>{{ toplam_gonderilen_mesaj }}</strong> mesaj{% if gonderilen_mesajlar.paginator.num_pages > 1 %}
+                              ({{ gonderilen_mesajlar.paginator.count }} mesajın {{ gonderilen_mesajlar.start_index }}-{{ gonderilen_mesajlar.end_index }} arası gösteriliyor)
+                            {% endif %}
+                          </p>
+                        </div>
+                      </div>
+
+                      <!-- Sayfalama -->
+                      {% if gonderilen_mesajlar.has_other_pages %}
+                        <nav class="mt-3">
+                          <ul class="pagination justify-content-center">
+                            {% if gonderilen_mesajlar.has_previous %}
+                              <li class="page-item">
+                                <a class="page-link" href="?gonderilen_sayfa=1" aria-label="İlk"><span aria-hidden="true">&laquo;&laquo;</span></a>
+                              </li>
+                              <li class="page-item">
+                                <a class="page-link" href="?gonderilen_sayfa={{ gonderilen_mesajlar.previous_page_number }}" aria-label="Önceki"><span aria-hidden="true">&laquo;</span></a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled">
+                                <span class="page-link">&laquo;&laquo;</span>
+                              </li>
+                              <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                              </li>
+                            {% endif %}
+
+                            {% for num in gonderilen_mesajlar.paginator.page_range %}
+                              {% if gonderilen_mesajlar.number == num %}
+                                <li class="page-item active">
+                                  <span class="page-link">{{ num }}</span>
+                                </li>
+                              {% elif num > gonderilen_mesajlar.number|add:'-3' and num < gonderilen_mesajlar.number|add:'3' %}
+                                <li class="page-item">
+                                  <a class="page-link" href="?gonderilen_sayfa={{ num }}">{{ num }}</a>
+                                </li>
+                              {% elif num == 1 or num == gonderilen_mesajlar.paginator.num_pages %}
+                                <li class="page-item">
+                                  <a class="page-link" href="?gonderilen_sayfa={{ num }}">{{ num }}</a>
+                                </li>
+                              {% elif num == gonderilen_mesajlar.number|add:'-3' or num == gonderilen_mesajlar.number|add:'3' %}
+                                <li class="page-item disabled">
+                                  <span class="page-link">...</span>
+                                </li>
+                              {% endif %}
+                            {% endfor %}
+
+                            {% if gonderilen_mesajlar.has_next %}
+                              <li class="page-item">
+                                <a class="page-link" href="?gonderilen_sayfa={{ gonderilen_mesajlar.next_page_number }}" aria-label="Sonraki"><span aria-hidden="true">&raquo;</span></a>
+                              </li>
+                              <li class="page-item">
+                                <a class="page-link" href="?gonderilen_sayfa={{ gonderilen_mesajlar.paginator.num_pages }}" aria-label="Son"><span aria-hidden="true">&raquo;&raquo;</span></a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                              </li>
+                              <li class="page-item disabled">
+                                <span class="page-link">&raquo;&raquo;</span>
+                              </li>
+                            {% endif %}
+                          </ul>
+                        </nav>
+                      {% endif %}
+                    {% else %}
+                      <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Henüz hiç mesaj göndermediniz.
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .message-table .message-unread {
+      background-color: rgba(103, 76, 239, 0.05);
+      font-weight: 500;
+    }
+    
+    .message-table .message-subject {
+      color: #20104b;
+      text-decoration: none;
+    }
+    
+    .message-table .message-subject:hover {
+      color: #674cef;
+      text-decoration: underline;
+    }
+    
+    /* Sayfalama stilleri */
+    .page-link {
+      color: #6f42c1;
+      border-color: #e9ecef;
+    }
+    
+    .page-item.active .page-link {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .page-link:hover {
+      color: #5a32a3;
+      background-color: #f8f9fa;
+    }
+    
+    .page-item.disabled .page-link {
+      color: #6c757d;
+    }
+    
+    /* Tablo stilleri */
+    .table thead th {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+      color: #495057;
+      font-weight: 600;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(111, 66, 193, 0.03);
+    }
+    
+    .table td,
+    .table th {
+      vertical-align: middle;
+      padding: 0.75rem;
+    }
+    
+    /* Sayfa banner */
+    .page-banner {
+      background: linear-gradient(135deg, #6f42c1 0%, #9e77e0 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 100px 0 120px;
+      margin-top: -60px;
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Yeni Kategori Ekle - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Yeni Kategori Ekle</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Yeni bir forum kategorisi oluşturmak için aşağıdaki formu doldurun.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kategori-form-section py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light py-3">
+                <h4 class="mb-0">Kategori Bilgileri</h4>
+              </div>
+              <div class="card-body p-4">
+                <form method="post" action="">
+                  {% csrf_token %}
+                  <div class="row mb-3">
+                    <div class="col-md-12">
+                      <label for="id_baslik" class="form-label">Kategori Başlığı <span class="text-danger">*</span></label>
+                      {{ form.baslik }}
+                      {% if form.baslik.errors %}
+                        <div class="invalid-feedback d-block">{{ form.baslik.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="id_aciklama" class="form-label">Kategori Açıklaması</label>
+                    {{ form.aciklama }}
+                    {% if form.aciklama.errors %}
+                      <div class="invalid-feedback d-block">{{ form.aciklama.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Bu kategori hakkında kısa bir açıklama yazın.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="id_sira" class="form-label">Sıra</label>
+                    {{ form.sira }}
+                    {% if form.sira.errors %}
+                      <div class="invalid-feedback d-block">{{ form.sira.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Kategorilerin görüntülenme sırası (daha düşük sayılar önce gösterilir).</div>
+                  </div>
+
+                  <div class="form-check mb-3">
+                    {{ form.aktif }}
+                    <label class="form-check-label" for="id_aktif">Aktif Kategori</label>
+                    {% if form.aktif.errors %}
+                      <div class="invalid-feedback d-block">{{ form.aktif.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Bu kategoriyi kullanıcılara göstermek için işaretleyin.</div>
+                  </div>
+
+                  <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'forum:forum_kategori_listele' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i> Listeye Dön</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i> Kategori Ekle</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .form-label {
+      font-weight: 500;
+    }
+    
+    .form-text {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+  </style>
+{% endblock %}

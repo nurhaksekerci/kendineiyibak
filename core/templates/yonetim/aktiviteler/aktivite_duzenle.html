@@ -1,0 +1,1424 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aktivite Düzenle: {{ aktivite.baslik }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+  
+  .component-list {
+    min-height: 60px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .component-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 10px;
+    cursor: move;
+    transition: all 0.2s;
+  }
+  
+  .component-item:hover {
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+  
+  .component-item .drag-handle {
+    color: #aaa;
+    cursor: move;
+  }
+  
+  .component-actions {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .component-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .oge-preview {
+    border: 1px solid #e9e9e9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .sortable-ghost {
+    opacity: 0.5;
+    background: #c8ebfb;
+  }
+  
+  .btn-component {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  
+  .btn-component:hover {
+    transform: translateY(-3px);
+  }
+  
+  .btn-component i {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Aktivite Düzenle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">{{ aktivite.baslik }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Aktivite Düzenleme Formu -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_listesi' %}">Aktiviteler</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Aktivite Düzenle</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      {% if messages %}
+        <div class="row mb-4">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <!-- Ana İçerik Bölümü -->
+        <div class="col-md-12">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">Aktivite Bilgileri</h5>
+            </div>
+            <div class="card-body">
+              <form id="aktivite-form" method="post" class="aktivite-form" data-aktivite-id="{{ aktivite.id }}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                  <label for="baslik" class="form-label">Aktivite Başlığı <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="baslik" name="baslik" value="{{ aktivite.baslik }}" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="aciklama" class="form-label">Aktivite Açıklaması</label>
+                  <textarea class="form-control" id="aciklama" name="aciklama" rows="3">{{ aktivite.aciklama }}</textarea>
+                </div>
+                
+                <div class="form-floating mb-3">
+                  <select class="form-select" id="hafta" name="hafta" required>
+                    {% for i in "123456789"|make_list %}
+                      <option value="{{ i }}" {% if aktivite.hafta == i|add:"0" %}selected{% endif %}>{{ i }}. Hafta</option>
+                    {% endfor %}
+                  </select>
+                  <label for="hafta">Hafta *</label>
+                  <div class="form-text">Aktivitenin hangi haftada görüntüleneceğini seçin. Kullanıcılar kayıt tarihlerinden itibaren (hafta-1) x 7 gün sonra bu aktiviteye erişebilecektir.</div>
+                </div>
+
+                {% if yeni_sistem_aciklamasi %}
+                <div class="alert alert-info mb-3">
+                  <i class="fas fa-info-circle me-2"></i> {{ yeni_sistem_aciklamasi }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="aktif" name="aktif" {% if aktivite.aktif %}checked{% endif %}>
+                    <label class="form-check-label" for="aktif">
+                      Aktif (Kullanıcılar tarafından görülebilir)
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Tip seçimi gizli alan olarak ayarlandı -->
+                <input type="hidden" id="tip" name="tip" value="karma">
+
+                <!-- Gizli İçerik JSON alanı -->
+                <input type="hidden" id="icerik_json" name="icerik_json" value="{{ aktivite.icerik_json }}">
+              </form>
+            </div>
+          </div>
+
+          <!-- Öğe Listeleme Bölümü -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">Aktivite Öğeleri</h5>
+            </div>
+            <div class="card-body">
+              <!-- Hızlı Öğe Ekleme Butonları -->
+              <div class="mb-3">
+                <div class="row g-2">
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-primary w-100 quick-add-btn" data-component-type="baslik">
+                      <i class="fas fa-heading me-1"></i> Başlık Ekle
+                    </button>
+                  </div>
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-primary w-100 quick-add-btn" data-component-type="aciklama">
+                      <i class="fas fa-align-left me-1"></i> Açıklama Ekle
+                    </button>
+                  </div>
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-primary w-100 quick-add-btn" data-component-type="checkbox">
+                      <i class="fas fa-check-square me-1"></i> Onay Kutusu Ekle
+                    </button>
+                  </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-primary w-100 quick-add-btn" data-component-type="metin">
+                      <i class="fas fa-font me-1"></i> Metin Alanı Ekle
+                    </button>
+                  </div>
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-primary w-100 quick-add-btn" data-component-type="tablo">
+                      <i class="fas fa-table me-1"></i> Tablo Ekle
+                    </button>
+                  </div>
+                  <div class="col-md">
+                    <button type="button" class="btn btn-outline-danger w-100" id="clear-components-btn">
+                      <i class="fas fa-trash me-1"></i> Tümünü Temizle
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="components-list" class="component-list">
+                {% if ogeler %}
+                  {% for oge in ogeler %}
+                    <div class="component-item" id="component-{{ oge.id }}" data-oge-id="{{ oge.id }}" data-component-data="{{ oge.id }}">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <span class="drag-handle me-2"><i class="fas fa-grip-vertical"></i></span>
+                          <span class="badge bg-secondary me-2">{{ oge.get_tip_display }}</span>
+                          <i class="fas fa-{{ oge.get_tip_display|lower }} me-1"></i>
+                          <strong>{{ oge.baslik|default:"Başlıksız Öğe" }}</strong>
+                          {% if oge.zorunlu %}<span class="text-danger ms-1">*</span>{% endif %}
+                        </div>
+                        <div class="component-actions">
+                          <button type="button" class="btn btn-sm btn-outline-primary edit-component" data-component-id="{{ oge.id }}">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-danger delete-component" data-component-id="{{ oge.id }}">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                      {% if oge.aciklama %}
+                        <div class="mt-1 small text-muted">{{ oge.aciklama }}</div>
+                      {% endif %}
+                      {% if oge.tip == 'tablo' %}
+                        <div class="mt-1 small text-muted">{{ oge.tablo_satir_sayisi }} satır x {{ oge.tablo_sutun_sayisi }} sütun</div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="text-center text-muted py-4" id="no-components-message">
+                    <i class="fas fa-info-circle mb-2"></i>
+                    <p>Henüz öğe eklenmedi. Öğe eklemek için yukarıdaki butonları kullanın.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+         
+          
+          <div class="d-grid gap-2 d-flex justify-content-between">
+            <a href="{% url 'yonetim_aktivite_listesi' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+            </a>
+            <button type="button" class="btn btn-primary" id="submit-form-btn">
+              <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Öğe Düzenleme Modal -->
+<div class="modal fade" id="editComponentModal" tabindex="-1" aria-labelledby="editComponentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editComponentModalLabel">Öğe Düzenle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="edit-component-container">
+        <!-- Form içeriği dinamik olarak yüklenecek -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-primary" id="save-component-btn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Global değişkenler
+    let componentSortable;
+    const components = [];
+    const componentsList = document.getElementById('components-list');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const aktiviteId = document.querySelector('.aktivite-form').dataset.aktiviteId;
+    
+    // Toastr bildirim ayarları
+    toastr.options = {
+      "closeButton": true,
+      "progressBar": true,
+      "positionClass": "toast-top-right",
+      "timeOut": "3000"
+    };
+    
+    // Mevcut öğeleri yükle
+    loadExistingComponents();
+    
+    // Sayfa yüklendiğinde Sortable'ı başlat
+    initSortable();
+    
+    // Mevcut silme ve düzenleme butonlarına event listener ekle
+    document.querySelectorAll('.delete-component').forEach(button => {
+      button.addEventListener('click', function() {
+        const ogeId = this.dataset.componentId;
+        if (confirm('Bu öğeyi silmek istediğinize emin misiniz?')) {
+          deleteComponent(ogeId);
+        }
+      });
+    });
+    
+    document.querySelectorAll('.edit-component').forEach(button => {
+      button.addEventListener('click', function() {
+        const ogeId = this.dataset.componentId;
+        const componentIndex = components.findIndex(c => c.id == ogeId);
+        if (componentIndex !== -1) {
+          openEditModal(components[componentIndex]);
+        }
+      });
+    });
+    
+    // Temel sayfa event listener'larını ekle
+    setupPageListeners();
+    
+    // Temel olay dinleyicileri
+    function setupPageListeners() {
+      // İptal butonuna tıklandığında modalı düzgün şekilde kapatmak için event listener
+      const cancelButton = document.querySelector('#editComponentModal .btn-secondary');
+      if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+          closeModal();
+        });
+      }
+
+      // x (çarpı) butonuna tıklandığında da modalı düzgün şekilde kapatacak event listener
+      const closeButton = document.querySelector('#editComponentModal .btn-close');
+      if (closeButton) {
+        closeButton.addEventListener('click', function() {
+          closeModal();
+        });
+      }
+      
+      // Aktivite formunu gönderme butonu
+      const submitFormBtn = document.getElementById('submit-form-btn');
+      if (submitFormBtn) {
+        submitFormBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Mevcut öğeleri JSON olarak form alanına aktar
+          document.getElementById('icerik_json').value = JSON.stringify(components);
+          
+          // Form doğrudan gönder
+          document.getElementById('aktivite-form').submit();
+        });
+      }
+      
+      // Hızlı öğe ekleme butonları - mevcut listener'ları temizleyelim
+      document.querySelectorAll('.quick-add-btn').forEach(button => {
+        // Önceki event listener'ları temizle (klonlama ile)
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+      });
+      
+      // Şimdi yeni listener'ları bir kez ekleyelim
+      document.querySelectorAll('.quick-add-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const componentType = this.dataset.componentType;
+          
+          // Başarılı ekleme geri bildirimi için görsel efekt
+          this.classList.replace('btn-outline-primary', 'btn-success');
+          setTimeout(() => {
+            this.classList.replace('btn-success', 'btn-outline-primary');
+          }, 300);
+          
+          // Tablo dışındaki tipler için basitleştirilmiş ekleme
+          if (componentType !== 'tablo') {
+            addSimpleComponent(componentType);
+          } else {
+            showTableModal();
+          }
+        });
+      });
+      
+      // Tüm öğeleri temizleme butonu
+      const clearComponentsBtn = document.getElementById('clear-components-btn');
+      if (clearComponentsBtn) {
+        clearComponentsBtn.addEventListener('click', function() {
+          if (confirm('Tüm öğeleri silmek istediğinize emin misiniz?')) {
+            // API üzerinden silme işlemi yapma
+            fetch(`/yonetim/aktivite/${aktiviteId}/tumunu-temizle/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(result => {
+              if (result.success) {
+                // Tüm bileşenleri temizle
+                components.length = 0;
+                
+                // DOM'u temizle
+                componentsList.innerHTML = `
+                  <div class="text-center text-muted py-4" id="no-components-message">
+                    <i class="fas fa-info-circle mb-2"></i>
+                    <p>Henüz öğe eklenmedi. Öğe eklemek için yukarıdaki butonları kullanın.</p>
+                  </div>
+                `;
+                
+                toastr.success('Tüm öğeler başarıyla silindi');
+              } else {
+                toastr.error(result.message || 'Öğeler silinirken bir hata oluştu');
+              }
+            })
+            .catch(error => {
+              toastr.error('Öğeler silinirken bir hata oluştu');
+              console.error('Silme hatası:', error);
+            });
+          }
+        });
+      }
+    }
+    
+    // Mevcut öğeleri yükle
+    function loadExistingComponents() {
+      // Sayfadaki bileşen elementlerini seç
+      const componentElements = document.querySelectorAll('.component-item');
+      
+      // Global components dizisini temizle
+      components.length = 0;
+      
+      // Her bir bileşen elementi için
+      componentElements.forEach(element => {
+        try {
+          // Component verisi özniteliğini al - sadece ID'yi alıyoruz artık
+          let ogeId = element.getAttribute('data-oge-id');
+          
+          // Verinin boş olup olmadığını kontrol et
+          if (!ogeId) {
+            throw new Error('data-oge-id özniteliği bulunamadı');
+          }
+          
+          // AJAX ile öğe bilgilerini getir
+          fetch(`/yonetim/aktivite-oge/${ogeId}/detay/`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Öğe bilgilerini components dizisine ekle
+              const componentObj = {
+                id: ogeId,
+                tip: (data.oge.tip || '').toLowerCase(),
+                baslik: data.oge.baslik || '',
+                aciklama: data.oge.aciklama || '',
+                zorunlu: data.oge.zorunlu === true,
+                aktif: data.oge.aktif !== false,
+                sira: data.oge.sira || 0
+              };
+              
+              // Tablo tipi için özel alanlar
+              if (componentObj.tip === 'tablo') {
+                componentObj.satir_sayisi = data.oge.satir_sayisi || 3;
+                componentObj.sutun_sayisi = data.oge.sutun_sayisi || 3;
+                componentObj.sutun_basliklar = data.oge.sutun_basliklar || [];
+                componentObj.satir_basliklar = data.oge.satir_basliklar || [];
+              }
+              
+              // Components dizisine ekle
+              components.push(componentObj);
+            } else {
+              console.error('Öğe bilgileri alınamadı:', data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Öğe bilgileri alınırken hata:', error);
+          });
+          
+        } catch (error) {
+          console.error("Bileşen yüklenirken hata oluştu:", error);
+        }
+      });
+      
+      console.log('Toplam yüklenen bileşen sayısı:', components.length);
+      
+      // Düzenleme ve silme düğmelerine olay dinleyicileri ekle
+      attachAllComponentEventListeners();
+    }
+    
+    // Tüm bileşenlere event listener ekle
+    function attachAllComponentEventListeners() {
+      document.querySelectorAll('.edit-component').forEach(button => {
+        button.addEventListener('click', function() {
+          const ogeId = this.getAttribute('data-component-id');
+          const component = components.find(comp => comp.id == ogeId);
+          if (component) {
+            openEditModal(component);
+          }
+        });
+      });
+      
+      // Tüm silme butonlarına tek bir event listener ekle
+      document.querySelectorAll('.delete-component').forEach(button => {
+        button.addEventListener('click', function() {
+          const ogeId = this.getAttribute('data-component-id');
+          // Silme fonksiyonunu doğrudan çağır
+          handleComponentDelete(ogeId);
+        });
+      });
+    }
+    
+    // Sürükle-bırak işlevini başlatma
+    function initSortable() {
+      // Daha önce oluşturulmuş bir Sortable varsa, önce yok edelim
+      if (componentSortable) {
+        componentSortable.destroy();
+      }
+      
+      // Yeni Sortable oluştur
+      componentSortable = new Sortable(componentsList, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        onSort: updateComponentOrder
+      });
+    }
+    
+    // Basit bileşen ekleme (tablo dışındaki tipler için)
+    function addSimpleComponent(type) {
+      const temporaryId = 'temp-' + Date.now();
+      const componentData = {
+        id: temporaryId,
+        tip: type,
+        baslik: getDefaultTitle(type),
+        aciklama: '',
+        zorunlu: false,
+        aktif: true,
+        sira: components.length
+      };
+      
+      // Bilgi mesajı
+      toastr.info('Öğe ekleniyor...');
+      
+      // AJAX ile sunucuda öğe oluştur
+      saveNewComponent(componentData);
+    }
+    
+    // Tablo modalını göster
+    function showTableModal() {
+      // Tablo için varsayılan değerler - 3x3 yapalım
+      const defaultData = {
+        satir_sayisi: 3,
+        sutun_sayisi: 3,
+        sutun_basliklar: ['Sütun 1', 'Sütun 2', 'Sütun 3'],
+        satir_basliklar: ['Satır 1', 'Satır 2', 'Satır 3']
+      };
+      
+      // Modal içeriği oluştur
+      let modalContent = `
+        <div class="mb-3">
+          <label for="edit-component-baslik" class="form-label">Tablo Başlığı</label>
+          <input type="text" class="form-control" id="edit-component-baslik" value="Tablo Öğesi">
+        </div>
+        
+        <div class="mb-3">
+          <label for="edit-component-aciklama" class="form-label">Açıklama</label>
+          <textarea class="form-control" id="edit-component-aciklama" rows="2"></textarea>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="edit-component-satir" class="form-label">Satır Sayısı</label>
+              <input type="number" class="form-control" id="edit-component-satir" min="1" max="50" value="${defaultData.satir_sayisi}">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="edit-component-sutun" class="form-label">Sütun Sayısı</label>
+              <input type="number" class="form-control" id="edit-component-sutun" min="1" max="20" value="${defaultData.sutun_sayisi}">
+            </div>
+          </div>
+        </div>
+      `;
+        
+      // Tablo sekme yapısını ekle
+      modalContent += `
+        <ul class="nav nav-tabs" id="tableTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="sutun-tab" data-bs-toggle="tab" data-bs-target="#sutun-pane" type="button" role="tab">Sütun Başlıkları</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="satir-tab" data-bs-toggle="tab" data-bs-target="#satir-pane" type="button" role="tab">Satır Başlıkları</button>
+          </li>
+        </ul>
+        
+        <div class="tab-content" id="tableTabsContent" style="padding: 15px 0;">
+          <div class="tab-pane fade show active" id="sutun-pane" role="tabpanel">
+            <div class="mb-3">
+              <label class="form-label">Sütun Başlıkları</label>
+              <div id="sutun-basliklar-container">
+      `;
+      
+      // Sütun başlıkları için inputlar oluştur
+      for (let i = 0; i < defaultData.sutun_sayisi; i++) {
+        modalContent += `
+          <div class="input-group mb-2">
+            <span class="input-group-text">${i + 1}</span>
+            <input type="text" class="form-control sutun-baslik" value="${defaultData.sutun_basliklar[i]}">
+          </div>
+        `;
+      }
+      
+      modalContent += `
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="satir-pane" role="tabpanel">
+            <div class="mb-3">
+              <label class="form-label">Satır Başlıkları</label>
+              <div id="satir-basliklar-container">
+      `;
+      
+      // Satır başlıkları için inputlar oluştur  
+      for (let i = 0; i < defaultData.satir_sayisi; i++) {
+        modalContent += `
+          <div class="input-group mb-2">
+            <span class="input-group-text">${i + 1}</span>
+            <input type="text" class="form-control satir-baslik" value="${defaultData.satir_basliklar[i]}">
+          </div>
+        `;
+      }
+      
+      modalContent += `
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Modal'ı göster
+      document.getElementById('edit-component-container').innerHTML = modalContent;
+      const modal = new bootstrap.Modal(document.getElementById('editComponentModal'));
+      modal.show();
+      
+      // Sütun sayısı değişince, başlık alanlarını güncelle
+      document.getElementById('edit-component-sutun').addEventListener('change', function() {
+        updateColumnHeaders(this.value, defaultData.sutun_basliklar);
+      });
+      
+      // Satır sayısı değişince, başlık alanlarını güncelle
+      document.getElementById('edit-component-satir').addEventListener('change', function() {
+        updateRowHeaders(this.value, defaultData.satir_basliklar);
+      });
+      
+      // Kaydet butonunu yapılandır
+      document.getElementById('save-component-btn').onclick = function() {
+        const baslik = document.getElementById('edit-component-baslik').value;
+        const aciklama = document.getElementById('edit-component-aciklama').value;
+        const satir_sayisi = parseInt(document.getElementById('edit-component-satir').value);
+        const sutun_sayisi = parseInt(document.getElementById('edit-component-sutun').value);
+        const sutun_basliklar = Array.from(document.querySelectorAll('.sutun-baslik')).map(input => input.value);
+        const satir_basliklar = Array.from(document.querySelectorAll('.satir-baslik')).map(input => input.value);
+        
+        // Bileşen verisini oluştur
+        const componentData = {
+          tip: 'tablo',
+          baslik: baslik,
+          aciklama: aciklama,
+          satir_sayisi: satir_sayisi,
+          sutun_sayisi: sutun_sayisi,
+          sutun_basliklar: sutun_basliklar,
+          satir_basliklar: satir_basliklar
+        };
+        
+        // Modal'ı kapat
+        closeModal();
+        
+        // Sunucuya kaydet ve DOM'a ekle
+        saveNewComponent(componentData);
+      };
+    }
+    
+    // Sütun başlıklarını güncelle
+    function updateColumnHeaders(count, currentHeaders) {
+      count = parseInt(count) || 3;
+      const container = document.getElementById('sutun-basliklar-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      // Mevcut değerleri koru
+      const currentValues = Array.isArray(currentHeaders) ? [...currentHeaders] : [];
+      
+      for (let i = 0; i < count; i++) {
+        const value = (i < currentValues.length) ? currentValues[i] : `Sütun ${i+1}`;
+        const html = `
+          <div class="input-group mb-2">
+            <span class="input-group-text">${i + 1}</span>
+            <input type="text" class="form-control sutun-baslik" value="${value}">
+          </div>
+        `;
+        container.innerHTML += html;
+      }
+    }
+    
+    // Satır başlıklarını güncelle
+    function updateRowHeaders(count, currentHeaders) {
+      count = parseInt(count) || 3;
+      const container = document.getElementById('satir-basliklar-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      // Mevcut değerleri koru
+      const currentValues = Array.isArray(currentHeaders) ? [...currentHeaders] : [];
+      
+      for (let i = 0; i < count; i++) {
+        const value = (i < currentValues.length) ? currentValues[i] : `Satır ${i+1}`;
+        const html = `
+          <div class="input-group mb-2">
+            <span class="input-group-text">${i + 1}</span>
+            <input type="text" class="form-control satir-baslik" value="${value}">
+          </div>
+        `;
+        container.innerHTML += html;
+      }
+    }
+      
+    // Yeni eklenen öğeyi sunucuda kaydet
+    function saveNewComponent(data) {
+      // Öğeyi sunucuya AJAX ile ekle
+      
+      fetch(`/yonetim/aktivite/${aktiviteId}/oge-ekle/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          tip: data.tip,
+          baslik: data.baslik,
+          aciklama: data.aciklama || '',
+          zorunlu: data.zorunlu || false,
+          aktif: data.aktif !== false,
+          satir_sayisi: data.satir_sayisi,
+          sutun_sayisi: data.sutun_sayisi,
+          sutun_basliklar: data.sutun_basliklar || [],
+          satir_basliklar: data.satir_basliklar || []
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          toastr.success(result.message || 'Öğe başarıyla eklendi');
+          
+          // Sunucudan dönen bilgileri kullanarak öğeyi DOM'a ekle
+          const ogeId = result.oge_id;
+          
+          // Yeni öğeyi DOM'a ekle
+          const yeniData = {
+            id: ogeId,
+            tip: result.oge_tip || data.tip,
+            baslik: result.oge_baslik || data.baslik,
+            aciklama: data.aciklama || '',
+            zorunlu: data.zorunlu || false,
+            aktif: data.aktif !== false,
+            satir_sayisi: data.satir_sayisi || 0,
+            sutun_sayisi: data.sutun_sayisi || 0,
+            sutun_basliklar: data.sutun_basliklar || [],
+            satir_basliklar: data.satir_basliklar || []
+          };
+          
+          // Global diziye ekle
+          components.push(yeniData);
+          
+          // DOM'a ekle
+          const componentHtml = createComponentHtml(yeniData);
+      const noComponentsMessage = document.getElementById('no-components-message');
+      
+      // No components message'ı gizle
+      if (noComponentsMessage) {
+        noComponentsMessage.style.display = 'none';
+      }
+      
+        componentsList.insertAdjacentHTML('beforeend', componentHtml);
+        
+          // Event listener'ları ekle
+          attachComponentEventListeners(ogeId);
+        
+          // Sortable'ı yeniden başlat
+        initSortable();
+        
+          // Eklenen componente scroll yap
+          const newComponent = document.getElementById(`component-${ogeId}`);
+        if (newComponent) {
+          newComponent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+          toastr.error(result.message || 'Öğe eklenirken bir hata oluştu');
+        }
+      })
+      .catch(error => {
+        toastr.error('Öğe eklenirken bir hata oluştu');
+        console.error('Ekleme hatası:', error);
+      });
+    }
+    
+    // Bileşene olay dinleyicileri ekle
+    function attachComponentEventListeners(id) {
+      // Düzenleme butonu
+      const editButton = document.querySelector(`.edit-component[data-component-id="${id}"]`);
+      if (editButton) {
+        editButton.addEventListener('click', function() {
+          // Sayfa yönlendirmesi yerine modal aç
+          const componentIndex = components.findIndex(c => c.id == id);
+          if (componentIndex !== -1) {
+            openEditModal(components[componentIndex]);
+          }
+        });
+      }
+      
+      // Silme butonu
+      const deleteButton = document.querySelector(`.delete-component[data-component-id="${id}"]`);
+      if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+          if (confirm('Bu öğeyi silmek istediğinize emin misiniz?')) {
+            deleteComponent(id);
+          }
+        });
+      }
+    }
+    
+    // Bileşen silme işlemi
+    function deleteComponent(id) {
+      // Silme için AJAX isteği gönder
+      fetch(`/yonetim/aktivite-oge/${id}/sil/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({})
+      })
+      .then(response => {
+        // İlk önce yanıtın başarılı olup olmadığını kontrol et
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.error('Sunucu hatası:', text);
+            throw new Error('Sunucu yanıt hatası: ' + response.status);
+          });
+        }
+        
+        // Content-Type'ı kontrol et
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return response.json();
+        } else {
+          // Eğer JSON değilse, metni alıp içeriği göster ve başarısız olarak işaretle
+          return response.text().then(text => {
+            console.log('Sunucu yanıtı (JSON değil):', text);
+            return { success: false, message: 'Sunucudan JSON olmayan yanıt alındı' };
+          });
+        }
+      })
+      .then(result => {
+        if (result.success) {
+          // Bileşeni global diziden kaldır
+          const index = components.findIndex(c => c.id == id);
+          if (index !== -1) {
+            components.splice(index, 1);
+          }
+          
+          // DOM'dan kaldır
+          const component = document.getElementById(`component-${id}`);
+          if (component) {
+              component.remove();
+          }
+          
+          // Hiç bileşen kalmadıysa mesajı göster
+          if (componentsList.querySelectorAll('.component-item').length === 0) {
+            componentsList.innerHTML = `
+              <div class="text-center text-muted py-4" id="no-components-message">
+                <i class="fas fa-info-circle mb-2"></i>
+                <p>Henüz öğe eklenmedi. Öğe eklemek için yukarıdaki butonları kullanın.</p>
+              </div>
+            `;
+          }
+          
+          toastr.success('Öğe başarıyla silindi');
+        } else {
+          toastr.error(result.message || 'Öğe silinirken bir hata oluştu');
+        }
+      })
+      .catch(error => {
+        console.error('Silme işlemi sırasında hata:', error);
+        toastr.error('Öğe silinirken bir hata oluştu: ' + error.message);
+      });
+    }
+
+    // Düzenleme modalını açma
+    function openEditModal(data) {
+      // Önemli: data objesini derin kopyasını al
+      const editData = JSON.parse(JSON.stringify(data));
+      
+      // Veri tipini lowercase yap
+      editData.tip = (editData.tip || '').toLowerCase();
+      
+      // HTML oluştur
+      let formHtml = '<input type="hidden" id="edit-component-id" value="' + editData.id + '">' +
+                    '<input type="hidden" id="edit-component-tip" value="' + editData.tip + '">' +
+                    '<div class="mb-3">' +
+                    '<label for="edit-component-baslik" class="form-label">Başlık</label>' +
+                    '<input type="text" class="form-control" id="edit-component-baslik" value="' + (editData.baslik || '') + '">' +
+                    '</div>' +
+                    '<div class="mb-3">' +
+                    '<label for="edit-component-aciklama" class="form-label">Açıklama</label>' +
+                    '<textarea class="form-control" id="edit-component-aciklama" rows="2">' + (editData.aciklama || '') + '</textarea>' +
+                    '</div>';
+      
+      // Tablo tipi için özel alanlar
+      if (editData.tip === 'tablo') {
+        // Satır ve sütun sayıları
+        const satir_sayisi = parseInt(editData.satir_sayisi) || 3;
+        const sutun_sayisi = parseInt(editData.sutun_sayisi) || 3;
+        
+        // Başlıklar için varsayılan değerler oluştur
+        const defaultSutunBasliklar = Array(sutun_sayisi).fill('').map((_, i) => `Sütun ${i+1}`);
+        const defaultSatirBasliklar = Array(satir_sayisi).fill('').map((_, i) => `Satır ${i+1}`);
+        
+        // Başlıkları kontrol et ve varsayılan değerleri kullan
+        const sutun_basliklar = Array.isArray(editData.sutun_basliklar) && editData.sutun_basliklar.length > 0 
+          ? editData.sutun_basliklar 
+          : defaultSutunBasliklar;
+        
+        const satir_basliklar = Array.isArray(editData.satir_basliklar) && editData.satir_basliklar.length > 0
+          ? editData.satir_basliklar
+          : defaultSatirBasliklar;
+        
+        formHtml += '<div class="row">' +
+                   '<div class="col-md-6">' +
+                   '<div class="mb-3">' +
+                   '<label for="edit-component-satir" class="form-label">Satır Sayısı</label>' +
+                   '<input type="number" class="form-control" id="edit-component-satir" min="1" max="20" value="' + satir_sayisi + '">' +
+                   '</div>' +
+                   '</div>' +
+                   '<div class="col-md-6">' +
+                   '<div class="mb-3">' +
+                   '<label for="edit-component-sutun" class="form-label">Sütun Sayısı</label>' +
+                   '<input type="number" class="form-control" id="edit-component-sutun" min="1" max="10" value="' + sutun_sayisi + '">' +
+                   '</div>' +
+                   '</div>' +
+                   '</div>';
+                   
+        formHtml += '<ul class="nav nav-tabs" id="tableTabs" role="tablist">' +
+                   '<li class="nav-item" role="presentation">' +
+                   '<button class="nav-link active" id="sutun-tab" data-bs-toggle="tab" data-bs-target="#sutun-pane" type="button" role="tab" aria-controls="sutun-pane" aria-selected="true">Sütun Başlıkları</button>' +
+                   '</li>' +
+                   '<li class="nav-item" role="presentation">' +
+                   '<button class="nav-link" id="satir-tab" data-bs-toggle="tab" data-bs-target="#satir-pane" type="button" role="tab" aria-controls="satir-pane" aria-selected="false">Satır Başlıkları</button>' +
+                   '</li>' +
+                   '</ul>';
+                   
+        formHtml += '<div class="tab-content" id="tableTabsContent" style="padding: 15px 0;">' +
+                   '<div class="tab-pane fade show active" id="sutun-pane" role="tabpanel" aria-labelledby="sutun-tab">' +
+                   '<div class="mb-3">' +
+                   '<label class="form-label">Sütun Başlıkları</label>' +
+                   '<div id="sutun-basliklar-container">';
+                   
+        // Sütun başlıkları için input alanları
+        for (let i = 0; i < sutun_sayisi; i++) {
+          const headerValue = (i < sutun_basliklar.length) ? sutun_basliklar[i] : defaultSutunBasliklar[i];
+          formHtml += '<div class="input-group mb-2">' +
+                     '<span class="input-group-text">' + (i + 1) + '</span>' +
+                     '<input type="text" class="form-control sutun-baslik" value="' + headerValue + '">' +
+                     '</div>';
+        }
+        
+        formHtml += '</div>' +
+                   '</div>' +
+                   '</div>';
+                   
+        formHtml += '<div class="tab-pane fade" id="satir-pane" role="tabpanel" aria-labelledby="satir-tab">' +
+                   '<div class="mb-3">' +
+                   '<label class="form-label">Satır Başlıkları</label>' +
+                   '<div id="satir-basliklar-container">';
+                   
+        // Satır başlıkları için input alanları
+        for (let i = 0; i < satir_sayisi; i++) {
+          const headerValue = (i < satir_basliklar.length) ? satir_basliklar[i] : defaultSatirBasliklar[i];
+          formHtml += '<div class="input-group mb-2">' +
+                     '<span class="input-group-text">' + (i + 1) + '</span>' +
+                     '<input type="text" class="form-control satir-baslik" value="' + headerValue + '">' +
+                     '</div>';
+        }
+        
+        formHtml += '</div>' +
+                   '</div>' +
+                   '</div>' +
+                   '</div>';
+      }
+      
+      // Zorunluluk kontrolü (checkbox, metin, tablo için)
+      if (editData.tip === 'checkbox' || editData.tip === 'metin' || editData.tip === 'tablo') {
+        formHtml += '<div class="form-check mb-3">' +
+                   '<input class="form-check-input" type="checkbox" id="edit-component-zorunlu" ' + (editData.zorunlu ? "checked" : "") + '>' +
+                   '<label class="form-check-label" for="edit-component-zorunlu">' +
+                   'Bu öğe zorunlu (doldurulması/işaretlenmesi gerekli)' +
+                   '</label>' +
+                   '</div>';
+      }
+      
+      // Tüm tiplerde aktiflik durumu
+      formHtml += '<div class="form-check mb-3">' +
+                 '<input class="form-check-input" type="checkbox" id="edit-component-aktif" ' + (editData.aktif !== false ? "checked" : "") + '>' +
+                 '<label class="form-check-label" for="edit-component-aktif">' +
+                 'Aktif (görünür)' +
+                 '</label>' +
+                 '</div>';
+      
+      document.getElementById('edit-component-container').innerHTML = formHtml;
+      
+      // Tablo tipi için event listener'lar ekle
+      if (editData.tip === 'tablo') {
+        document.getElementById('edit-component-sutun').addEventListener('change', function() {
+          updateColumnHeaders(this.value, editData.sutun_basliklar || []);
+        });
+        
+        document.getElementById('edit-component-satir').addEventListener('change', function() {
+          updateRowHeaders(this.value, editData.satir_basliklar || []);
+        });
+      }
+      
+      // Modal'ı aç
+      const modal = new bootstrap.Modal(document.getElementById('editComponentModal'));
+      modal.show();
+      
+      // Kaydet butonunu yapılandır
+      document.getElementById('save-component-btn').onclick = function() {
+        // Modal içindeki formun geçerliliğini kontrol et
+        const baslikInput = document.getElementById('edit-component-baslik');
+        if (!baslikInput.value.trim()) {
+          toastr.error('Lütfen başlık alanını doldurun');
+          baslikInput.focus();
+          return;
+        }
+        
+        updateComponentData(editData);
+      };
+    }
+    
+    // Bileşen verilerini güncelle (saveComponentChanges yerine kullanılacak)
+    function updateComponentData(originalData) {
+      const id = document.getElementById('edit-component-id').value;
+      const tip = document.getElementById('edit-component-tip').value;
+      const index = components.findIndex(c => c.id == id);
+      
+      if (index === -1) {
+        toastr.error('Düzenlenecek öğe bulunamadı!');
+        // Modal'ı doğru şekilde kapatmayı dene
+        closeModal();
+        return;
+      }
+      
+      // Temel verileri al
+      const updatedData = {
+        ...originalData,
+        id: id,
+        tip: tip,
+        baslik: document.getElementById('edit-component-baslik').value,
+        aciklama: document.getElementById('edit-component-aciklama').value || '',
+        aktif: document.getElementById('edit-component-aktif').checked
+      };
+      
+      // Tip-spesifik alanları güncelle
+      if (tip === 'checkbox' || tip === 'metin' || tip === 'tablo') {
+        const zorunluElement = document.getElementById('edit-component-zorunlu');
+        if (zorunluElement) {
+          updatedData.zorunlu = zorunluElement.checked;
+        }
+      }
+      
+      // Tablo verileri
+      if (tip === 'tablo') {
+        updatedData.satir_sayisi = parseInt(document.getElementById('edit-component-satir').value) || 3;
+        updatedData.sutun_sayisi = parseInt(document.getElementById('edit-component-sutun').value) || 3;
+        updatedData.sutun_basliklar = Array.from(document.querySelectorAll('.sutun-baslik')).map(input => input.value || '');
+        updatedData.satir_basliklar = Array.from(document.querySelectorAll('.satir-baslik')).map(input => input.value || '');
+        
+        // Konsola yazdırarak başlık değerlerini kontrol et
+        console.log('Güncellenecek tablo verileri:', {
+          satir_sayisi: updatedData.satir_sayisi,
+          sutun_sayisi: updatedData.sutun_sayisi,
+          sutun_basliklar: updatedData.sutun_basliklar,
+          satir_basliklar: updatedData.satir_basliklar
+        });
+      }
+      
+      // Global dizideki veriyi güncelle
+      components[index] = updatedData;
+      
+      // Modal'ı kapat - önce bootstrap modal'ı kapatalım
+      closeModal();
+      
+      // Güncelleme bilgisi göster
+      toastr.info('Değişiklikler kaydediliyor...');
+      
+      // DOM'u güncelle (sunucu yanıtını beklemeden)
+      const component = document.getElementById(`component-${id}`);
+      if (component) {
+        component.outerHTML = createComponentHtml(updatedData);
+        attachComponentEventListeners();
+      }
+      
+      // Form verilerini oluştur
+      const formData = new FormData();
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      formData.append('baslik', updatedData.baslik);
+      formData.append('aciklama', updatedData.aciklama);
+      formData.append('tip', updatedData.tip);
+      
+      // Zorunluluk ve aktiflik durumu ekle
+      if (updatedData.zorunlu) formData.append('zorunlu', 'on');
+      if (updatedData.aktif) formData.append('aktif', 'on');
+      
+      // Tablo verilerini ekle
+      if (updatedData.tip === 'tablo') {
+        formData.append('satir_sayisi', updatedData.satir_sayisi);
+        formData.append('sutun_sayisi', updatedData.sutun_sayisi);
+        // JSON olarak tırnak içinde gönder, kontrol için konsola yazdır
+        const sutunBasliklarJson = JSON.stringify(updatedData.sutun_basliklar);
+        const satirBasliklarJson = JSON.stringify(updatedData.satir_basliklar);
+        console.log('Gönderilen JSON:', {sutunBasliklarJson, satirBasliklarJson});
+        
+        formData.append('sutun_basliklar_json', sutunBasliklarJson);
+        formData.append('satir_basliklar_json', satirBasliklarJson);
+      }
+      
+      // AJAX isteği gönder
+      fetch(`/yonetim/aktivite-oge/${id}/duzenle/`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken,
+        },
+        body: formData
+      })
+      .then(response => {
+        // İlk önce yanıtın başarılı olup olmadığını kontrol et
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.error('Sunucu hatası:', text);
+            throw new Error('Sunucu yanıt hatası: ' + response.status);
+          });
+        }
+        
+        // Content-Type'ı kontrol et
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+        return response.json();
+        } else {
+          // Eğer JSON değilse, metni alıp içeriği göster ve başarısız olarak işaretle
+          return response.text().then(text => {
+            console.log('Sunucu yanıtı (JSON değil):', text);
+            return { success: false, message: 'Sunucudan JSON olmayan yanıt alındı' };
+          });
+        }
+      })
+      .then(result => {
+        if (result.success) {
+          toastr.success('Öğe başarıyla güncellendi');
+          
+          // Scroll sorunlarını engellemek için sayfayı yenileme (aksi takdirde scroll çalışmayabilir)
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          toastr.error(result.message || 'Öğe güncellenirken bir hata oluştu');
+          console.error('Güncelleme hatası:', result);
+        }
+      })
+      .catch(error => {
+        toastr.error('Öğe güncellenirken bir hata oluştu: ' + error.message);
+        console.error('Güncelleme hatası:', error);
+        
+        // Hata durumunda da sayfa UI'ı düzeltelim
+        setTimeout(() => {
+          reattachAllEventListeners();
+        }, 500);
+      });
+    }
+    
+    // Modal'ı güvenli bir şekilde kapatmak için yeni fonksiyon
+    function closeModal() {
+      try {
+        // Bootstrap modal'ı kapat
+        const modalEl = document.getElementById('editComponentModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+        
+        // Modal kapatıldıktan sonra, backdrop'u da temizle
+        setTimeout(() => {
+          // Backdrop'u bul ve kaldır
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+          
+          // Body'den tüm modal ile ilgili class ve stilleri kaldır
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+          
+          // Scroll'u etkinleştirmek için ek önlemler
+          document.documentElement.style.removeProperty('overflow');
+          document.documentElement.style.removeProperty('padding-right');
+          
+          // Event listener'ları yeniden bağla
+          reattachAllEventListeners();
+        }, 500); // Timeout süresini 500ms'ye çıkardım
+      } catch (e) {
+        console.error('Modal kapatma hatası:', e);
+        
+        // Hata durumunda manuel olarak temizlik yap
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('padding-right');
+        
+        // Event listener'ları yeniden bağla
+        reattachAllEventListeners();
+      }
+    }
+    
+    // Event listener'ları yeniden bağlama fonksiyonu
+    function reattachAllEventListeners() {
+      // Önce mevcut listener'ları temizle
+      document.querySelectorAll('.edit-component, .delete-component').forEach(button => {
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+      });
+      
+      // Sonra tüm listener'ları yeniden ekle
+      attachAllComponentEventListeners();
+      setupPageListeners();
+      
+      // Sortable'ı yeniden başlat
+      initSortable();
+    }
+
+    // Öğe HTML'i oluşturma
+    function createComponentHtml(data) {
+      const typeLabels = {
+        'baslik': 'Başlık / Bölüm',
+        'aciklama': 'Açıklama Metni',
+        'checkbox': 'Onay Kutusu',
+        'metin': 'Metin Alanı',
+        'tablo': 'Tablo'
+      };
+      
+      const typeIcons = {
+        'baslik': 'heading',
+        'aciklama': 'align-left',
+        'checkbox': 'check-square',
+        'metin': 'font',
+        'tablo': 'table'
+      };
+      
+      // Component HTML içeriği - data-component-data özniteliğini kaldırıyoruz
+      let html = '<div class="component-item" id="component-' + data.id + '" data-oge-id="' + data.id + '">' +
+               '<div class="d-flex justify-content-between align-items-center">' +
+               '<div>' +
+               '<span class="drag-handle me-2"><i class="fas fa-grip-vertical"></i></span>' +
+               '<span class="badge bg-secondary me-2">' + typeLabels[data.tip] + '</span>' +
+               '<i class="fas fa-' + typeIcons[data.tip] + ' me-1"></i>' +
+               '<strong>' + data.baslik + '</strong>' +
+               (data.zorunlu ? '<span class="text-danger ms-1">*</span>' : '') +
+               '</div>' +
+               '<div class="component-actions">' +
+               '<button type="button" class="btn btn-sm btn-outline-primary edit-component" data-component-id="' + data.id + '">' +
+               '<i class="fas fa-edit"></i>' +
+               '</button>' +
+               '<button type="button" class="btn btn-sm btn-outline-danger delete-component" data-component-id="' + data.id + '">' +
+               '<i class="fas fa-trash"></i>' +
+               '</button>' +
+               '</div>' +
+               '</div>';
+      
+      // Açıklama varsa ekle
+      if (data.aciklama) {
+        html += '<div class="mt-1 small text-muted">' + data.aciklama + '</div>';
+      }
+      
+      // Tablo tipi için boyut bilgileri
+      if (data.tip === 'tablo') {
+        html += '<div class="mt-1 small text-muted">' + data.satir_sayisi + ' satır x ' + data.sutun_sayisi + ' sütun</div>';
+      }
+      
+      // Component kapatma
+      html += '</div>';
+      
+      return html;
+    }
+    
+    // Bileşen sıralamasını güncelle
+    function updateComponentOrder() {
+      // DOM'daki sıralamaya göre global diziyi güncelle
+      const componentItems = document.querySelectorAll('.component-item');
+      
+      // Yeni sıralı dizi oluştur
+      const newOrder = Array.from(componentItems).map(item => {
+        const id = item.id.replace('component-', '');
+        return components.find(c => c.id == id);
+      }).filter(Boolean);
+      
+      // Global diziyi güncelle
+      components.length = 0;
+      components.push(...newOrder);
+      
+      // Sıra numaralarını güncelle
+      components.forEach((comp, index) => {
+        comp.sira = index;
+      });
+      
+      // Sunucuya yeni sıralama bilgisini gönder
+      const ogeIds = newOrder.map(comp => comp.id);
+      
+      fetch(`/yonetim/aktivite/${aktiviteId}/oge-siralama/`, {
+        method: 'POST',
+            headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ oge_ids: ogeIds })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          console.log('Sıralama başarıyla güncellendi');
+              } else {
+          console.error('Sıralama güncellenirken bir hata oluştu:', result.message);
+        }
+      })
+      .catch(error => {
+        console.error('Sıralama güncellenirken bir hata oluştu:', error);
+      });
+    }
+    
+    // Öğe tipi için varsayılan başlık
+    function getDefaultTitle(type) {
+      const titles = {
+        'baslik': 'Yeni Bölüm Başlığı',
+        'aciklama': 'Açıklama Metni',
+        'checkbox': 'Onay Kutusu Öğesi',
+        'metin': 'Metin Alanı',
+        'tablo': 'Tablo Öğesi'
+      };
+      return titles[type] || 'Yeni Öğe';
+    }
+  });
+</script>
+{% endblock %} 

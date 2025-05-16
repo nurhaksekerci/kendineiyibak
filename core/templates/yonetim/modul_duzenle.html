@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ modul.baslik }} Düzenle - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Modül Düzenle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">Hoş geldiniz, {{ request.user.first_name|default:request.user.username }}! Eğitim modülünü düzenleyebilirsiniz.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modül Düzenleme Formu -->
+  <section class="yonetim-form section-space">
+    <div class="container">
+      <!-- Mesajlar -->
+      {% if messages %}
+        <div class="row mb-4">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0">Modül Bilgileri</h4>
+              <a href="{% url 'yonetim_paneli' %}" class="btn btn-secondary btn-sm">
+                <i class="fa fa-arrow-left"></i> Geri Dön
+              </a>
+            </div>
+            <div class="card-body">
+              <form method="post" action="{% url 'modul_duzenle' modul.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                  <label for="baslik" class="form-label">Modül Başlığı <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="baslik" name="baslik" value="{{ modul.baslik }}" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="aciklama" class="form-label">Açıklama</label>
+                  <textarea class="form-control" id="aciklama" name="aciklama" rows="3">{{ modul.aciklama }}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="kategori" class="form-label">Kategori</label>
+                  <select class="form-select" id="kategori" name="kategori" required>
+                    <option value="">Kategori Seçin</option>
+                    {% for kategori in kategoriler %}
+                      <option value="{{ kategori.id }}" {% if modul.kategori.id == kategori.id %}selected{% endif %}>{{ kategori.baslik }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="egitmen" class="form-label">Eğitmen</label>
+                  <select class="form-select" id="egitmen" name="egitmen">
+                    <option value="">Eğitmen Seçin (Opsiyonel)</option>
+                    {% for egitmen in egitmenler %}
+                      <option value="{{ egitmen.id }}" {% if modul.egitmen and modul.egitmen.id == egitmen.id %}selected{% endif %}>{{ egitmen.unvan }} {{ egitmen.ad_soyad }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">Eğitmen seçilmezse modülde eğitmen bilgisi gösterilmeyecektir.</div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="mb-3">
+                      <label for="hafta" class="form-label">Hafta</label>
+                      <input type="number" class="form-control" id="hafta" name="hafta" min="1" value="{{ modul.hafta }}" required>
+                      <div class="form-text">Modülün hangi haftada erişilebilir olacağını belirtin. Kullanıcılar kayıt tarihlerinden itibaren (hafta-1) x 7 gün sonra bu modüle erişebilecektir.</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {% if yeni_sistem_aciklamasi %}
+                <div class="alert alert-info mb-3">
+                  <i class="fas fa-info-circle me-2"></i> {{ yeni_sistem_aciklamasi }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                  <label for="resim" class="form-label">Kapak Resmi</label>
+                  {% if modul.resim %}
+                    <div class="mb-2">
+                      <img src="{{ modul.resim.url }}" alt="{{ modul.baslik }}" class="img-thumbnail" style="max-width: 200px;">
+                      <p class="text-muted">Mevcut resim</p>
+                    </div>
+                  {% endif %}
+                  <input type="file" class="form-control" id="resim" name="resim" accept="image/*">
+                  <div class="form-text">Yeni bir resim yüklerseniz mevcut resim değiştirilecektir. Önerilen boyut: 800x600 piksel.</div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="aktif" name="aktif" {% if modul.aktif %}checked{% endif %}>
+                  <label class="form-check-label" for="aktif">Aktif</label>
+                  <div class="form-text">Modül aktif olarak işaretlenirse kullanıcılar tarafından görüntülenebilir.</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save"></i> Değişiklikleri Kaydet
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+  
+  .yonetim-form {
+    padding: 80px 0;
+  }
+  
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+  }
+  
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #6610f2;
+    box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25);
+  }
+</style>
+{% endblock %} 

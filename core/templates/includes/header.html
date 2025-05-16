@@ -1,0 +1,189 @@
+{% load static %}
+<header class="main-header sticky-header sticky-header--normal">
+  <div class="container-fluid">
+    <div class="main-header__inner">
+      <div class="main-header__logo logo-retina">
+        <a href="{% url 'index' %}"><img src="{% static 'assets/images/kendine_iyi_bak_logo.png' %}" alt="Kendine İyi Bak" width="100" class="logo-dark" /></a>
+      </div>
+      <!-- /.main-header__logo -->
+      <div class="main-header__right">
+        <nav class="main-header__nav main-menu">
+          <ul class="main-menu__list">
+            <li>
+              <a href="{% url 'index' %}">Ana Sayfa</a>
+            </li>
+            <li>
+              <a href="{% url 'index' %}#about">Hakkımızda</a>
+            </li>
+            <li>
+              {% if user.is_authenticated %}
+                <a href="{% url 'courses' %}">Eğitimler</a>
+              {% else %}
+                <a href="{% url 'access_denied' %}">Eğitimler</a>
+              {% endif %}
+            </li>
+            <li>
+              <a href="{% url 'forum:forum_main' %}">Forum</a>
+            </li>
+
+            {% if user.is_staff or user.is_superuser %}
+              <li>
+                <a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+        <!-- /.main-header__nav -->
+        <div class="mobile-nav__btn mobile-nav__toggler">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <!-- /.mobile-nav__toggler -->
+
+        {% if user.is_authenticated %}
+          <div class="user-menu">
+            {% if request.user.okunmayan_mesaj_sayisi > 0 %}
+              <div class="notification-dot"></div>
+            {% endif %}
+            <a href="{% url 'profil' %}" class="user-menu__link">
+              <i class="fa fa-user-circle"></i>
+              <span>{{ user.fullname|default:user.username }}</span>
+            </a>
+            <div class="user-menu__dropdown">
+              <a href="{% url 'profil' %}">Profilim</a>
+              <a href="{% url 'mesajlar' %}">
+                Mesajlar{% if request.user.okunmayan_mesaj_sayisi > 0 %}
+                  <span class="badge bg-danger rounded-pill">{{ request.user.okunmayan_mesaj_sayisi }}</span>
+                {% endif %}
+              </a>
+              <a href="{% url 'gorusme_listesi' %}">Görüntülü Görüşmeler</a>
+              {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a>
+              {% endif %}
+              <a href="{% url 'logout' %}">Çıkış Yap</a>
+            </div>
+          </div>
+        {% else %}
+          <div class="auth-buttons" style="display: flex; gap: 10px;">
+            <a href="{% url 'giris' %}" class="main-header__btn eduhive-btn eduhive-btn--border">
+              <span>Giriş Yap</span>
+              <span class="eduhive-btn__icon"><span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span></span>
+            </a>
+            <a href="{% url 'kayit' %}" class="main-header__btn eduhive-btn">
+              <span>Kayıt Ol</span>
+              <span class="eduhive-btn__icon"><span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span></span>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+      <!-- /.main-header__right -->
+    </div>
+    <!-- /.main-header__inner -->
+  </div>
+  <!-- /.container-fluid -->
+</header>
+
+<style>
+  .user-menu {
+    position: relative;
+    margin-left: 15px;
+  }
+  
+  .user-menu__link {
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 30px;
+    background-color: #f0f0f0;
+    transition: all 0.3s ease;
+  }
+  
+  .user-menu__link:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .user-menu__link i {
+    font-size: 18px;
+    margin-right: 8px;
+    color: #6610f2;
+  }
+  
+  .user-menu__dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 180px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    margin-top: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+  
+  .user-menu:hover .user-menu__dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .user-menu__dropdown a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .user-menu__dropdown a:hover {
+    background-color: #f5f5f5;
+    color: #6610f2;
+  }
+  
+  /* Auth Buttons */
+  .auth-buttons {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .auth-buttons .main-header__btn {
+    margin-right: 0;
+  }
+  
+  .auth-buttons .eduhive-btn--border {
+    margin-right: 5px;
+  }
+  
+  /* Konum bilgisi için stil */
+  .location-info {
+    display: none;
+  }
+  
+  .notification-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3366;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    z-index: 101;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    margin-left: 5px;
+  }
+</style>
+
+<!-- Dark Mode Script kaldırıldı -->

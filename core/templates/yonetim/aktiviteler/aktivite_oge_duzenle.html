@@ -1,0 +1,574 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aktivite Öğesi Düzenle: {{ oge.aktivite.baslik }}{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="page-wrapper">
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Aktivite Öğesi Düzenle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">{{ oge.aktivite.baslik }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_listesi' %}">Aktiviteler</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_duzenle' oge.aktivite.id %}">{{ oge.aktivite.baslik }}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Öğe Düzenle</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      {% if messages %}
+      <div class="row mb-4">
+        <div class="col-12">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-8 mx-auto">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <form method="post" id="ogeForm" autocomplete="off">
+                {% csrf_token %}
+                
+                <!-- Öğe tipi gizli input olarak ekleniyor -->
+                <input type="hidden" id="tip" name="tip" value="{{ oge.tip }}">
+                
+                <div class="mb-3">
+                  <label class="form-label">Öğe Tipi</label>
+                  <input type="text" class="form-control" value="{{ oge.get_tip_display }}" readonly disabled>
+                </div>
+
+                <div class="mb-3">
+                  <label for="baslik" class="form-label">Öğe Başlığı</label>
+                  <input type="text" class="form-control" id="baslik" name="baslik" value="{{ oge.baslik }}">
+                </div>
+
+                <div class="mb-3">
+                  <label for="aciklama" class="form-label">Açıklama</label>
+                  <textarea class="form-control" id="aciklama" name="aciklama" rows="2">{{ oge.aciklama }}</textarea>
+                </div>
+
+                <div id="tabloAyarlari" class="card bg-light mb-3" style="display: none;">
+                  <div class="card-header">Tablo Ayarları</div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="satir_sayisi" class="form-label">Satır Sayısı</label>
+                          <input type="number" class="form-control" id="satir_sayisi" name="satir_sayisi" 
+                                 value="{{ oge.tablo_satir_sayisi|default:3 }}" min="1" max="50">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="sutun_sayisi" class="form-label">Sütun Sayısı</label>
+                          <input type="number" class="form-control" id="sutun_sayisi" name="sutun_sayisi" 
+                                 value="{{ oge.tablo_sutun_sayisi|default:3 }}" min="1" max="15">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="sutun_basliklar" class="form-label">Sütun Başlıkları (virgülle ayırın)</label>
+                      <input type="text" class="form-control" id="sutun_basliklar" name="sutun_basliklar" 
+                             value="{{ sutun_basliklar|join:', ' }}">
+                      <!-- DEBUG bilgisi -->
+                      <small class="text-muted">Mevcut sütun başlıkları: {{ sutun_basliklar }}</small>
+                    </div>
+                    <div class="mb-3">
+                      <label for="satir_basliklar" class="form-label">Satır Başlıkları (virgülle ayırın)</label>
+                      <input type="text" class="form-control" id="satir_basliklar" name="satir_basliklar" 
+                             value="{{ satir_basliklar|join:', ' }}">
+                      <!-- DEBUG bilgisi -->
+                      <small class="text-muted">Mevcut satır başlıkları: {{ satir_basliklar }}</small>
+                    </div>
+                    
+                    <!-- Tablo Başlıkları Sekmeler -->
+                    <ul class="nav nav-tabs mt-4" id="tableTabs" role="tablist">
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="sutun-tab" data-bs-toggle="tab" data-bs-target="#sutun-pane" type="button" role="tab" aria-controls="sutun-pane" aria-selected="true">Sütun Başlıkları</button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="satir-tab" data-bs-toggle="tab" data-bs-target="#satir-pane" type="button" role="tab" aria-controls="satir-pane" aria-selected="false">Satır Başlıkları</button>
+                      </li>
+                    </ul>
+                    
+                    <!-- Tablo Önizleme Alanı -->
+                    <div class="tab-content" id="tableTabsContent" style="padding: 15px 0;">
+                      <div class="tab-pane fade show active" id="sutun-pane" role="tabpanel" aria-labelledby="sutun-tab">
+                        <div id="sutun-container" class="mb-3">
+                          <!-- Sütun başlıkları buraya JavaScript ile eklenecek -->
+                        </div>
+                      </div>
+                      <div class="tab-pane fade" id="satir-pane" role="tabpanel" aria-labelledby="satir-tab">
+                        <div id="satir-container" class="mb-3">
+                          <!-- Satır başlıkları buraya JavaScript ile eklenecek -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="sira" class="form-label">Sıra Numarası</label>
+                  <input type="number" class="form-control" id="sira" name="sira" value="{{ oge.sira }}" min="0">
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="zorunlu" name="zorunlu" {% if oge.zorunlu %}checked{% endif %}>
+                  <label class="form-check-label" for="zorunlu">Bu öğe zorunlu olsun</label>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="aktif" name="aktif" {% if oge.aktif %}checked{% endif %}>
+                  <label class="form-check-label" for="aktif">Aktif</label>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                  <a href="{% url 'yonetim_aktivite_duzenle' oge.aktivite.id %}" class="btn btn-secondary">Geri Dön</a>
+                  <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 60px 0;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    color: white;
+    margin-bottom: 30px;
+  }
+  
+  /* Modal düzenlemeleri */
+  .modal {
+    inert: auto;
+  }
+  
+  .modal-dialog {
+    display: block;
+  }
+  
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    float: right;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Bu dosyayı Django şablonu olarak kabul edip tamamen yeniden yazalım
+document.addEventListener('DOMContentLoaded', function() {
+  // Tablo yönetimi
+  const tipSelect = document.getElementById('tip');
+  
+  if (tipSelect && tipSelect.value === 'tablo') {
+    const tabloPanel = document.getElementById('tabloAyarlari');
+    if (tabloPanel) {
+      // Tablo panelini göster
+      tabloPanel.style.display = 'block';
+      
+      // Tablo değerlerini ayarla
+      initializeValues();
+      
+      // Sekme olaylarını yakala
+      setupTabEvents();
+      
+      // Form olaylarını ayarla
+      setupFormEvents();
+    }
+  }
+  
+  // ARIA erişilebilirlik sorunları için modal düzeltmeleri
+  setupModalAccessibility();
+});
+
+// ARIA erişilebilirlik düzeltmeleri
+function setupModalAccessibility() {
+  // Modal kapatma butonlarından aria-hidden özelliğini kaldır
+  document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(function(button) {
+    button.removeAttribute('aria-hidden');
+  });
+  
+  // Modal açıldığında backdrop'tan aria-hidden'ı kaldır
+  const modalElements = document.querySelectorAll('.modal');
+  modalElements.forEach(function(modal) {
+    modal.addEventListener('shown.bs.modal', function() {
+      const backdrop = document.querySelector('.modal-backdrop');
+      if (backdrop) {
+        backdrop.removeAttribute('aria-hidden');
+      }
+    });
+    
+    // Bootstrap modalını başlat (eğer daha önce başlatılmamışsa)
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      new bootstrap.Modal(modal);
+    }
+  });
+}
+
+// Tablo değerlerini başlat
+function initializeValues() {
+  // Varsayılan değerleri ayarla
+  const rowsInput = document.getElementById('satir_sayisi');
+  const colsInput = document.getElementById('sutun_sayisi');
+  
+  // Değerleri doğrula
+  let rows = parseInt(rowsInput.value) || 3;
+  let cols = parseInt(colsInput.value) || 3;
+  
+  // Minimum 1 değeri sağla
+  rows = Math.max(1, rows);
+  cols = Math.max(1, cols);
+  
+  // Input değerlerini güncelle
+  rowsInput.value = rows;
+  colsInput.value = cols;
+  
+  // Başlıkları kontrol et ve gerekirse güncelle
+  setupHeaders(rows, cols);
+  
+  // Başlık düzenleme alanlarını oluştur
+  createHeaderEditors();
+  
+  // Tablo önizlemesini oluştur
+  createTablePreview();
+}
+
+// Başlıkları ayarla
+function setupHeaders(rows, cols) {
+  const rowHeadersInput = document.getElementById('satir_basliklar');
+  const colHeadersInput = document.getElementById('sutun_basliklar');
+  
+  // Başlıkları al ve ayır
+  let rowHeaders = rowHeadersInput.value.split(',').map(function(item) {
+    return item.trim();
+  }).filter(function(item) {
+    return item.length > 0;
+  });
+  
+  let colHeaders = colHeadersInput.value.split(',').map(function(item) {
+    return item.trim();
+  }).filter(function(item) {
+    return item.length > 0;
+  });
+  
+  // Eksik başlıkları tamamla
+  while (rowHeaders.length < rows) {
+    rowHeaders.push('Satır ' + (rowHeaders.length + 1));
+  }
+  
+  while (colHeaders.length < cols) {
+    colHeaders.push('Sütun ' + (colHeaders.length + 1));
+  }
+  
+  // Fazla başlıkları kırp
+  rowHeaders = rowHeaders.slice(0, rows);
+  colHeaders = colHeaders.slice(0, cols);
+  
+  // Başlıkları inputlara geri yaz
+  rowHeadersInput.value = rowHeaders.join(', ');
+  colHeadersInput.value = colHeaders.join(', ');
+}
+
+// Başlık düzenleme alanları oluştur
+function createHeaderEditors() {
+  createColumnHeaderEditor();
+  createRowHeaderEditor();
+}
+
+// Sütun başlıkları düzenleyicisi
+function createColumnHeaderEditor() {
+  const container = document.getElementById('sutun-container');
+  if (!container) return;
+  
+  const colCount = parseInt(document.getElementById('sutun_sayisi').value) || 3;
+  const colHeaders = document.getElementById('sutun_basliklar').value.split(',').map(function(item) {
+    return item.trim();
+  });
+  
+  let html = '<h6>Sütun Başlıkları</h6>';
+  
+  for (let i = 0; i < colCount; i++) {
+    const headerValue = i < colHeaders.length && colHeaders[i] ? colHeaders[i] : 'Sütun ' + (i + 1);
+    html += '<div class="input-group mb-2">';
+    html += '<span class="input-group-text">' + (i + 1) + '</span>';
+    html += '<input type="text" class="form-control column-header" data-index="' + i + '" value="' + headerValue + '">';
+    html += '</div>';
+  }
+  
+  container.innerHTML = html;
+  
+  // Input değişikliklerini dinle
+  document.querySelectorAll('.column-header').forEach(function(input) {
+    input.addEventListener('input', function() {
+      updateHeadersFromInputs();
+      createTablePreview();
+    });
+  });
+}
+
+// Satır başlıkları düzenleyicisi
+function createRowHeaderEditor() {
+  const container = document.getElementById('satir-container');
+  if (!container) return;
+  
+  const rowCount = parseInt(document.getElementById('satir_sayisi').value) || 3;
+  const rowHeaders = document.getElementById('satir_basliklar').value.split(',').map(function(item) {
+    return item.trim();
+  });
+  
+  let html = '<h6>Satır Başlıkları</h6>';
+  
+  for (let i = 0; i < rowCount; i++) {
+    const headerValue = i < rowHeaders.length && rowHeaders[i] ? rowHeaders[i] : 'Satır ' + (i + 1);
+    html += '<div class="input-group mb-2">';
+    html += '<span class="input-group-text">' + (i + 1) + '</span>';
+    html += '<input type="text" class="form-control row-header" data-index="' + i + '" value="' + headerValue + '">';
+    html += '</div>';
+  }
+  
+  container.innerHTML = html;
+  
+  // Input değişikliklerini dinle
+  document.querySelectorAll('.row-header').forEach(function(input) {
+    input.addEventListener('input', function() {
+      updateHeadersFromInputs();
+      createTablePreview();
+    });
+  });
+}
+
+// Input alanlarından başlıkları güncelle
+function updateHeadersFromInputs() {
+  // Sütun başlıklarını güncelle
+  const colInputs = document.querySelectorAll('.column-header');
+  if (colInputs.length > 0) {
+    const values = Array.from(colInputs).map(function(input) {
+      const value = input.value.trim();
+      return value || 'Sütun ' + (parseInt(input.dataset.index) + 1);
+    });
+    document.getElementById('sutun_basliklar').value = values.join(', ');
+  }
+  
+  // Satır başlıklarını güncelle
+  const rowInputs = document.querySelectorAll('.row-header');
+  if (rowInputs.length > 0) {
+    const values = Array.from(rowInputs).map(function(input) {
+      const value = input.value.trim();
+      return value || 'Satır ' + (parseInt(input.dataset.index) + 1);
+    });
+    document.getElementById('satir_basliklar').value = values.join(', ');
+  }
+}
+
+// Tablo önizlemesi oluştur
+function createTablePreview() {
+  const rowCount = parseInt(document.getElementById('satir_sayisi').value) || 3;
+  const colCount = parseInt(document.getElementById('sutun_sayisi').value) || 3;
+  
+  // Başlıkları al
+  const rowHeaders = document.getElementById('satir_basliklar').value.split(',').map(function(item) {
+    return item.trim();
+  });
+  
+  const colHeaders = document.getElementById('sutun_basliklar').value.split(',').map(function(item) {
+    return item.trim();
+  });
+  
+  // HTML önizlemesi oluştur
+  let html = '<div class="mt-4"><h6>Tablo Önizleme</h6>';
+  html += '<div class="table-responsive">';
+  html += '<table class="table table-sm table-bordered">';
+  
+  // Tablo başlığı
+  html += '<thead><tr>';
+  html += '<th scope="col" style="background-color: #f8f9fa;"></th>'; // Sol üst köşe
+  
+  // Sütun başlıkları
+  for (let i = 0; i < colCount; i++) {
+    const headerText = i < colHeaders.length && colHeaders[i] ? colHeaders[i] : 'Sütun ' + (i + 1);
+    html += '<th scope="col">' + headerText + '</th>';
+  }
+  
+  html += '</tr></thead><tbody>';
+  
+  // Tablo satırları
+  for (let i = 0; i < rowCount; i++) {
+    html += '<tr>';
+    
+    // Satır başlığı
+    const rowHeader = i < rowHeaders.length && rowHeaders[i] ? rowHeaders[i] : 'Satır ' + (i + 1);
+    html += '<th scope="row" style="background-color: #f8f9fa;">' + rowHeader + '</th>';
+    
+    // Hücreler
+    for (let j = 0; j < colCount; j++) {
+      html += '<td></td>';
+    }
+    
+    html += '</tr>';
+  }
+  
+  html += '</tbody></table></div></div>';
+  
+  // Önizlemeyi ekle
+  const previewContainer = document.getElementById('table-preview-container');
+  if (!previewContainer) {
+    const newContainer = document.createElement('div');
+    newContainer.id = 'table-preview-container';
+    document.getElementById('tabloAyarlari').appendChild(newContainer);
+    newContainer.innerHTML = html;
+    } else {
+    previewContainer.innerHTML = html;
+  }
+}
+
+// Sekme olaylarını ayarla
+function setupTabEvents() {
+  document.querySelectorAll('#tableTabs button').forEach(function(button) {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Tıklanan sekmeyi al
+      const target = this.getAttribute('data-bs-target');
+      if (!target) return;
+      
+      // Tüm sekmeleri gizle
+      document.querySelectorAll('.tab-pane').forEach(function(pane) {
+        pane.classList.remove('show', 'active');
+      });
+      
+      // Hedef sekmeyi göster
+      const targetPane = document.querySelector(target);
+      if (targetPane) {
+        targetPane.classList.add('show', 'active');
+      }
+      
+      // Butonları güncelle
+      document.querySelectorAll('#tableTabs button').forEach(function(btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      
+      this.classList.add('active');
+      this.setAttribute('aria-selected', 'true');
+    });
+  });
+}
+
+// Form olaylarını ayarla
+function setupFormEvents() {
+  // Satır sayısı değiştiğinde
+  document.getElementById('satir_sayisi').addEventListener('change', function() {
+    const rows = parseInt(this.value) || 3;
+    const cols = parseInt(document.getElementById('sutun_sayisi').value) || 3;
+    
+    // Başlıkları güncelle
+    setupHeaders(rows, cols);
+    
+    // Editörleri yenile
+    createHeaderEditors();
+    
+    // Önizlemeyi güncelle
+    createTablePreview();
+  });
+  
+  // Sütun sayısı değiştiğinde
+  document.getElementById('sutun_sayisi').addEventListener('change', function() {
+    const rows = parseInt(document.getElementById('satir_sayisi').value) || 3;
+    const cols = parseInt(this.value) || 3;
+    
+    // Başlıkları güncelle
+    setupHeaders(rows, cols);
+    
+    // Editörleri yenile
+    createHeaderEditors();
+    
+    // Önizlemeyi güncelle
+    createTablePreview();
+  });
+  
+  // Form gönderilmeden önce
+  const form = document.getElementById('ogeForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const tipValue = document.getElementById('tip').value;
+      
+      if (tipValue === 'tablo') {
+        // Tablo alanlarının etkin olduğundan emin ol
+        document.getElementById('satir_sayisi').disabled = false;
+        document.getElementById('sutun_sayisi').disabled = false;
+        document.getElementById('satir_basliklar').disabled = false;
+        document.getElementById('sutun_basliklar').disabled = false;
+        
+        // Son değerleri al
+        const rows = parseInt(document.getElementById('satir_sayisi').value) || 3;
+        const cols = parseInt(document.getElementById('sutun_sayisi').value) || 3;
+        
+        // Doğrulama yap
+        if (rows < 1 || rows > 50) {
+          e.preventDefault();
+    alert('Satır sayısı 1 ile 50 arasında olmalıdır.');
+    return false;
+  }
+        
+        if (cols < 1 || cols > 15) {
+          e.preventDefault();
+    alert('Sütun sayısı 1 ile 15 arasında olmalıdır.');
+    return false;
+  }
+        
+        // Son kez başlıkları güncelle
+        setupHeaders(rows, cols);
+      }
+      
+  return true;
+    });
+  }
+}
+</script>
+{% endblock %} 

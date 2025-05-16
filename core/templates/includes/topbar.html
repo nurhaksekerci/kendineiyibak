@@ -1,0 +1,45 @@
+<div class="topbar">
+  <div class="container-fluid">
+    <div class="topbar__inner">
+      <ul class="list-unstyled topbar__info">
+        <li>
+          <span class="topbar__info__icon topbar__info__icon--email"><i class="icon-email"></i></span>
+          <a href="mailto:aysunmutlu25@gmail.com">aysunmutlu25@gmail.com</a>
+        </li>
+        <li>
+          <span class="topbar__info__icon"><i class="icon-telephone"></i></span>
+          <a href="tel:+905367655107">+90 536 765 51 07</a>
+        </li>
+      </ul>
+      <!-- /.list-unstyled topbar__info -->
+      <div class="topbar__location" style="display: none;">
+        <ul class="list-unstyled topbar__info">
+          <li>
+            <span class="topbar__info__icon"><i class="icon-location"></i></span>
+            <a href="https://www.google.com/maps">İstanbul, Türkiye</a>
+          </li>
+        </ul>
+      </div>
+      <!-- /.topbar__location -->
+    </div>
+    <!-- /.topbar__inner -->
+  </div>
+  <!-- /.container-fluid -->
+</div>
+<!-- /.topbar -->
+
+<style>
+  .topbar__location {
+    display: none !important; /* Konum bilgisini tamamen gizle */
+  }
+  
+  .topbar__info li:nth-child(2) {
+    /* Telefon bilgisini daha belirgin yap */
+    font-weight: bold;
+  }
+  
+  .topbar__info__icon--phone {
+    color: var(--eduhive-base, #6610f2);
+    font-size: 1.1em;
+  }
+</style>

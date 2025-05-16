@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Kategori Sil: {{ kategori.isim }} - Yönetim Paneli
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Kategori Sil: {{ kategori.isim }}</h1>
+              <div class="breadcrumb-area text-center mt-3">
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                      <a href="{% url 'index' %}">Ana Sayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                      <a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                      <a href="{% url 'forum:forum_kategori_listele' %}">Forum Kategorileri</a>
+                    </li>
+                    <li class="breadcrumb-item active">Kategori Sil</li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- İçerik -->
+    <section class="section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- İşlem Butonları -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <a href="{% url 'forum:forum_kategori_listele' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Kategorilere Dön</a>
+          </div>
+        </div>
+
+        <!-- Onay Kartı -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card border-danger">
+              <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Dikkat - Kategori Silme İşlemi</h4>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-warning">
+                  <h5 class="alert-heading">Bu işlem geri alınamaz!</h5>
+                  <p>
+                    <strong>"{{ kategori.isim }}"</strong> kategorisini silmek üzeresiniz. Bu işlem geri alınamaz ve kategori altındaki tüm konular ve yorumlar da silinecektir.
+                  </p>
+                  <hr />
+                  <p class="mb-0">Emin misiniz?</p>
+                </div>
+
+                <div class="kategori-bilgileri mb-4">
+                  <table class="table table-bordered">
+                    <tr>
+                      <th style="width: 200px;">Kategori Adı:</th>
+                      <td>{{ kategori.isim }}</td>
+                    </tr>
+                    <tr>
+                      <th>Açıklama:</th>
+                      <td>{{ kategori.aciklama|default:'Açıklama yok' }}</td>
+                    </tr>
+                    <tr>
+                      <th>İçerik:</th>
+                      <td>
+                        Konu Sayısı: {{ kategori.forumkonu_set.count }}<br />
+                        Alt Kategori Sayısı: {{ kategori.forumkategori_set.count }}
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+
+                <form method="post">
+                  {% csrf_token %}
+                  <div class="d-flex justify-content-between">
+                    <a href="{% url 'forum:forum_kategori_listele' %}" class="btn btn-secondary"><i class="fas fa-times"></i> İptal Et</a>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Kategoriyi Sil</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ kategori.baslik }} - Forum - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">{{ kategori.baslik }}</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">{{ kategori.aciklama }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kategori İçeriği -->
+    <section class="forum-section py-5">
+      <div class="container">
+        <!-- Kontrol Paneli ve Üst Navigasyon -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="forum-control d-flex justify-content-between align-items-center">
+              <div class="forum-breadcrumb">
+                <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb bg-transparent p-0 mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'forum:forum_main' %}">Forum</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ kategori.baslik }}</li>
+                  </ol>
+                </nav>
+              </div>
+              <div class="forum-actions">
+                <a href="{% url 'forum:yeni_konu_kategori' kategori_slug=kategori.slug %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Yeni Konu</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="row">
+          <!-- Sol Taraf: Kategori İçeriği -->
+          <div class="col-lg-8 mb-4 mb-lg-0">
+            <!-- Alt Kategoriler (Varsa) -->
+            {% if alt_kategoriler %}
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fas fa-list me-2" style="color: #6f42c1;"></i>Alt Kategoriler</h4>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush">
+                    {% for alt_kategori in alt_kategoriler %}
+                      <a href="{% url 'forum:kategori_detay' kategori_slug=alt_kategori.slug %}" class="list-group-item list-group-item-action p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h5 class="mb-1">{{ alt_kategori.baslik }}</h5>
+                            <p class="text-muted mb-0">{{ alt_kategori.aciklama }}</p>
+                          </div>
+                          <div class="text-center">
+                            <div class="fw-bold">{{ alt_kategori.konu_sayisi }}</div>
+                            <small class="text-muted">Konu</small>
+                          </div>
+                        </div>
+                      </a>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Sıralama ve Filtreleme -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <form method="get" class="d-flex justify-content-between align-items-center">
+                  <div class="form-group mb-0">
+                    <label for="sirala" class="me-2">Sırala:</label>
+                    <select name="sirala" id="sirala" class="form-select form-select-sm" onchange="this.form.submit()">
+                      <option value="-olusturma_tarihi" {% if siralama == '-olusturma_tarihi' %}selected{% endif %}>En Yeni</option>
+                      <option value="olusturma_tarihi" {% if siralama == 'olusturma_tarihi' %}selected{% endif %}>En Eski</option>
+                      <option value="-goruntulenme" {% if siralama == '-goruntulenme' %}selected{% endif %}>En Çok Görüntülenen</option>
+                      <option value="-sabit" {% if siralama == '-sabit' %}selected{% endif %}>Sabit Konular</option>
+                    </select>
+                  </div>
+                  <div>
+                    <span class="badge bg-primary">{{ konular.paginator.count }} Konu</span>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Kategori Konuları -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-comments me-2" style="color: #6f42c1;"></i>Konular</h4>
+              </div>
+              <div class="card-body p-0">
+                {% if konular %}
+                  <div class="list-group list-group-flush">
+                    {% for konu in konular %}
+                      <div class="list-group-item p-3 {% if konu.sabit %}border-start border-primary border-4{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                          <div>
+                            <div class="d-flex align-items-center mb-1">
+                              {% if konu.sabit %}
+                                <span class="badge bg-primary me-2"><i class="fas fa-thumbtack"></i> Sabit</span>
+                              {% endif %}
+                              <h6 class="mb-0 fw-bold">
+                                <a href="{% url 'forum:konu_detay' kategori_slug=kategori.slug konu_slug=konu.slug %}" class="text-decoration-none text-dark">
+                                  {{ konu.baslik }}
+                                </a>
+                              </h6>
+                            </div>
+                            <p class="text-muted small mb-0">{{ konu.yazar.fullname }} tarafından {{ konu.olusturma_tarihi|date:"d F Y H:i" }}</p>
+                          </div>
+                          <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-dark me-2"><i class="fas fa-comment-alt me-1"></i> {{ konu.yorum_sayisi }}</span>
+                            <span class="badge bg-light text-dark me-2"><i class="fas fa-eye me-1"></i> {{ konu.goruntulenme }}</span>
+                            {% if user == konu.yazar %}
+                              <a href="{% url 'forum:konu_sil' konu_id=konu.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash-alt"></i>
+                              </a>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  <!-- Sayfalama -->
+                  {% if konular.paginator.num_pages > 1 %}
+                    <div class="pagination-container p-3">
+                      <nav aria-label="Sayfalama Navigasyonu">
+                        <ul class="pagination justify-content-center">
+                          {% if konular.has_previous %}
+                            <li class="page-item">
+                              <a class="page-link" href="?sayfa=1&sirala={{ siralama }}" aria-label="İlk">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                              </a>
+                            </li>
+                            <li class="page-item">
+                              <a class="page-link" href="?sayfa={{ konular.previous_page_number }}&sirala={{ siralama }}" aria-label="Önceki">
+                                <span aria-hidden="true">&laquo;</span>
+                              </a>
+                            </li>
+                          {% endif %}
+
+                          {% for num in konular.paginator.page_range %}
+                            {% if konular.number == num %}
+                              <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > konular.number|add:'-3' and num < konular.number|add:'3' %}
+                              <li class="page-item"><a class="page-link" href="?sayfa={{ num }}&sirala={{ siralama }}">{{ num }}</a></li>
+                            {% endif %}
+                          {% endfor %}
+
+                          {% if konular.has_next %}
+                            <li class="page-item">
+                              <a class="page-link" href="?sayfa={{ konular.next_page_number }}&sirala={{ siralama }}" aria-label="Sonraki">
+                                <span aria-hidden="true">&raquo;</span>
+                              </a>
+                            </li>
+                            <li class="page-item">
+                              <a class="page-link" href="?sayfa={{ konular.paginator.num_pages }}&sirala={{ siralama }}" aria-label="Son">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                              </a>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </nav>
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <div class="alert alert-info m-3">Bu kategoride henüz konu bulunmuyor. İlk konuyu açan siz olun!</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ Taraf: Yan Panel -->
+          <div class="col-lg-4">
+            <!-- Kategori Bilgileri -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-2" style="color: #6f42c1;"></i>Kategori Bilgileri</h4>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>Toplam Konu</span>
+                    <span class="fw-bold">{{ kategori.konu_sayisi }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span>Oluşturulma Tarihi</span>
+                    <span class="fw-bold">{{ kategori.olusturma_tarihi|date:"d.m.Y" }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Forum Kuralları -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-gavel me-2" style="color: #6f42c1;"></i>Forum Kuralları</h4>
+              </div>
+              <div class="card-body">
+                <ul class="mb-0">
+                  <li class="mb-2">Saygılı ve kibar bir dil kullanın.</li>
+                  <li class="mb-2">Tıbbi tavsiye vermek yerine deneyim paylaşın.</li>
+                  <li class="mb-2">Kişisel bilgilerinizi paylaşmamaya özen gösterin.</li>
+                  <li class="mb-2">Konu başlıklarını açıklayıcı yapın.</li>
+                  <li>Forumda reklam yapmaktan kaçının.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Banner Tasarımı */
+    .page-banner {
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 100px 0 120px;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .breadcrumb-item a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+      color: white;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Liste Stilleri */
+    .list-group-item-action:hover {
+      background-color: rgba(111, 66, 193, 0.03);
+    }
+    
+    .badge.bg-primary {
+      background-color: #6f42c1 !important;
+    }
+    
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .forum-section h5 {
+      color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .forum-section .btn-primary:hover {
+      background-color: #5a32a3;
+      border-color: #5a32a3;
+    }
+    
+    .page-link {
+      color: #6f42c1;
+    }
+    
+    .page-item.active .page-link {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+  </style>
+{% endblock %} 

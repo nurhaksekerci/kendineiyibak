@@ -1,0 +1,13 @@
+<li class="nav-item">
+  <a class="nav-link {% if 'konular' in request.path and not 'onay-bekleyen-konular' in request.path %}active{% endif %}" href="{% url 'forum:forum_konu_listele' %}"><i class="fas fa-comment-alt me-2"></i> Forum Konuları</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link {% if 'onay-bekleyen-konular' in request.path %}active{% endif %}" href="{% url 'forum:forum_konu_onay_listesi' %}">
+    <i class="fas fa-tasks me-2"></i> Onay Bekleyen Konular{% if bekleyen_konu_sayisi %}
+      <span class="badge bg-danger ms-2">{{ bekleyen_konu_sayisi }}</span>
+    {% endif %}
+  </a>
+</li>
+<li class="nav-item">
+  <a class="nav-link {% if 'yorumlar' in request.path %}active{% endif %}" href="{% url 'forum:forum_yorum_listele' %}"><i class="fas fa-comments me-2"></i> Forum Yorumları</a>
+</li>

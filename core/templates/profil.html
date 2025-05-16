@@ -1,0 +1,731 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Profilim - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profil Section -->
+    <section class="profile-section py-5">
+      <div class="container">
+        <!-- Profil Özeti -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <div class="profile-summary card border-0 shadow-sm">
+              <div class="card-body p-0">
+                <div class="row g-0">
+                  <div class="col-md-4 profile-info-col">
+                    <div class="profile-info p-4 text-center">
+                      <div class="profile-avatar mb-4">
+                        <div class="avatar-circle" style="background-color: #f0f0f0; width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                          <i class="fa fa-user-circle fa-5x" style="color: #6f42c1;"></i>
+                        </div>
+                      </div>
+                      <h3 class="mb-1">{{ user.fullname }}</h3>
+                      <p class="text-muted mb-3">{{ user.email }}</p>
+                      <span class="badge px-3 py-2 rounded-pill" style="background-color: rgb(224, 224, 224); color: #6f42c1;">Hasta Bakıcı</span>
+
+                      {% if user.is_staff or user.is_superuser %}
+                        <div class="mt-3">
+                          <a style="color: white;" href="{% url 'yonetim_paneli' %}" class="btn btn-outline-secondary"><i class="fa fa-cog"></i> Yönetim Paneli</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="profile-stats p-4">
+                      <h4 class="mb-4 border-bottom pb-2">Eğitim İstatistikleri</h4>
+                      <div class="row stats-row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                          <div class="stat-card p-3" style="border-radius: 10px; background-color: #f8f9fa; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div class="stat-icon mb-2">
+                              <i class="fas fa-check-circle fa-2x text-success"></i>
+                            </div>
+                            <h2 class="stat-value">{{ tamamlanan_moduller.count }}</h2>
+                            <p class="stat-label text-muted">Tamamlanan Modül</p>
+                          </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                          <div class="stat-card p-3" style="border-radius: 10px; background-color: #f8f9fa; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div class="stat-icon mb-2">
+                              <i class="fas fa-play-circle fa-2x" style="color: #6f42c1;"></i>
+                            </div>
+                            <h2 class="stat-value">{{ izlenen_videolar.count }}</h2>
+                            <p class="stat-label text-muted">İzlenen Video</p>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="stat-card p-3" style="border-radius: 10px; background-color: #f8f9fa; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div class="stat-icon mb-2">
+                              <i class="fas fa-question-circle fa-2x" style="color: #6f42c1;"></i>
+                            </div>
+                            <h2 class="stat-value">{{ dogru_cevap_sayisi }}</h2>
+                            <p class="stat-label text-muted">Doğru Cevap</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- İlerleme Durumu -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-chart-line me-2" style="color: #6f42c1;"></i>İlerleme Durumu</h4>
+              </div>
+              <div class="card-body">
+                {% if ilerlemeler %}
+                  <div class="row" id="ilerleme-kismi">
+                    {% for ilerleme in ilerlemeler|slice:':4' %}
+                      <div class="col-lg-6 mb-4">
+                        <div class="progress-card p-3 border rounded h-100" style="border-color: #e7e7e7 !important; transition: all 0.3s;">
+                          <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">{{ ilerleme.modul.baslik }}</h5>
+                            <span class="badge 
+                              {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                bg-success
+
+
+
+
+
+
+
+
+
+
+                              {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                bg-warning
+
+
+
+
+
+
+
+
+
+
+                              {% else %}
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                bg-secondary
+
+
+
+
+
+
+
+
+
+
+                              {% endif %} rounded-pill px-3">
+                              {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                                <i class="fas fa-check-circle me-1"></i> Tamamlandı
+                              {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                                <i class="fas fa-spinner me-1"></i> Devam Ediyor
+                              {% else %}
+                                <i class="fas fa-hourglass-start me-1"></i> Başlanmadı
+                              {% endif %}
+                            </span>
+                          </div>
+                          <div class="progress mb-2" style="height: 10px; border-radius: 5px; background-color: #f0f0f0;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ ilerleme.ilerleme_yuzdesi }}%; background-color: #6f42c1; border-radius: 5px;" aria-valuenow="{{ ilerleme.ilerleme_yuzdesi }}" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">İlerleme: <strong>{{ ilerleme.ilerleme_yuzdesi }}%</strong></span>
+                            <a href="{% url 'modul_detay' ilerleme.modul.id %}" class="btn btn-sm rounded-pill" style="background-color: #6f42c1; color: white;">
+                              <i class="fas 
+                                {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  fa-redo
+
+
+
+
+
+
+
+
+
+
+                                {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  fa-play
+
+
+
+
+
+
+
+
+
+
+                                {% else %}
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  fa-arrow-right
+
+
+
+
+
+
+
+
+
+
+                                {% endif %} me-1">
+
+                              </i>
+                              {% if ilerleme.ilerleme_yuzdesi == 100 %}
+                                Tekrar Gözden Geçir
+                              {% elif ilerleme.ilerleme_yuzdesi > 0 %}
+                                Devam Et
+                              {% else %}
+                                Başla
+                              {% endif %}
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  {% if ilerlemeler.count > 4 %}
+                    <div class="row" id="ilerleme-tumunu-goster-row">
+                      <div class="col-12 text-center mt-2">
+                        <button id="ilerleme-daha-fazla" class="btn btn-sm btn-outline-secondary rounded-pill px-4"><i class="fas fa-chevron-down me-1"></i> Daha Fazla Göster</button>
+                      </div>
+                    </div>
+
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function () {
+                        const dahaFazlaBtn = document.getElementById('ilerleme-daha-fazla');
+                        const ilerlemeListesi = [
+                          {% for ilerleme in ilerlemeler|slice:'4:' %}
+                            {
+                              "id": {{ ilerleme.modul.id }},
+                              "baslik": "{{ ilerleme.modul.baslik }}",
+                              "ilerlemeYuzdesi": {{ ilerleme.ilerleme_yuzdesi }},
+                              "url": "{% url 'modul_detay' ilerleme.modul.id %}"
+                            }{% if not forloop.last %},{% endif %}
+                          {% endfor %}
+                        ];
+                        
+                        let gosterilmisModulSayisi = 0;
+                        const herSeferdekiModulSayisi = 7;
+                        
+                        dahaFazlaBtn.addEventListener('click', function() {
+                          const kismiDiv = document.getElementById('ilerleme-kismi');
+                          
+                          // Bir sonraki grubu al
+                          const yeniModuller = ilerlemeListesi.slice(
+                            gosterilmisModulSayisi, 
+                            gosterilmisModulSayisi + herSeferdekiModulSayisi
+                          );
+                          
+                          yeniModuller.forEach(function(ilerleme) {
+                            const col = document.createElement('div');
+                            col.className = 'col-lg-6 mb-4';
+                            
+                            let badge, icon, buttonText;
+                            
+                            if (ilerleme.ilerlemeYuzdesi == 100) {
+                              badge = '<span class="badge bg-success rounded-pill px-3"><i class="fas fa-check-circle me-1"></i> Tamamlandı</span>';
+                              icon = 'fa-redo';
+                              buttonText = 'Tekrar Gözden Geçir';
+                            } else if (ilerleme.ilerlemeYuzdesi > 0) {
+                              badge = '<span class="badge bg-warning rounded-pill px-3"><i class="fas fa-spinner me-1"></i> Devam Ediyor</span>';
+                              icon = 'fa-play';
+                              buttonText = 'Devam Et';
+                            } else {
+                              badge = '<span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-hourglass-start me-1"></i> Başlanmadı</span>';
+                              icon = 'fa-arrow-right';
+                              buttonText = 'Başla';
+                            }
+                            
+                            let html = '';
+                            html += '<div class="progress-card p-3 border rounded h-100" style="border-color: #e7e7e7 !important; transition: all 0.3s;">';
+                            html += '<div class="d-flex justify-content-between align-items-center mb-3">';
+                            html += '<h5 class="mb-0">' + ilerleme.baslik + '</h5>';
+                            html += badge;
+                            html += '</div>';
+                            html += '<div class="progress mb-2" style="height: 10px; border-radius: 5px; background-color: #f0f0f0;">';
+                            html += '<div class="progress-bar" role="progressbar" style="width: ' + ilerleme.ilerlemeYuzdesi + '%; background-color: #6f42c1; border-radius: 5px;" aria-valuenow="' + ilerleme.ilerlemeYuzdesi + '" aria-valuemin="0" aria-valuemax="100"></div>';
+                            html += '</div>';
+                            html += '<div class="d-flex justify-content-between align-items-center">';
+                            html += '<span class="text-muted">İlerleme: <strong>' + ilerleme.ilerlemeYuzdesi + '%</strong></span>';
+                            html += '<a href="' + ilerleme.url + '" class="btn btn-sm rounded-pill" style="background-color: #6f42c1; color: white;">';
+                            html += '<i class="fas ' + icon + ' me-1"></i> ' + buttonText;
+                            html += '</a>';
+                            html += '</div>';
+                            html += '</div>';
+                            
+                            col.innerHTML = html;
+                            kismiDiv.appendChild(col);
+                          });
+                          
+                          gosterilmisModulSayisi += herSeferdekiModulSayisi;
+                          
+                          // Tüm modüller gösterildi mi kontrol et
+                          if (gosterilmisModulSayisi >= ilerlemeListesi.length) {
+                            dahaFazlaBtn.style.display = 'none';
+                          } else {
+                            // Kalan modül sayısını güncelle
+                            const kalanModul = ilerlemeListesi.length - gosterilmisModulSayisi;
+                            dahaFazlaBtn.innerHTML = `<i class="fas fa-chevron-down me-1"></i> Daha Fazla Göster (${kalanModul} modül kaldı)`;
+                          }
+                        });
+                      });
+                    </script>
+                  {% endif %}
+                {% else %}
+                  <div class="alert alert-info border-0 shadow-sm">
+                    <div class="d-flex">
+                      <div class="me-3">
+                        <i class="fas fa-info-circle fa-2x text-info"></i>
+                      </div>
+                      <div>
+                        <h5>Henüz hiçbir modüle başlamadınız</h5>
+                        <p class="mb-0">
+                          Eğitimlere başlamak için <a href="{% url 'courses' %}" class="alert-link">Eğitimler sayfasından</a> bir modül seçebilirsiniz.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-5">
+          <!-- Tamamlanan Modüller -->
+          <div class="col-lg-4 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-check-double me-2 text-success"></i>Tamamlanan Modüller</h4>
+              </div>
+              <div class="card-body">
+                {% if tamamlanan_moduller %}
+                  <div class="completed-modules">
+                    {% for ilerleme in tamamlanan_moduller|slice:':2' %}
+                      <a href="{% url 'modul_detay' ilerleme.modul.id %}" class="module-card d-block p-3 mb-3 rounded border">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <h5 class="mb-0">{{ ilerleme.modul.baslik }}</h5>
+                          <span class="badge bg-success rounded-pill"><i class="fas fa-check me-1"></i></span>
+                        </div>
+                        <p class="text-muted mb-2 small">{{ ilerleme.modul.aciklama|truncatechars:80 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-success"><i class="fas fa-calendar-check me-1"></i> {{ ilerleme.tamamlanma_tarihi|date:'d.m.Y' }}</small>
+                          <small class="text-muted">{{ ilerleme.modul.video_sayisi }} Video</small>
+                        </div>
+                      </a>
+                    {% endfor %}
+                    {% if tamamlanan_moduller.count > 2 %}
+                      <div class="text-center mt-3">
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-4 d-none"><i class="fas fa-list me-1"></i> Tümünü Gör ({{ tamamlanan_moduller.count }})</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fas fa-award fa-3x text-muted mb-3"></i>
+                    <h5>Henüz modül tamamlamadınız</h5>
+                    <p class="text-muted">Eğitimleri tamamladıkça burada görünecekler.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Devam Eden Modüller -->
+          <div class="col-lg-4 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-spinner me-2 text-warning"></i>Devam Eden Modüller</h4>
+              </div>
+              <div class="card-body">
+                {% if devam_eden_moduller %}
+                  <div class="ongoing-modules">
+                    {% for ilerleme in devam_eden_moduller|slice:':2' %}
+                      <a href="{% url 'modul_detay' ilerleme.modul.id %}" class="module-card d-block p-3 mb-3 rounded border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <h5 class="mb-0">{{ ilerleme.modul.baslik }}</h5>
+                          <span class="badge bg-warning rounded-pill">{{ ilerleme.ilerleme_yuzdesi }}%</span>
+                        </div>
+                        <div class="progress mb-2">
+                          <div class="progress-bar bg-gradient-primary" role="progressbar" style="width: {{ ilerleme.ilerleme_yuzdesi }}%;" aria-valuenow="{{ ilerleme.ilerleme_yuzdesi }}" aria-valuemin="0" aria-valuemax="100">{{ ilerleme.ilerleme_yuzdesi }}%</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-warning"><i class="fas fa-play-circle me-1"></i> Devam Ediyor</small>
+                          <small class="text-muted">{{ ilerleme.modul.video_sayisi }} Video</small>
+                        </div>
+                      </a>
+                    {% endfor %}
+                    {% if devam_eden_moduller.count > 2 %}
+                      <div class="text-center mt-3">
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-4 d-none"><i class="fas fa-list me-1"></i> Tümünü Gör ({{ devam_eden_moduller.count }})</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                    <h5>Devam eden modül bulunmuyor</h5>
+                    <p class="text-muted">Başladığınız ancak tamamlamadığınız modüller burada görünecek.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Başlanmamış Modüller -->
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-hourglass-start me-2 text-secondary"></i>Başlanmamış Modüller</h4>
+              </div>
+              <div class="card-body">
+                {% if baslanmamis_moduller %}
+                  <div class="not-started-modules">
+                    {% for ilerleme in baslanmamis_moduller|slice:':2' %}
+                      <a href="{% url 'modul_detay' ilerleme.modul.id %}" class="module-card d-block p-3 mb-3 rounded border">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <h5 class="mb-0">{{ ilerleme.modul.baslik }}</h5>
+                          <span class="badge bg-secondary rounded-pill">0%</span>
+                        </div>
+                        <p class="text-muted mb-2 small">{{ ilerleme.modul.aciklama|truncatechars:80 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-secondary"><i class="fas fa-hourglass-start me-1"></i> Başlanmadı</small>
+                          <small class="text-muted">{{ ilerleme.modul.video_sayisi }} Video</small>
+                        </div>
+                      </a>
+                    {% endfor %}
+                    {% if baslanmamis_moduller.count > 2 %}
+                      <div class="text-center mt-3">
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-4 d-none"><i class="fas fa-list me-1"></i> Tümünü Gör ({{ baslanmamis_moduller.count }})</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fas fa-stream fa-3x text-muted mb-3"></i>
+                    <h5>Başlanmamış modül bulunmuyor</h5>
+                    <p class="text-muted">Henüz başlamadığınız modüller burada görünecek.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Son İzlenen Videolar -->
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-play-circle me-2 text-primary"></i>Son İzlenen 3 Video</h4>
+              </div>
+              <div class="card-body">
+                {% if izlenen_videolar %}
+                  <div class="row">
+                    {% for izleme in izlenen_videolar|slice:':3' %}
+                      <div class="col-md-4 col-lg-4 mb-4">
+                        <div class="video-card card h-100 border-0 shadow-sm">
+                          <div class="video-thumbnail position-relative">
+                            {% if izleme.video.get_thumbnail %}
+                              <img src="{{ izleme.video.get_thumbnail }}" alt="{{ izleme.video.baslik }}" class="card-img-top" />
+                            {% else %}
+                              <div class="placeholder-thumbnail bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-play-circle fa-3x text-primary"></i>
+                              </div>
+                            {% endif %}
+                            <span class="video-duration badge bg-dark position-absolute bottom-0 end-0 m-2">{{ izleme.video.sure_formatli }}</span>
+                          </div>
+                          <div class="card-body">
+                            <h5 class="card-title">{{ izleme.video.baslik }}</h5>
+                            <p class="card-text small text-muted mb-3">
+                              <i class="fas fa-book-open me-1"></i> {{ izleme.video.modul.baslik }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="badge bg-success rounded-pill px-3"><i class="fas fa-check me-1"></i> Tamamlandı</span>
+                              <a href="{% url 'video_izle' izleme.video.id %}" class="btn btn-sm btn-primary rounded-pill"><i class="fas fa-play me-1"></i> İzle</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fas fa-film fa-3x text-muted mb-3"></i>
+                    <h5>Henüz video izlemediniz</h5>
+                    <p class="text-muted">İzlediğiniz videolar burada listelenecek.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #f8f5ff;
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+    }
+    
+    .profile-section {
+      padding: 50px 0;
+    }
+    
+    /* Profil Özeti Stili */
+    .profile-summary {
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    
+    .profile-info-col {
+      background: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      color: white;
+    }
+    
+    .profile-info {
+      height: 100%;
+    }
+    
+    .profile-info h3,
+    .profile-info p {
+      color: white;
+    }
+    
+    .avatar-circle {
+      width: 120px;
+      height: 120px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      color: white;
+    }
+    
+    .stats-row {
+      margin-top: 20px;
+    }
+    
+    .stat-card {
+      padding: 15px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0;
+      color: #333;
+    }
+    
+    .stat-label {
+      color: #777;
+      font-size: 0.9rem;
+    }
+    
+    /* Kartlar ve Modüller */
+    .card {
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+      padding: 15px 20px;
+    }
+    
+    .progress-card {
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+    
+    .progress-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .module-card {
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    /* Video Kartları */
+    .video-card {
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .video-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .video-thumbnail {
+      height: 160px;
+      overflow: hidden;
+    }
+    
+    .video-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .placeholder-thumbnail {
+      height: 160px;
+    }
+    
+    /* Renkler ve Gradyanlar */
+    .text-primary {
+      color: #6610f2 !important;
+    }
+    
+    .bg-primary {
+      background-color: #6610f2 !important;
+    }
+    
+    .bg-gradient-primary {
+      background: linear-gradient(to right, #6610f2, #7a36f7) !important;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(to right, #6610f2, #7a36f7);
+      border: none;
+    }
+    
+    .btn-outline-primary {
+      color: #6610f2;
+      border-color: #6610f2;
+    }
+    
+    .btn-outline-primary:hover {
+      background: linear-gradient(to right, #6610f2, #7a36f7);
+      border-color: transparent;
+    }
+    
+    .progress-bar {
+      background-color: #6610f2;
+    }
+    
+    /* Responsive Ayarlar */
+    @media (max-width: 767px) {
+      .profile-info-col {
+        border-radius: 15px 15px 0 0;
+      }
+    
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,647 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load video_filters %}
+
+{% block title %}
+  {{ video.baslik }} - Kendine İyi Bak
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #f8f5ff;
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+  }
+  
+  .video-title {
+    font-size: 2rem;
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .text-primary {
+    color: #6f42c1 !important;
+  }
+  
+  .bg-primary {
+    background-color: #6f42c1 !important;
+  }
+  
+  .btn-primary {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+  }
+  
+  .btn-outline-primary {
+    color: #6f42c1;
+    border-color: #6f42c1;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+  }
+  
+  .list-group-item.active {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+  }
+  
+  .video-player-container {
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .video-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+    background-color: transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  
+  .video-container video,
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  .object-fit-cover {
+    object-fit: cover;
+  }
+  
+  /* Yeni eklenen stiller */
+  .locked-video {
+    position: relative;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  
+  .locked-video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 10;
+  }
+  
+  .locked-video-overlay i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-body .video-meta {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6f42c1;
+  }
+
+  /* Soru tipi badge stilleri */
+  .soru-tipi-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    color: white;
+  }
+
+  .soru-tipi-badge.coktan_secmeli {
+    background-color: #6f42c1;
+  }
+
+  .soru-tipi-badge.dogru_yanlis {
+    background-color: #20c997;
+  }
+
+  .soru-tipi-badge.metin {
+    background-color: #0d6efd;
+  }
+  
+  /* Soru kartı stilleri */
+  .soru-card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+  }
+  
+  .soru-card .card-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .soru-card .card-body {
+    padding: 20px;
+  }
+
+  .soru-card h5 {
+    margin: 0;
+    font-weight: 600;
+    display: inline-block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  
+  <!-- Header Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video İzleme -->
+  <section class="video-izleme py-5">
+    <div class="container">
+      {% if erisim_izni %}
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="video-wrapper mb-4">
+            <h1 class="video-title mb-3">{{ video.baslik }}</h1>
+            
+            <div class="video-container">
+              {% if video.video_url %}
+                {% if 'youtube.com' in video.video_url or 'youtu.be' in video.video_url %}
+                  <iframe id="youtube-player" src="{{ video.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                {% else %}
+                  <video id="video-player" width="100%" height="100%" controls controlsList="nodownload" preload="auto" playsinline>
+                    <source src="{{ video.video_url }}" type="video/mp4">
+                    Tarayıcınız video oynatmayı desteklemiyor.
+                  </video>
+                {% endif %}
+              {% elif video.dosya %}
+                <video id="video-player" width="100%" height="100%" controls controlsList="nodownload" preload="auto" playsinline poster="{{ video.get_thumbnail }}">
+                  <source src="{{ video.dosya.url }}" type="video/mp4">
+                  Tarayıcınız video oynatmayı desteklemiyor.
+                </video>
+                <div id="video-error" class="alert alert-danger mt-3" style="display: none;">
+                  <i class="fas fa-exclamation-triangle me-2"></i> Video yüklenirken bir sorun oluştu. 
+                  <button class="btn btn-sm btn-danger ms-3" onclick="window.location.reload()">Sayfayı Yenile</button>
+                </div>
+              {% else %}
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle me-2"></i> Bu video için içerik bulunamadı.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="video-info mb-4">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="video-meta">
+                    <i class="far fa-clock me-2"></i>
+                    <span>{{ video.sure|format_duration }}</span>
+                  </div>
+                  <button id="tamamla-btn" class="btn {% if izleme.tamamlandi %}btn-success{% else %}btn-primary{% endif %} rounded-pill px-3" style="{% if not izleme.tamamlandi %}background-color: #6f42c1; border-color: #6f42c1;{% endif %}">
+                    {% if izleme.tamamlandi %}
+                      <i class="fas fa-check me-1"></i> Tamamlandı
+                    {% else %}
+                      <i class="fas fa-check-circle me-1"></i> Videoyu Tamamla
+                    {% endif %}
+                  </button>
+                </div>
+                <div class="video-description">
+                  <h4 class="mb-3" style="color: #6f42c1;"><i class="fas fa-info-circle me-2"></i>Video Açıklaması</h4>
+                  <p>{{ video.aciklama }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if sorular %}
+          <div class="video-sorular mb-4">
+            <h4>Sorular</h4>
+            <div class="alert alert-info">
+              Videoyu <b>TAMAMLADIKTAN SONRA</b> aşağıdaki soruları cevaplayınız. Doğru cevaplar ilerlemenize katkı sağlayacaktır.
+            </div>
+            
+            <div id="sorular-container">
+              {% for soru in sorular %}
+                <div class="card mb-3 soru-card" data-soru-id="{{ soru.id }}" data-soru-tipi="{{ soru.soru_tipi }}">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="header-content">
+                      <h5 class="mb-0">Soru {{ forloop.counter }}</h5>
+                      <span class="badge soru-tipi-badge {{ soru.soru_tipi }}">
+                        {% if soru.soru_tipi == 'coktan_secmeli' %}
+                          Çoktan Seçmeli
+                        {% elif soru.soru_tipi == 'dogru_yanlis' %}
+                          Doğru/Yanlış
+                        {% elif soru.soru_tipi == 'metin' %}
+                          Metin
+                        {% endif %}
+                      </span>
+                    </div>
+                    <div class="badge-container">
+                      {% if soru.id in cevaplanan_sorular %}
+                        <span class="badge bg-success">Cevaplandı</span>
+                      {% else %}
+                        <span class="badge bg-warning">Cevaplanmadı</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-text">{{ soru.soru_metni }}</p>
+                    
+                    {% if soru.soru_tipi == 'coktan_secmeli' %}
+                    <!-- Çoktan Seçmeli Soru -->
+                    <form class="soru-form" method="post" action="/soru/{{ soru.id }}/cevapla/" data-soru-id="{{ soru.id }}" data-soru-tipi="{{ soru.soru_tipi }}" onsubmit="return false;">
+                      {% csrf_token %}
+                      <div class="secenekler coktan-secmeli">
+                        {% for secenek in soru.secenekler.all %}
+                          <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="secenek_id" id="secenek_{{ secenek.id }}" value="{{ secenek.id }}" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                            <label class="form-check-label w-100" for="secenek_{{ secenek.id }}">
+                              {{ secenek.secenek_metni }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                      
+                      <div class="mt-3">
+                        <button type="button" class="btn btn-primary cevapla-btn" data-soru-id="{{ soru.id }}" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                          {% if not izleme.tamamlandi %}
+                            <i class="fas fa-lock me-1"></i> Önce Videoyu Tamamlayın
+                          {% else %}
+                            Cevapla
+                          {% endif %}
+                        </button>
+                      </div>
+                    </form>
+                    {% elif soru.soru_tipi == 'dogru_yanlis' %}
+                    <!-- Doğru/Yanlış Soru -->
+                    <form class="soru-form" method="post" action="/soru/{{ soru.id }}/cevapla/" data-soru-id="{{ soru.id }}" data-soru-tipi="{{ soru.soru_tipi }}" onsubmit="return false;">
+                      {% csrf_token %}
+                      <div class="secenekler dogru-yanlis">
+                        {% for secenek in soru.secenekler.all %}
+                          <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="secenek_id" id="secenek_{{ secenek.id }}" value="{{ secenek.id }}" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                            <label class="form-check-label w-100" for="secenek_{{ secenek.id }}">
+                              {{ secenek.secenek_metni }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                      
+                      <div class="mt-3">
+                        <button type="button" class="btn btn-primary cevapla-btn" data-soru-id="{{ soru.id }}" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                          {% if not izleme.tamamlandi %}
+                            <i class="fas fa-lock me-1"></i> Önce Videoyu Tamamlayın
+                          {% else %}
+                            Cevapla
+                          {% endif %}
+                        </button>
+                      </div>
+                    </form>
+                    {% elif soru.soru_tipi == 'metin' %}
+                    <!-- Metin Cevaplı Soru -->
+                    <form class="soru-form" method="post" action="/soru/{{ soru.id }}/cevapla/" data-soru-id="{{ soru.id }}" data-soru-tipi="{{ soru.soru_tipi }}" onsubmit="return false;">
+                      {% csrf_token %}
+                      <div class="metin-cevap">
+                        <div class="mb-3">
+                          <input type="text" class="form-control metin-cevap-input" name="metin_cevap" id="metin_cevap_{{ soru.id }}" placeholder="Cevabınızı buraya yazın" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                        </div>
+                      </div>
+                      
+                      <div class="mt-3">
+                        <button type="button" class="btn btn-primary cevapla-btn" data-soru-id="{{ soru.id }}" {% if soru.id in cevaplanan_sorular or not izleme.tamamlandi %}disabled{% endif %}>
+                          {% if not izleme.tamamlandi %}
+                            <i class="fas fa-lock me-1"></i> Önce Videoyu Tamamlayın
+                          {% else %}
+                            Cevapla
+                          {% endif %}
+                        </button>
+                      </div>
+                    </form>
+                    {% endif %}
+                    
+                    <div class="sonuc-container mt-3" style="display: none;">
+                      <div class="alert alert-success sonuc-dogru" style="display: none;">
+                        <i class="fas fa-check-circle me-2"></i> Tebrikler! Doğru cevap verdiniz.
+                      </div>
+                      <div class="alert alert-danger sonuc-yanlis" style="display: none;">
+                        <i class="fas fa-times-circle me-2"></i> <span class="yanlis-mesaj">Yanlış cevap.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h4 class="card-title">Modül Bilgileri</h4>
+              <div class="d-flex align-items-center mb-3">
+                <div>
+                  <h5 class="mb-0">{{ modul.baslik }}</h5>
+                  <p class="text-muted mb-0">{{ modul.kategori.baslik }}</p>
+                </div>
+              </div>
+              <div class="progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: {{ ilerleme.ilerleme_yuzdesi }}%; background-color: #6f42c1;" aria-valuenow="{{ ilerleme.ilerleme_yuzdesi }}" aria-valuemin="0" aria-valuemax="100">{{ ilerleme.ilerleme_yuzdesi }}%</div>
+              </div>
+              <a href="{% url 'modul_detay' modul.id %}" class="btn btn-outline-secondary w-100" style="color: #6f42c1; border-color: #6f42c1;">Modüle Dön</a>
+            </div>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="card-title">Video Listesi</h4>
+              <div class="alert alert-info mb-3 alert-dismissible fade show">
+                <i class="fas fa-info-circle me-2"></i> Videoları sırayla izlemelisiniz. Bir videoyu tamamlamadan bir sonraki videoya erişemezsiniz.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <div class="list-group">
+                {% for v in modul.videolar.all %}
+                  {% if v.id in erisim_izni_olan_videolar %}
+                    <a href="{% url 'video_izle' v.id %}" class="list-group-item list-group-item-action d-flex flex-column" {% if v.id == video.id %}style="background-color: #6f42c1; color: white; border-left: 3px solid #6f42c1;"{% else %}style="border-left: 3px solid transparent;"{% endif %}>
+                      <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          {% if v.get_thumbnail %}
+                          <div class="me-2" style="width: 60px; height: 40px; overflow: hidden; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <img src="{{ v.get_thumbnail }}" alt="{{ v.baslik }}" class="w-100 h-100 object-fit-cover">
+                          </div>
+                          {% endif %}
+                          <h6 class="mb-1 fw-bold" style="font-size: 0.9rem;">{{ v.baslik }}</h6>
+                        </div>
+                        <small {% if v.id == video.id %}class="text-white"{% endif %} style="font-size: 0.8rem;">{{ v.sure_formatli }}</small>
+                      </div>
+                      <small class="d-flex align-items-center mt-1" {% if v.id == video.id %}style="color: white;"{% endif %}>
+                        {% if v.id in izlenen_videolar %}
+                          <i class="fas fa-check-circle me-1 {% if v.id == video.id %}text-white{% else %}text-success{% endif %}"></i> Tamamlandı
+                        {% else %}
+                          <i class="far fa-circle me-1"></i> İzlenmedi
+                        {% endif %}
+                      </small>
+                    </a>
+                  {% else %}
+                    <div class="list-group-item list-group-item-action disabled d-flex flex-column" style="background-color: #f9f9fa; border-left: 3px solid #e0e0e0;">
+                      <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          {% if v.get_thumbnail %}
+                          <div class="me-2" style="width: 60px; height: 40px; overflow: hidden; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); opacity: 0.5;">
+                            <img src="{{ v.get_thumbnail }}" alt="{{ v.baslik }}" class="w-100 h-100 object-fit-cover">
+                          </div>
+                          {% endif %}
+                          <h6 class="mb-1 text-muted" style="font-size: 0.9rem;">{{ v.baslik }}</h6>
+                        </div>
+                        <small style="font-size: 0.8rem;">{{ v.sure_formatli }}</small>
+                      </div>
+                      <small class="d-flex align-items-center text-muted mt-1">
+                        <i class="fas fa-lock me-1"></i> Kilitli
+                      </small>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-warning p-4 shadow-sm">
+            <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Bu Videoya Erişim İzniniz Yok</h4>
+            <hr>
+            <p>Bu videoya erişebilmek için önceki videoları tamamlamanız gerekmektedir. Videoları sıralı bir şekilde izlemelisiniz.</p>
+            <p>Eğitim modüllerimizde, videoları sıralı bir şekilde izlemeniz gerekmektedir. Bir videoyu tamamlamadan bir sonraki videoya geçemezsiniz.</p>
+            <div class="mt-3">
+              <a href="{% url 'modul_detay' modul.id %}" class="btn" style="background-color: #6f42c1; color: white;">Modüle Geri Dön</a>
+            </div>
+          </div>
+          
+          <div class="card mt-4">
+            <div class="card-body">
+              <h4 class="card-title">Erişilebilir Videolar</h4>
+              <p>Aşağıdaki videolara erişim izniniz bulunmaktadır:</p>
+              <div class="list-group">
+                {% for v in modul.videolar.all %}
+                  {% if v.id in erisim_izni_olan_videolar %}
+                    <a href="{% url 'video_izle' v.id %}" class="list-group-item list-group-item-action d-flex flex-column" {% if v.id == video.id %}style="background-color: #6f42c1; color: white; border-left: 3px solid #6f42c1;"{% else %}style="border-left: 3px solid transparent;"{% endif %}>
+                      <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          {% if v.get_thumbnail %}
+                          <div class="me-2" style="width: 60px; height: 40px; overflow: hidden; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <img src="{{ v.get_thumbnail }}" alt="{{ v.baslik }}" class="w-100 h-100 object-fit-cover">
+                          </div>
+                          {% endif %}
+                          <h6 class="mb-1 fw-bold" style="font-size: 0.9rem;">{{ v.baslik }}</h6>
+                        </div>
+                        <small {% if v.id == video.id %}class="text-white"{% endif %} style="font-size: 0.8rem;">{{ v.sure_formatli }}</small>
+                      </div>
+                      <small class="d-flex align-items-center mt-1" {% if v.id == video.id %}style="color: white;"{% endif %}>
+                        {% if v.id in izlenen_videolar %}
+                          <i class="fas fa-check-circle me-1 {% if v.id == video.id %}text-white{% else %}text-success{% endif %}"></i> Tamamlandı
+                        {% else %}
+                          <i class="far fa-circle me-1"></i> İzlenmedi
+                        {% endif %}
+                      </small>
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const videoElement = document.getElementById('video-player');
+    
+    if (videoElement) {
+    // Klavye kontrolleri
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight') {
+        videoElement.currentTime += 10;
+      }
+      if (e.key === 'ArrowLeft') {
+        videoElement.currentTime -= 10;
+      }
+    });
+  }
+  
+    // Videoyu tamamla butonu
+    const tamamlaBtn = document.getElementById('tamamla-btn');
+    if (tamamlaBtn) {
+      tamamlaBtn.addEventListener('click', function() {
+        fetch('{% url "video_tamamla" video.id %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+      });
+    }
+
+  // Soru cevaplama fonksiyonları
+  const cevapButtonlari = document.querySelectorAll('.cevapla-btn');
+  if (cevapButtonlari.length > 0) {
+    cevapButtonlari.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const soruId = this.getAttribute('data-soru-id');
+        const soruForm = document.querySelector(`form[data-soru-id="${soruId}"]`);
+        const soruTipi = soruForm.getAttribute('data-soru-tipi');
+        const soruCard = document.querySelector(`.soru-card[data-soru-id="${soruId}"]`);
+        
+        let formData = new FormData();
+        
+        // Soru tipine göre form verilerini al
+        if (soruTipi === 'coktan_secmeli' || soruTipi === 'dogru_yanlis') {
+          const secilen = soruForm.querySelector('input[name="secenek_id"]:checked');
+          if (!secilen) {
+            alert('Lütfen bir cevap seçin!');
+            return;
+          }
+          formData.append('secenek_id', secilen.value);
+        } else if (soruTipi === 'metin') {
+          const metinCevap = soruForm.querySelector('.metin-cevap-input').value;
+          if (!metinCevap.trim()) {
+            alert('Lütfen bir cevap yazın!');
+            return;
+          }
+          formData.append('metin_cevap', metinCevap);
+        }
+        
+        // CSRF token ekle
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Cevabı gönder
+        fetch(soruForm.getAttribute('action'), {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Cevap sonucu:', data);
+            
+          // Sonucu göster
+          const sonucContainer = soruCard.querySelector('.sonuc-container');
+          const sonucDogru = soruCard.querySelector('.sonuc-dogru');
+          const sonucYanlis = soruCard.querySelector('.sonuc-yanlis');
+          const yanlisMessage = soruCard.querySelector('.yanlis-mesaj');
+            
+          sonucContainer.style.display = 'block';
+            
+          if (data.dogru) {
+            sonucDogru.style.display = 'block';
+            sonucYanlis.style.display = 'none';
+          } else if (soruTipi === 'metin') {
+            sonucDogru.style.display = 'none';
+            sonucYanlis.style.display = 'block';
+            // Metinsel sorular için özel mesaj
+            if (yanlisMessage) {
+              yanlisMessage.textContent = 'Cevabınız alınmıştır. En kısa zamanda değerlendirilecektir.';
+            }
+          } else {
+            sonucDogru.style.display = 'none';
+            sonucYanlis.style.display = 'block';
+            // Çoktan seçmeli ve doğru/yanlış sorular için standart mesaj
+            if (yanlisMessage) {
+              yanlisMessage.textContent = 'Yanlış cevap.';
+            }
+          }
+          
+          // Form elemanlarını devre dışı bırak
+          const inputs = soruForm.querySelectorAll('input, button.cevapla-btn');
+          inputs.forEach(input => {
+            input.disabled = true;
+          });
+          
+          // Durumu güncelle
+          const badgeContainer = soruCard.querySelector('.badge-container');
+          badgeContainer.innerHTML = '<span class="badge bg-success">Cevaplandı</span>';
+          
+          // Seçilen cevabı göster
+          if (soruTipi === 'coktan_secmeli' || soruTipi === 'dogru_yanlis') {
+            const secenekler = soruForm.querySelectorAll('.form-check-label');
+            secenekler.forEach(secenek => {
+              const input = document.getElementById(secenek.getAttribute('for'));
+              if (input.checked) {
+                if (data.dogru) {
+                  secenek.classList.add('bg-success', 'text-white');
+                } else {
+                  secenek.classList.add('bg-danger', 'text-white');
+                }
+              }
+            });
+            
+            // Doğru cevabı göster
+            if (data.dogru_cevap_id && !data.dogru) {
+              const dogruLabel = soruForm.querySelector(`label[for="secenek_${data.dogru_cevap_id}"]`);
+              if (dogruLabel) {
+                dogruLabel.classList.add('bg-success', 'text-white');
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Hata:', error);
+          alert('Cevap gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+      });
+        });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Onay Bekleyen Konular - Forum Yönetimi{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />          
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Onay Bekleyen Konular</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Onay bekleyen forum konularını bu sayfadan yönetebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container my-5">
+        <!-- Başlık ve Butonlar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0 text-primary">
+                <i class="fas fa-tasks me-2"></i> Onay Bekleyen Konular
+                {% if bekleyen_konu_sayisi %}
+                    <span class="badge bg-danger ms-2">{{ bekleyen_konu_sayisi }}</span>
+                {% endif %}
+            </h1>
+            <div>
+                <a href="{% url 'forum:forum_konu_listele' %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-list me-1"></i> Tüm Konular
+                </a>
+                <a href="{% url 'forum:forum_main' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Forum Ana Sayfa
+                </a>
+            </div>
+        </div>
+
+        <!-- Uyarı Mesajları -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Filtreler -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="kategori" class="form-label">Kategori Filtresi</label>
+                        <select name="kategori" id="kategori" class="form-select">
+                            <option value="">Tüm Kategoriler</option>
+                            {% for kategori in kategoriler %}
+                                <option value="{{ kategori.id }}" {% if secili_kategori_id == kategori.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ kategori.baslik }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-filter me-1"></i> Filtrele
+                        </button>
+                        <a href="{% url 'forum:forum_konu_onay_listesi' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-sync-alt me-1"></i> Filtreleri Temizle
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Konu Listesi -->
+        <div class="card border-0 shadow">
+            <div class="card-body p-0">
+                {% if konular %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th scope="col" width="5%">#</th>
+                                    <th scope="col" width="40%">Konu Başlığı</th>
+                                    <th scope="col" width="15%">Kategori</th>
+                                    <th scope="col" width="15%">Yazar</th>
+                                    <th scope="col" width="15%">Tarih</th>
+                                    <th scope="col" width="10%">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for konu in konular %}
+                                    <tr>
+                                        <td>{{ konu.id }}</td>
+                                        <td>
+                                            <a href="{% url 'forum:konu_detay' kategori_slug=konu.kategori.slug konu_slug=konu.slug %}" 
+                                               class="text-decoration-none fw-bold" target="_blank">
+                                                {{ konu.baslik }}
+                                            </a>
+                                        </td>
+                                        <td>{{ konu.kategori.baslik }}</td>
+                                        <td>{{ konu.yazar.fullname }}</td>
+                                        <td>{{ konu.olusturma_tarihi|date:"d.m.Y H:i" }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'forum:forum_konu_onayla' konu_id=konu.id %}" 
+                                                   class="btn btn-sm btn-success" title="Onayla">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'forum:forum_konu_reddet' konu_id=konu.id %}" 
+                                                   class="btn btn-sm btn-danger" title="Reddet">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-check text-muted fa-4x mb-3"></i>
+                        <h5 class="text-muted">Onay Bekleyen Konu Bulunmamaktadır</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sayfalama -->
+        {% if konular.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if konular.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?sayfa=1{% if request.GET.kategori %}&kategori={{ request.GET.kategori }}{% endif %}">İlk</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?sayfa={{ konular.previous_page_number }}{% if request.GET.kategori %}&kategori={{ request.GET.kategori }}{% endif %}">Önceki</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">İlk</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Önceki</span>
+                        </li>
+                    {% endif %}
+
+                    {% for i in konular.paginator.page_range %}
+                        {% if konular.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > konular.number|add:'-3' and i < konular.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?sayfa={{ i }}{% if request.GET.kategori %}&kategori={{ request.GET.kategori }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if konular.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?sayfa={{ konular.next_page_number }}{% if request.GET.kategori %}&kategori={{ request.GET.kategori }}{% endif %}">Sonraki</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?sayfa={{ konular.paginator.num_pages }}{% if request.GET.kategori %}&kategori={{ request.GET.kategori }}{% endif %}">Son</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Sonraki</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Son</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+  
+  .badge {
+    font-weight: 500;
+    padding: 6px 10px;
+  }
+  
+  .btn-group .btn {
+    margin-right: 5px;
+  }
+</style>
+{% endblock %} 

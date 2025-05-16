@@ -1,0 +1,365 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+        Kendine İyi Bak - Demans Hasta Bakıcı Eğitim Platformu
+      {% endblock %}
+    </title>
+    <meta name="description"
+      content="{% block meta_description %}
+        
+        
+        
+        Kendine İyi Bak, demans hastalarına bakan bakıcılar için özel olarak tasarlanmış kapsamlı bir eğitim platformudur.
+
+
+
+      {% endblock %}" />
+    {% include 'includes/css.html' %}
+    {% block extra_css %}
+
+    {% endblock %}
+  </head>
+  <body class="custom-cursor">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor__cursor"></div>
+    <div class="custom-cursor__cursor-two"></div>
+
+    <!-- Preloader -->
+    <div class="preloader">
+      <div class="preloader__image" style="background-image: url({% static 'assets/images/loader.png' %});"></div>
+    </div>
+
+    <!-- Ana Sayfa İçeriği -->
+    <div class="page-wrapper">
+      <!-- Header Bölümü -->
+      <div class="home-main-header">
+        {% include 'includes/topbar.html' %}
+        {% include 'includes/header.html' %}
+      </div>
+
+      <!-- Bildirim Çubuğu -->
+      <!-- {% if user.is_authenticated and bildirimler %}
+        <div class="notification-bar">
+          <div class="container">
+            <div class="notification-bar__inner">
+              <div class="notification-bar__icon">
+                <i class="fa fa-bell"></i>
+              </div>
+              <div class="notification-bar__content">
+                {% with bildirim=bildirimler.0 %}
+                  <a href="{{ bildirim.url }}" class="notification-bar__link">
+                    <strong>{{ bildirim.baslik }}</strong>
+                    <span>{{ bildirim.icerik }}</span>
+                  </a>
+                {% endwith %}
+                {% if bildirimler|length > 1 %}
+                  <span class="notification-bar__more">+{{ bildirimler|length|add:'-1' }} daha</span>
+                {% endif %}
+              </div>
+              <div class="notification-bar__actions">
+                <a href="{% url 'mesajlar' %}" class="notification-bar__view-all">Tümünü Gör</a>
+                <button class="notification-bar__close"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %} -->
+
+      <!-- Ana İçerik Bölümü -->
+      <main>
+        <!-- Bildirim Mesajları -->
+        {% if messages %}
+          <div class="notification-container">
+            {% for message in messages %}
+              <div class="notification notification-{% if message.tags == 'success' %}
+                  
+                  
+                  success
+
+
+                {% elif message.tags == 'info' %}
+                  
+                  
+                  info
+
+
+                {% elif message.tags == 'warning' %}
+                  
+                  
+                  warning
+
+
+                {% elif message.tags == 'error' %}
+                  
+                  
+                  danger
+
+
+                {% else %}
+                  
+                  
+                  primary
+
+
+                {% endif %}"
+                role="alert">
+                <div class="d-flex align-items-center">
+                  {% if message.tags == 'success' %}
+                    <i class="fa fa-check-circle me-2"></i>
+                  {% elif message.tags == 'info' %}
+                    <i class="fa fa-info-circle me-2"></i>
+                  {% elif message.tags == 'warning' %}
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                  {% elif message.tags == 'error' %}
+                    <i class="fa fa-times-circle me-2"></i>
+                  {% else %}
+                    <i class="fa fa-bell me-2"></i>
+                  {% endif %}
+                  {{ message }}
+                </div>
+                <button type="button" class="notification-close" aria-label="Kapat"><i class="fa fa-times"></i></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}
+
+        {% endblock %}
+      </main>
+
+      <!-- Footer Bölümü -->
+      {% include 'includes/footer.html' %}
+    </div>
+
+    <!-- Mobil Navigasyon -->
+    {% include 'includes/mobile-nav.html' %}
+
+    <!-- Arama Popup -->
+    <div class="search-popup">
+      <div class="search-popup__overlay search-toggler"></div>
+      <div class="search-popup__content">
+        <form role="search" method="get" class="search-popup__form" action="#">
+          <input type="text" id="search" placeholder="Arama yapın..." />
+          <button type="submit" aria-label="search submit" class="eduhive-btn"><i class="icon-search"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Yukarı Çık Butonu -->
+    <a href="#" data-target="html" class="scroll-to-target scroll-to-top">
+      <span class="scroll-to-top__text">Yukarı Çık</span>
+      <span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span>
+    </a>
+
+    <!-- JavaScript Dosyaları -->
+    {% include 'includes/js.html' %}
+    {% block extra_js %}
+
+    {% endblock %}
+
+    <style>
+      .notification-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 1050;
+        max-width: 350px;
+      }
+      
+      .notification {
+        position: relative;
+        margin-bottom: 10px;
+        padding: 15px 35px 15px 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out forwards;
+        border-left: 4px solid;
+        background-color: #fff;
+      }
+      
+      .notification-success {
+        background-color: #f0fff4;
+        border-left-color: #48bb78;
+      }
+      
+      .notification-info {
+        background-color: #ebf8ff;
+        border-left-color: #4299e1;
+      }
+      
+      .notification-warning {
+        background-color: #fffaf0;
+        border-left-color: #ed8936;
+      }
+      
+      .notification-danger {
+        background-color: #fff5f5;
+        border-left-color: #f56565;
+      }
+      
+      .notification-primary {
+        background-color: #ebf4ff;
+        border-left-color: #6610f2;
+      }
+      
+      .notification-close {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 5px;
+        cursor: pointer;
+        color: #666;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+      }
+      
+      .notification-close:hover {
+        opacity: 1;
+      }
+      
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      .notification.fade-out {
+        animation: fadeOut 0.5s ease-out forwards;
+      }
+      
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
+      
+      /* Bildirim Çubuğu */
+      .notification-bar {
+        background-color: #6610f2;
+        background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+        color: #fff;
+        padding: 12px 0;
+        position: relative;
+        z-index: 99;
+      }
+      
+      .notification-bar__inner {
+        display: flex;
+        align-items: center;
+      }
+      
+      .notification-bar__icon {
+        font-size: 20px;
+        margin-right: 15px;
+        color: #fff;
+      }
+      
+      .notification-bar__content {
+        flex: 1;
+      }
+      
+      .notification-bar__link {
+        color: #fff;
+        text-decoration: none;
+        display: block;
+      }
+      
+      .notification-bar__link strong {
+        font-weight: 600;
+        margin-right: 8px;
+      }
+      
+      .notification-bar__more {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 12px;
+        margin-left: 8px;
+      }
+      
+      .notification-bar__actions {
+        display: flex;
+        align-items: center;
+      }
+      
+      .notification-bar__view-all {
+        color: #fff;
+        text-decoration: none;
+        margin-right: 15px;
+        font-size: 14px;
+        font-weight: 500;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .notification-bar__close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+      }
+    </style>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const notifications = document.querySelectorAll('.notification')
+      
+        // Bildirimleri kapatma fonksiyonu
+        function closeNotification(notification) {
+          notification.classList.add('fade-out')
+          setTimeout(() => {
+            notification.remove()
+          }, 500)
+        }
+      
+        // Kapatma düğmesi işlevselliği
+        document.querySelectorAll('.notification-close').forEach((button) => {
+          button.addEventListener('click', function () {
+            const notification = this.closest('.notification')
+            closeNotification(notification)
+          })
+        })
+      
+        // Otomatik kapanma
+        notifications.forEach((notification) => {
+          setTimeout(() => {
+            if (notification && notification.isConnected) {
+              closeNotification(notification)
+            }
+          }, 5000)
+        })
+      })
+      
+      document.addEventListener('DOMContentLoaded', function () {
+        // Bildirim çubuğunu kapatma
+        const notificationBar = document.querySelector('.notification-bar')
+        const notificationBarClose = document.querySelector('.notification-bar__close')
+      
+        if (notificationBarClose) {
+          notificationBarClose.addEventListener('click', function () {
+            notificationBar.style.display = 'none'
+          })
+        }
+      })
+    </script>
+  </body>
+</html>

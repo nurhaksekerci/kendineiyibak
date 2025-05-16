@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Eğitmen Düzenle - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Eğitmen Düzenle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">Hoş geldiniz, {{ request.user.fullname|default:request.user.username }}! "{{ egitmen.ad_soyad }}" eğitmenini düzenleyebilirsiniz.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Eğitmen Düzenleme Formu -->
+  <section class="yonetim-form section-space">
+    <div class="container">
+      {% if messages %}
+        <div class="row mb-4">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+      
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0">Eğitmen Bilgileri</h4>
+              <a href="{% url 'yonetim_paneli' %}" class="btn btn-secondary btn-sm">
+                <i class="fa fa-arrow-left"></i> Geri Dön
+              </a>
+            </div>
+            <div class="card-body">
+              <!-- Mevcut Eğitmen Bilgileri -->
+              <div class="row mb-4">
+                <div class="col-md-12">
+                  <div class="card bg-light border-0">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-12">
+                          {% if egitmen.profil_resmi %}
+                            <div class="text-center mb-3">
+                              <img src="{{ egitmen.profil_resmi.url }}" alt="{{ egitmen.ad_soyad }}" class="img-fluid rounded-circle" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                            </div>
+                          {% endif %}
+                          <h5 class="card-title mb-1">{% if egitmen.unvan %}{{ egitmen.unvan }} {% endif %}{{ egitmen.ad_soyad }}</h5>
+                          <p class="text-muted mb-1">
+                            {{ egitmen.email|default:"E-posta belirtilmemiş" }}
+                          </p>
+                          <p class="card-text">
+                            <span class="badge {% if egitmen.aktif %}bg-success{% else %}bg-danger{% endif %}">
+                              {% if egitmen.aktif %}Aktif{% else %}Pasif{% endif %}
+                            </span>
+                          </p>
+                          {% if egitmen.ozgecmis %}
+                            <div class="mt-2">
+                              <h6>Özgeçmiş:</h6>
+                              <p class="small">{{ egitmen.ozgecmis|linebreaks }}</p>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="ad_soyad" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="ad_soyad" name="ad_soyad" value="{{ egitmen.ad_soyad }}" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="unvan" class="form-label">Unvan</label>
+                      <input type="text" class="form-control" id="unvan" name="unvan" value="{{ egitmen.unvan }}">
+                      <div class="form-text">Örn: Psikolog, Uzman Doktor, Prof. Dr., vb.</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="email" class="form-label">E-posta</label>
+                  <input type="email" class="form-control" id="email" name="email" value="{{ egitmen.email|default_if_none:'' }}">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="profil_resmi" class="form-label">Profil Resmi</label>
+                  <input type="file" class="form-control" id="profil_resmi" name="profil_resmi" accept="image/*">
+                  {% if egitmen.profil_resmi %}
+                    <div class="form-text">Mevcut resim: {{ egitmen.profil_resmi.name }}</div>
+                  {% endif %}
+                  <div class="form-text">Eğitmen için yeni bir profil resmi yükleyebilirsiniz (opsiyonel).</div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="ozgecmis" class="form-label">Özgeçmiş</label>
+                  <textarea class="form-control" id="ozgecmis" name="ozgecmis" rows="4">{{ egitmen.ozgecmis|default_if_none:'' }}</textarea>
+                  <div class="form-text">Eğitmenin kısa özgeçmişi, deneyimleri ve uzmanlık alanları</div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="aktif" name="aktif" {% if egitmen.aktif %}checked{% endif %}>
+                  <label class="form-check-label" for="aktif">Aktif</label>
+                  <div class="form-text">İşaretli ise eğitmen site üzerinde görüntülenecektir</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save"></i> Değişiklikleri Kaydet
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+
+  .yonetim-form {
+    padding: 80px 0;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+  }
+
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+  }
+
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #6610f2;
+    box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25);
+  }
+</style>
+{% endblock %} 

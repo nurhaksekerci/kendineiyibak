@@ -1,0 +1,165 @@
+{% load static %}
+<section class="blog-one section-space" id="blog">
+    <div class="container">
+        <div class="blog-one__top">
+            <div class="row gutter-y-50 align-items-center">
+                <div class="col-xl-9 col-lg-8">
+                    <div class="blog-one__content">
+                        <div class="sec-title wow fadeInUp" data-wow-duration="1500ms">
+                            <h6 class="sec-title__tagline">Blog</h6>
+                            <h3 class="sec-title__title"><span class="sec-title__title__shape">Güncel</span> <span class="sec-title__title__text">Makaleler</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-4">
+                    <div class="blog-one__custome-navs"></div>
+                </div>
+            </div>
+        </div>
+        <div class="blog-one__carousel eduhive-owl__carousel owl-carousel owl-theme" data-owl-options="{
+            &quot;items&quot;: 3,
+            &quot;margin&quot;: 30,
+            &quot;loop&quot;: true,
+            &quot;smartSpeed&quot;: 700,
+            &quot;nav&quot;: true,
+            &quot;dots&quot;: false,
+            &quot;navContainer&quot;: &quot;.blog-one__custome-navs&quot;,
+            &quot;responsive&quot;: {
+                &quot;0&quot;: {&quot;items&quot;: 1},
+                &quot;768&quot;: {&quot;items&quot;: 2},
+                &quot;992&quot;: {&quot;items&quot;: 3}
+            }
+        }">
+            <!-- Blog 1 -->
+            <div class="item">
+                <div class="blog-card wow fadeInUp" data-wow-duration="1500ms">
+                    <div class="blog-card__image">
+                        <img src="{% static 'assets/images/blog/demans-belirtileri.jpg' %}" alt="Demans Belirtileri">
+                        <a href="blog-details.html" class="blog-card__image__link"></a>
+                        <div class="blog-card__date">
+                            <span class="blog-card__date__day">15</span>
+                            <span class="blog-card__date__month">Mar</span>
+                        </div>
+                    </div>
+                    <div class="blog-card__content">
+                        <ul class="list-unstyled blog-card__meta">
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="far fa-user"></i>
+                                    </span>
+                                    Dr. Ayşe Yılmaz
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="icon-comments"></i>
+                                    </span>
+                                    3 Yorum
+                                </a>
+                            </li>
+                        </ul>
+                        <h3 class="blog-card__title">
+                            <a href="blog-details.html">Demans Hastalığının Erken Belirtileri</a>
+                        </h3>
+                        <a href="blog-details.html" class="blog-card__link">
+                            Devamını Oku
+                            <span class="blog-card__link__icon">
+                                <span class="blog-card__link__icon__inner"><i class="icon-right-arrow"></i></span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog 2 -->
+            <div class="item">
+                <div class="blog-card wow fadeInUp" data-wow-duration="1500ms">
+                    <div class="blog-card__image">
+                        <img src="{% static 'assets/images/blog/iletisim-teknikleri.jpg' %}" alt="İletişim Teknikleri">
+                        <a href="blog-details.html" class="blog-card__image__link"></a>
+                        <div class="blog-card__date">
+                            <span class="blog-card__date__day">10</span>
+                            <span class="blog-card__date__month">Mar</span>
+                        </div>
+                    </div>
+                    <div class="blog-card__content">
+                        <ul class="list-unstyled blog-card__meta">
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="far fa-user"></i>
+                                    </span>
+                                    Uzm. Psk. Mehmet Demir
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="icon-comments"></i>
+                                    </span>
+                                    5 Yorum
+                                </a>
+                            </li>
+                        </ul>
+                        <h3 class="blog-card__title">
+                            <a href="blog-details.html">Demans Hastalarıyla Etkili İletişim Yöntemleri</a>
+                        </h3>
+                        <a href="blog-details.html" class="blog-card__link">
+                            Devamını Oku
+                            <span class="blog-card__link__icon">
+                                <span class="blog-card__link__icon__inner"><i class="icon-right-arrow"></i></span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog 3 -->
+            <div class="item">
+                <div class="blog-card wow fadeInUp" data-wow-duration="1500ms">
+                    <div class="blog-card__image">
+                        <img src="{% static 'assets/images/blog/aktiviteler.jpg' %}" alt="Aktiviteler">
+                        <a href="blog-details.html" class="blog-card__image__link"></a>
+                        <div class="blog-card__date">
+                            <span class="blog-card__date__day">5</span>
+                            <span class="blog-card__date__month">Mar</span>
+                        </div>
+                    </div>
+                    <div class="blog-card__content">
+                        <ul class="list-unstyled blog-card__meta">
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="far fa-user"></i>
+                                    </span>
+                                    Fizyoterapist Zeynep Kaya
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="blog-card__meta__icon">
+                                        <i class="icon-comments"></i>
+                                    </span>
+                                    2 Yorum
+                                </a>
+                            </li>
+                        </ul>
+                        <h3 class="blog-card__title">
+                            <a href="blog-details.html">Demans Hastaları İçin Faydalı Aktiviteler</a>
+                        </h3>
+                        <a href="blog-details.html" class="blog-card__link">
+                            Devamını Oku
+                            <span class="blog-card__link__icon">
+                                <span class="blog-card__link__icon__inner"><i class="icon-right-arrow"></i></span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <img src="{% static 'assets/images/shapes/blog-shape-1-1.png' %}" alt="shape" class="blog-one__shape-one">
+    <img src="{% static 'assets/images/shapes/blog-shape-1-2.png' %}" alt="shape" class="blog-one__shape-two">
+</section> 

@@ -1,0 +1,114 @@
+{% load static %}
+
+<footer class="main-footer section-space-top">
+  <div class="container">
+    <!-- /.main-footer__top -->
+    <div class="row gutter-y-40">
+      <div class="col-xl-4 col-lg-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+        <div class="footer-widget footer-widget--about">
+          <h2 class="footer-widget__title">Hakkımızda</h2><!-- /.footer-widget__title -->
+          <p class="footer-widget__about-text">Demanslı yakınınıza ve kendinize daha iyi bakmanız için gerekli bilgi ve becerileri edinin.</p>
+          <!-- /.footer-widget__about-text -->
+        </div>
+        <!-- /.footer-widget -->
+      </div>
+      <!-- /.col-xl-4 col-lg-4 -->
+      <div class="col-xl-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+        <div class="footer-widget footer-widget--links">
+          <h2 class="footer-widget__title">Hızlı Erişim</h2><!-- /.footer-widget__title -->
+          <ul class="list-unstyled footer-widget__links">
+            <li>
+              <a href="{% url 'index' %}">
+                <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                Ana Sayfa
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'index' %}#about">
+                <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                Hakkımızda
+              </a>
+            </li>
+            <li>
+              {% if user.is_authenticated %}
+                <a href="{% url 'courses' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Eğitimler
+                </a>
+              {% else %}
+                <a href="{% url 'access_denied' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Eğitimler
+                </a>
+              {% endif %}
+            </li>
+            <li>
+              {% if user.is_authenticated %}
+                <a href="{% url 'profil' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Profilim
+                </a>
+              {% else %}
+                <a href="{% url 'giris' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Giriş Yap
+                </a>
+              {% endif %}
+            </li>
+            <li>
+              {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Çıkış Yap
+                </a>
+              {% else %}
+                <a href="{% url 'kayit' %}">
+                  <span class="footer-widget__links__icon"><i class="icon-double-arrow"></i></span>
+                  Kayıt Ol
+                </a>
+              {% endif %}
+            </li>
+          </ul>
+          <!-- /.list-unstyled footer-widget__links -->
+        </div>
+        <!-- /.footer-widget -->
+      </div>
+      <!-- /.col-xl-4 col-md-6 col-sm-12 -->
+      <div class="col-xl-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+        <div class="footer-widget footer-widget--contact">
+          <h2 class="footer-widget__title">İletişim Bilgileri</h2><!-- /.footer-widget__title -->
+          <ul class="footer-widget__info">
+            <li style="display: none;">
+              <span class="footer-widget__info__icon"><i class="icon-location"></i></span>
+              <a href="https://www.google.com/maps">İstanbul, Türkiye</a>
+            </li>
+            <li>
+              <span class="footer-widget__info__icon"><i class="icon-email"></i></span>
+              <a href="mailto:aysunmutlu25@gmail.com">aysunmutlu25@gmail.com</a>
+            </li>
+            <li>
+              <span class="footer-widget__info__icon"><i class="icon-telephone"></i></span>
+              <a href="tel:+905367655107">+90 536 765 51 07</a>
+            </li>
+          </ul>
+          <!-- /.footer-widget__info -->
+        </div>
+        <!-- /.footer-widget -->
+      </div>
+      <!-- /.col-xl-4 col-md-6 col-sm-12 -->
+    </div>
+    <!-- /.row gutter-y-40 -->
+  </div>
+  <!-- /.container -->
+  <div class="main-footer__bottom">
+    <div class="container">
+      <div class="main-footer__bottom__inner d-flex justify-content-center">
+        <!--     <p class="main-footer__copyright text-center w-100">
+          &copy; Copyright <span class="dynamic-year"></span> Kendine İyi Bak. Tüm Hakları Saklıdır.
+        </p>     -->
+      </div>
+      <!-- /.main-footer__inner -->
+    </div>
+    <!-- /.container -->
+  </div>
+</footer>

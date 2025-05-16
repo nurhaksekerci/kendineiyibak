@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aktivite Yanıtları: {{ aktivite.baslik }}{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Aktivite Yanıtları</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">{{ aktivite.baslik }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Yanıt Listesi -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_listesi' %}">Aktiviteler</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_duzenle' aktivite.id %}">{{ aktivite.baslik }}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Yanıtlar</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                  <h2 class="h4 mb-1">Aktivite Bilgileri</h2>
+                  <p class="text-muted mb-0">{{ aktivite.hafta }}. Hafta - {{ aktivite.get_tip_display }}</p>
+                </div>
+                <a href="{% url 'yonetim_aktivite_duzenle' aktivite.id %}" class="btn btn-outline-primary">
+                  <i class="fas fa-edit me-2"></i>Aktiviteyi Düzenle
+                </a>
+              </div>
+              
+              {% if aktivite.aciklama %}
+                <div class="mb-4">
+                  <p>{{ aktivite.aciklama }}</p>
+                </div>
+              {% endif %}
+              
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card bg-light mb-3">
+                    <div class="card-body">
+                      <h5 class="h6 mb-3">Aktivite Özeti</h5>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                          <span>Oluşturma Tarihi</span>
+                          <span class="badge bg-secondary">{{ aktivite.olusturma_tarihi|date:"d.m.Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                          <span>Toplam Öğe</span>
+                          <span class="badge bg-primary">{{ aktivite.ogeleri_getir.count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                          <span>Toplam Yanıt</span>
+                          <span class="badge bg-success">{{ yanitlar.count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                          <span>Durum</span>
+                          {% if aktivite.aktif %}
+                            <span class="badge bg-success">Aktif</span>
+                          {% else %}
+                            <span class="badge bg-secondary">Pasif</span>
+                          {% endif %}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-8">
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Kullanıcı</th>
+                          <th>Durum</th>
+                          <th>Oluşturma Tarihi</th>
+                          <th>Son Güncelleme</th>
+                          <th>İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% if yanitlar %}
+                          {% for yanit in yanitlar %}
+                            <tr>
+                              <td>{{ yanit.id }}</td>
+                              <td>
+                                <a href="{% url 'kullanici_detay' yanit.kullanici.id %}">
+                                  {{ yanit.kullanici.fullname|default:yanit.kullanici.username }}
+                                </a>
+                              </td>
+                              <td>
+                                {% if yanit.tamamlandi %}
+                                  <span class="badge bg-success">Tamamlandı</span>
+                                {% else %}
+                                  <span class="badge bg-warning text-dark">Devam Ediyor</span>
+                                {% endif %}
+                              </td>
+                              <td>{{ yanit.olusturma_tarihi|date:"d.m.Y H:i" }}</td>
+                              <td>{{ yanit.guncelleme_tarihi|date:"d.m.Y H:i" }}</td>
+                              <td>
+                                <a href="{% url 'yonetim_aktivite_yanit_detay' yanit.id %}" class="btn btn-sm btn-outline-primary">
+                                  <i class="fas fa-eye"></i>
+                                </a>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        {% else %}
+                          <tr>
+                            <td colspan="6" class="text-center py-4">
+                              <p class="text-muted mb-0">Henüz yanıt bulunmuyor.</p>
+                            </td>
+                          </tr>
+                        {% endif %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+</style>
+{% endblock %} 

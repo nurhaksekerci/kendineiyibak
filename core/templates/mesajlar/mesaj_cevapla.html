@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ mesaj.konu }} - Cevapla - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Mesaj Cevapla</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Mesaja cevap yazın ve gönderin.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mesaj Cevapla Section -->
+    <section class="reply-section py-5">
+      <div class="container">
+        <!-- Kontrol Çubuğu -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'mesaj_detay' mesaj_id=mesaj.id %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Mesaja Dön</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mesaj Formu -->
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-reply me-2 text-primary"></i>Mesajı Cevapla</h4>
+              </div>
+              <div class="card-body">
+                <!-- Orijinal Mesaj -->
+                <div class="original-message mb-4">
+                  <h5 class="border-bottom pb-2 mb-3">Orijinal Mesaj</h5>
+                  <div class="message-info p-3 bg-light rounded mb-3">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <p class="mb-1">
+                          <strong>Konu:</strong> {{ mesaj.konu }}
+                        </p>
+                        <p class="mb-1">
+                          <strong>Gönderen:</strong> {{ mesaj.gonderen.fullname|default:mesaj.gonderen.username }}
+                          {% if mesaj.gonderen.is_staff %}
+                            <i class="fas fa-star text-warning ms-1" title="Yönetici"></i>
+                          {% endif %}
+                        </p>
+                      </div>
+                      <div class="col-md-6 text-md-end">
+                        <p class="mb-1">
+                          <strong>Tarih:</strong> {{ mesaj.olusturma_tarihi|date:'d.m.Y H:i' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="message-content border rounded p-3 mb-3">
+                    <pre style="white-space: pre-wrap; font-family: inherit; margin-bottom: 0;">{{ mesaj.icerik }}</pre>
+                  </div>
+                </div>
+
+                <!-- Cevap Formu -->
+                <div class="reply-form">
+                  <h5 class="border-bottom pb-2 mb-3">Cevabınız</h5>
+                  <form method="post" action="{% url 'mesaj_cevapla' mesaj_id=mesaj.id %}">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                      <textarea name="icerik" class="form-control" rows="10" placeholder="Cevabınızı buraya yazın..." required></textarea>
+                    </div>
+
+                    <div class="text-end">
+                      <button type="submit" class="btn btn-primary px-4"><i class="fas fa-paper-plane me-2"></i>Cevabı Gönder</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .form-control:focus {
+      border-color: #674cef;
+      box-shadow: 0 0 0 0.25rem rgba(103, 76, 239, 0.25);
+    }
+    
+    .message-info {
+      background-color: #f0f0ff !important;
+      border-left: 4px solid #674cef;
+    }
+  </style>
+{% endblock %}

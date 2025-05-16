@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ mesaj.konu }} - Mesaj Detayı - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Mesaj Detayı</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Mesaj içeriğini görüntüleyin ve yanıtlayın.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mesaj Detay Section -->
+    <section class="message-detail-section py-5">
+      <div class="container">
+        <!-- Kontrol Çubuğu -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'mesajlar' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Mesajlara Dön</a>
+              </div>
+              <div>
+                <a href="{% url 'mesaj_cevapla' mesaj_id=mesaj.id %}" class="btn btn-primary"><i class="fas fa-reply me-2"></i>Cevapla</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mesaj Kartı -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                  <h4 class="mb-0 text-primary">{{ mesaj.konu }}</h4>
+                  <span class="badge {% if mesaj.durum == 'bekliyor' %}
+                      bg-warning text-dark
+                    {% elif mesaj.durum == 'cevaplandi' %}
+                      bg-success
+                    {% else %}
+                      bg-secondary
+                    {% endif %}">
+                    {{ mesaj.get_durum_display }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Mesaj Bilgileri -->
+                <div class="message-info mb-4 p-3 bg-light rounded">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1">
+                        <strong>Gönderen:</strong> {{ mesaj.gonderen.fullname|default:mesaj.gonderen.username }}
+                        {% if mesaj.gonderen.is_staff %}
+                          <i class="fas fa-star text-warning ms-1" title="Yönetici"></i>
+                        {% endif %}
+                      </p>
+                      <p class="mb-1">
+                        <strong>Alıcı:</strong> {{ mesaj.alici.fullname|default:mesaj.alici.username }}
+                        {% if mesaj.alici.is_staff %}
+                          <i class="fas fa-star text-warning ms-1" title="Yönetici"></i>
+                        {% endif %}
+                      </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                      <p class="mb-1">
+                        <strong>Tarih:</strong> {{ mesaj.olusturma_tarihi|date:'d.m.Y H:i' }}
+                      </p>
+                      {% if mesaj.okunma_tarihi %}
+                        <p class="mb-1">
+                          <strong>Okunma Tarihi:</strong> {{ mesaj.okunma_tarihi|date:'d.m.Y H:i' }}
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mesaj İçeriği -->
+                <div class="message-content mb-4">
+                  <div class="message-bubble p-4 mb-3 border rounded">
+                    <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; margin-bottom: 0;">{{ mesaj.icerik }}</pre>
+                  </div>
+                </div>
+
+                <!-- Cevaplar -->
+                {% if cevaplar %}
+                  <div class="message-replies mt-5">
+                    <h5 class="mb-3 border-bottom pb-2">Cevaplar</h5>
+
+                    {% for cevap in cevaplar %}
+                      <div class="reply-item mb-4">
+                        <div class="reply-header d-flex justify-content-between align-items-center mb-2">
+                          <div>
+                            <strong>{{ cevap.gonderen.fullname|default:cevap.gonderen.username }}</strong>
+                            {% if cevap.gonderen.is_staff %}
+                              <i class="fas fa-star text-warning ms-1" title="Yönetici"></i>
+                            {% endif %}
+                          </div>
+                          <small class="text-muted">{{ cevap.olusturma_tarihi|date:'d.m.Y H:i' }}</small>
+                        </div>
+                        <div class="reply-bubble p-3 border rounded">
+                          <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; margin-bottom: 0;">{{ cevap.icerik }}</pre>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <!-- Hızlı Cevap Formu -->
+                <div class="quick-reply mt-4">
+                  <h5 class="mb-3 border-bottom pb-2">Hızlı Cevap</h5>
+                  <form action="{% url 'mesaj_cevapla' mesaj_id=mesaj.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <textarea name="icerik" class="form-control" rows="5" placeholder="Cevabınızı buraya yazın..." required></textarea>
+                    </div>
+                    <div class="text-end">
+                      <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Gönder</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .message-bubble,
+    .reply-bubble {
+      background-color: #f8f9fa;
+      border-color: #e9ecef !important;
+    }
+    
+    .message-info {
+      background-color: #f0f0ff !important;
+      border-left: 4px solid #674cef;
+    }
+  </style>
+{% endblock %}

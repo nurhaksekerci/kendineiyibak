@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Görüntülü Görüşme - Kendine İyi Bak
+{% endblock %}
+
+{% block extra_head %}
+  <!-- Otomatik yönlendirme etiketi - her sayfa yenilemesinde 0.5 saniye sonra anasayfaya gidecek -->
+  <meta http-equiv="refresh" content="0.5;url=/" id="autoRefresh" />
+
+  <script>
+    // Sayfa yüklendiğinde otomatik yönlendirmeyi devre dışı bırak
+    document.addEventListener('DOMContentLoaded', function () {
+      // Meta refresh etiketini bul ve kaldır (sadece normal sayfada)
+      var metaRefresh = document.getElementById('autoRefresh')
+      if (metaRefresh) {
+        metaRefresh.remove()
+      }
+    })
+  </script>
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Görüntülü Görüşme</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hemen görüşme başlatabilir veya mevcut görüşmelere katılabilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Görüntülü Görüşme</h6>
+              <div class="meeting-controls">
+                <a href="{{ meeting_link }}" target="_blank" id="btnStartMeeting" class="btn btn-success btn-sm me-2"><i class="fas fa-video me-1"></i> Görüşmeyi Başlat</a>
+                {% if gorusme.olusturan == user %}
+                <form action="/gorusme/{{ gorusme.id }}/sonlandir/" method="POST" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="redirect_url" value="/" />
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Görüşmeyi sonlandırmak istediğinize emin misiniz?');"><i class="fas fa-phone-slash me-1"></i> Görüşmeyi Sonlandır</button>
+                </form>
+                {% else %}
+                <button type="button" class="btn btn-danger btn-sm" onclick="alert('Görüşmeyi sadece başlatan kişi sonlandırabilir!');"><i class="fas fa-phone-slash me-1"></i> Görüşmeyi Sonlandır</button>
+                {% endif %}
+              </div>
+            </div>
+            <div class="card-body p-3">
+              <div class="row">
+                <div class="col-md-8">
+                  <!-- Jitsi meet container -->
+                  <div id="jitsi-container" class="rounded overflow-hidden" style="height: 500px; background-color: #1a1a1a;">
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                      <i class="fas fa-video text-muted mb-3" style="font-size: 48px;"></i>
+                      <h5 class="text-muted">Görüşme henüz başlamadı</h5>
+                      <p class="text-muted">Görüşmeyi başlatmak için yukarıdaki "Görüşmeyi Başlat" butonuna tıklayın</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card mb-3">
+                    <div class="card-header pb-0">
+                      <h6 class="mb-0">Görüşme Bilgileri</h6>
+                    </div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label">Görüşme ID</label>
+                        <div class="input-group">
+                          <input type="text" id="meetingId" class="form-control" value="{{ gorusme_id }}" readonly />
+                          <button class="btn btn-outline-primary mb-0" id="btnCopyMeetingId"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <small class="text-muted">Bu ID'yi görüşmeye katılması gereken kişilerle paylaşın</small>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Görüşme Bağlantısı</label>
+                        <div class="input-group">
+                          <input type="text" id="meetingLink" class="form-control" value="{{ meeting_link }}" readonly />
+                          <button class="btn btn-outline-primary mb-0" id="btnCopyMeetingLink"><i class="fas fa-copy"></i></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0">Katılımcılar</h6>
+                      <span class="badge badge-sm bg-primary" style="background-color: #6610f2 !important;">Toplam: {{ katilimcilar|length|add:'1' }}</span>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-0">
+                      <!-- Önce katılım sayıları göstergesi -->
+                     
+
+                      <div class="table-responsive p-0" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table align-items-center mb-0">
+                          <thead>
+                            <tr>
+                              <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">Katılımcı</th>
+                              <th class="text-uppercase text-xxs font-weight-bolder opacity-7 text-end pe-3">Durum</th>
+                            </tr>
+                          </thead>
+                          <tbody id="participantsList">
+                            <!-- Görüşmeyi oluşturan kişi -->
+                            <tr>
+                              <td>
+                                <div class="d-flex px-3 py-1">
+                                  
+                                  <div class="d-flex flex-column justify-content-center">
+                                    <h6 class="mb-0 text-sm">{{ gorusme.olusturan.fullname|default:gorusme.olusturan.username }}</h6>
+                                    <p class="text-xs text-secondary mb-0">{{ gorusme.olusturan.email }}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td class="align-middle text-end pe-3">
+                                <span class="badge badge-sm bg-gradient-success" style="background-color: #6610f2 !important;">
+                                  {% if gorusme.olusturan == user %}
+                                    Oluşturan (Siz)
+                                  {% else %}
+                                    Oluşturan
+                                  {% endif %}
+                                </span>
+                              </td>
+                            </tr>
+
+                            <!-- Kabul eden katılımcılar -->
+                            {% for katilimci in katilimcilar %}
+                              {% if katilimci.kullanici != gorusme.olusturan and katilimci.davet_durumu == 'kabul' %}
+                                <tr>
+                                  <td>
+                                    <div class="d-flex px-3 py-1">
+                                      
+                                      <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">{{ katilimci.kullanici.fullname|default:katilimci.kullanici.username }}</h6>
+                                        <p class="text-xs text-secondary mb-0">{{ katilimci.kullanici.email }}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td class="align-middle text-end pe-3">
+                                    <span class="badge badge-sm bg-gradient-success" style="background-color: #6610f2 !important;">
+                                      {% if katilimci.kullanici == user %}
+                                        Kabul Ettiniz
+                                      {% else %}
+                                        Kabul Etti
+                                      {% endif %}
+                                    </span>
+                                  </td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+
+                            <!-- Bekleyen katılımcılar -->
+                            {% for katilimci in katilimcilar %}
+                              {% if katilimci.kullanici != gorusme.olusturan and katilimci.davet_durumu == 'bekliyor' %}
+                                <tr>
+                                  <td>
+                                    <div class="d-flex px-3 py-1">
+                                      
+                                      <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">{{ katilimci.kullanici.fullname|default:katilimci.kullanici.username }}</h6>
+                                        <p class="text-xs text-secondary mb-0">{{ katilimci.kullanici.email }}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td class="align-middle text-end pe-3">
+                                    <span class="badge badge-sm bg-gradient-warning" style="background-color: #6610f2 !important;"  >Davet Edildi</span>
+                                  </td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+
+                            <!-- Reddeden katılımcılar -->
+                            {% for katilimci in katilimcilar %}
+                              {% if katilimci.kullanici != gorusme.olusturan and katilimci.davet_durumu == 'red' %}
+                                <tr>
+                                  <td>
+                                    <div class="d-flex px-3 py-1">
+                                      <div>
+                                        <img src="{{ katilimci.kullanici.userprofile.avatar.url }}" class="avatar avatar-sm me-3" alt="user" />
+                                      </div>
+                                      <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">{{ katilimci.kullanici.display_name|default:katilimci.kullanici.username }}</h6>
+                                        <p class="text-xs text-danger mb-0">
+                                          <i class="fas fa-times-circle me-1"></i> Katılmayı reddetti
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td class="align-middle text-end pe-3">
+                                    <span class="badge badge-sm bg-gradient-danger" style="background-color: #6610f2 !important;">Reddetti</span>
+                                  </td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      
+                    </div>
+                  </div>
+
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .page-banner h1 {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+  </style>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    // CSRF token'ı çerezlerden alma fonksiyonu
+    function getCookie(name) {
+      let cookieValue = null
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';')
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim()
+          if (cookie.substring(0, name.length + 1) === name + '=') {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+            break
+          }
+        }
+      }
+      return cookieValue
+    }
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      // Kopya butonları
+      document.getElementById('btnCopyMeetingId').addEventListener('click', function () {
+        const meetingId = document.getElementById('meetingId')
+        if (!meetingId || !meetingId.value) {
+          alert('Kopyalanacak görüşme ID bulunamadı.')
+          return
+        }
+    
+        meetingId.select()
+        try {
+          // Modern tarayıcılar için
+          const successful = document.execCommand('copy')
+          if (successful) {
+            alert('Görüşme ID başarıyla kopyalandı.')
+          } else {
+            throw new Error('Kopyalama başarısız')
+          }
+        } catch (err) {
+          console.error('Kopyalama hatası:', err)
+          alert('Kopyalama işlemi başarısız oldu. Lütfen manuel olarak kopyalayın.')
+        }
+      })
+    
+      document.getElementById('btnCopyMeetingLink').addEventListener('click', function () {
+        const meetingLink = document.getElementById('meetingLink')
+        if (!meetingLink || !meetingLink.value) {
+          alert('Kopyalanacak görüşme bağlantısı bulunamadı.')
+          return
+        }
+    
+        meetingLink.select()
+        try {
+          // Modern tarayıcılar için
+          const successful = document.execCommand('copy')
+          if (successful) {
+            alert('Görüşme bağlantısı başarıyla kopyalandı.')
+          } else {
+            throw new Error('Kopyalama başarısız')
+          }
+        } catch (err) {
+          console.error('Kopyalama hatası:', err)
+          alert('Kopyalama işlemi başarısız oldu. Lütfen manuel olarak kopyalayın.')
+        }
+      })
+    
+      // Katılımcı ekleme fonksiyonu
+      const btnKatilimciEkle = document.getElementById('btnKatilimciEkle')
+      if (btnKatilimciEkle) {
+        btnKatilimciEkle.addEventListener('click', function () {
+          const kullaniciSecim = document.getElementById('kullaniciSecim')
+          const kullaniciId = kullaniciSecim.value
+    
+          if (!kullaniciId) {
+            alert('Lütfen bir kullanıcı seçin.')
+            return
+          }
+    
+          // AJAX isteği için gerekli CSRF token
+          const csrftoken = getCookie('csrftoken')
+    
+          // AJAX isteği ile kullanıcıyı davet et
+          fetch('/gorusme/{{ gorusme.id }}/davet_gonder/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ kullanici_id: kullaniciId })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert(data.message)
+                // Başarılı olursa kullanıcı seçimi sıfırla
+                kullaniciSecim.value = ''
+              } else {
+                alert('Hata: ' + data.message)
+              }
+            })
+            .catch((error) => {
+              console.error('Davet gönderme hatası:', error)
+              alert('Davet gönderilirken bir hata oluştu.')
+            })
+        })
+      }
+    })
+  </script>
+{% endblock %}

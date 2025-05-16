@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aktivite Öğesi Ekle: {{ aktivite.baslik }}{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Aktivite Öğesi Ekle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">{{ aktivite.baslik }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Öğe Ekleme Formu -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_listesi' %}">Aktiviteler</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'yonetim_aktivite_duzenle' aktivite.id %}">{{ aktivite.baslik }}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Öğe Ekle</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      {% if messages %}
+        <div class="row mb-4">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-8 mx-auto">
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">{% if quick_add %}Hızlı Öğe Ekle{% else %}Öğe Detayları{% endif %}</h5>
+            </div>
+            <div class="card-body">
+              <form method="post" action="{% url 'yonetim_aktivite_oge_ekle' aktivite.id %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                  <label for="tip" class="form-label">Öğe Tipi <span class="text-danger">*</span></label>
+                  <select class="form-select" id="tip" name="tip" required onchange="showHideFields()">
+                    {% for tip_value, tip_label in oge_tipleri %}
+                      <option value="{{ tip_value }}" {% if default_tip == tip_value %}selected{% endif %}>{{ tip_label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="baslik" class="form-label">Öğe Başlığı</label>
+                  <input type="text" class="form-control" id="baslik" name="baslik" value="{{ default_baslik }}">
+                  <div class="form-text" id="baslik-help">Kullanıcıların göreceği başlık veya etiket.</div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="aciklama" class="form-label">Açıklama</label>
+                  <textarea class="form-control" id="aciklama" name="aciklama" rows="2"></textarea>
+                  <div class="form-text" id="aciklama-help">Öğe hakkında ek açıklama (isteğe bağlı).</div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="zorunlu" name="zorunlu">
+                  <label class="form-check-label" for="zorunlu">Bu öğe zorunlu olsun</label>
+                  <div class="form-text" id="zorunlu-help">İşaretlenirse, kullanıcılar bu öğeyi tamamlamadan ilerleyemezler.</div>
+                </div>
+                
+                <!-- Tablo tipi için ek ayarlar -->
+                <div id="tabloAyarlari" class="card bg-light mb-3">
+                  <div class="card-header">Tablo Ayarları</div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="satir_sayisi" class="form-label">Satır Sayısı</label>
+                          <input type="number" class="form-control" id="satir_sayisi" name="satir_sayisi" value="3" min="1" max="20">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="sutun_sayisi" class="form-label">Sütun Sayısı</label>
+                          <input type="number" class="form-control" id="sutun_sayisi" name="sutun_sayisi" value="3" min="1" max="10" onchange="generateColumnHeaders()">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="sutun_basliklar" class="form-label">Sütun Başlıkları (virgülle ayırın)</label>
+                      <input type="text" class="form-control" id="sutun_basliklar" name="sutun_basliklar" placeholder="Başlık 1, Başlık 2, Başlık 3">
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="satir_basliklar" class="form-label">Satır Başlıkları (virgülle ayırın)</label>
+                      <input type="text" class="form-control" id="satir_basliklar" name="satir_basliklar" placeholder="Satır 1, Satır 2, Satır 3">
+                    </div>
+
+                    <!-- Tablo Ön İzleme -->
+                    <div class="mt-3">
+                      <label class="form-label">Tablo Ön İzleme</label>
+                      <div class="table-responsive">
+                        <table class="table table-sm table-bordered" id="tablo-onizleme">
+                          <thead>
+                            <tr id="sutun-basliklar-onizleme">
+                              <th>Sütun 1</th>
+                              <th>Sütun 2</th>
+                              <th>Sütun 3</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tablo-govde-onizleme">
+                            <tr>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                            </tr>
+                            <tr>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                            </tr>
+                            <tr>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                              <td><input type="text" class="form-control form-control-sm" disabled></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="aktif" name="aktif" checked>
+                  <label class="form-check-label" for="aktif">Öğeyi aktif olarak yayınla</label>
+                </div>
+                
+                <div class="d-grid gap-2 d-flex justify-content-between">
+                  <a href="{% url 'yonetim_aktivite_duzenle' aktivite.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Aktiviteye Dön
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Öğeyi Ekle
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+</style>
+
+{% block extra_js %}
+<script>
+  // Ekleme sayfasında DOM yüklendiğinde çalışacak kodlar
+  document.addEventListener('DOMContentLoaded', function() {
+    // İlk sayfa yüklendiğinde alanları göster/gizle
+    showHideFields();
+    
+    // Değişimleri takip et
+    document.getElementById('tip').addEventListener('change', showHideFields);
+    document.getElementById('satir_sayisi').addEventListener('change', updateTablePreview);
+    document.getElementById('sutun_sayisi').addEventListener('change', updateTablePreview);
+    document.getElementById('sutun_basliklar').addEventListener('input', updateTablePreview);
+    document.getElementById('satir_basliklar').addEventListener('input', updateTablePreview);
+  });
+  
+  // Tip seçimine göre alanları göster/gizle
+  function showHideFields() {
+    var tipSelect = document.getElementById('tip');
+    var tabloAyarlari = document.getElementById('tabloAyarlari');
+    var baslikHelpText = document.getElementById('baslik-help');
+    
+    // Önce tüm alanları gizle
+    if (tabloAyarlari) {
+      tabloAyarlari.style.display = 'none';
+    }
+    
+    // Tablo tipiyse ayarları göster
+    if (tipSelect.value === 'tablo') {
+      console.log("Tablo tipi seçildi, alanlar gösteriliyor");
+      if (tabloAyarlari) {
+        tabloAyarlari.style.display = 'block';
+      }
+      
+      if (baslikHelpText) {
+        baslikHelpText.textContent = 'Tablonun başlığı.';
+      }
+      
+      // Tablo ayarlarını başlat
+      initializeTableValues();
+      
+      // Tablo ön izlemesini oluştur
+      updateTablePreview();
+    } else {
+      // Diğer tiplere göre açıklama metnini güncelle
+      if (baslikHelpText) {
+        if (tipSelect.value === 'baslik') {
+          baslikHelpText.textContent = 'Bölüm veya kısım başlığı.';
+        } else if (tipSelect.value === 'aciklama') {
+          baslikHelpText.textContent = 'Başlık (isteğe bağlı, görüntülenmeyebilir).';
+        } else if (tipSelect.value === 'checkbox') {
+          baslikHelpText.textContent = 'Onay kutusu etiketi.';
+        } else if (tipSelect.value === 'metin') {
+          baslikHelpText.textContent = 'Metin alanı etiketi.';
+        } else {
+          baslikHelpText.textContent = 'Kullanıcıların göreceği başlık veya etiket.';
+        }
+      }
+      
+      // Önerilen başlık değerini ayarla
+      updateFieldDefaults(tipSelect.value);
+    }
+  }
+  
+  // Tablo değerlerini başlat
+  function initializeTableValues() {
+    console.log("Tablo değerleri başlatılıyor...");
+    
+    // Satır ve sütun sayıları
+    const satirSayisiInput = document.getElementById('satir_sayisi');
+    const sutunSayisiInput = document.getElementById('sutun_sayisi');
+    
+    if (!satirSayisiInput || !sutunSayisiInput) {
+      console.log("Satır veya sütun sayısı inputları bulunamadı");
+      return;
+    }
+    
+    // Değerlerden emin ol, varsayılan 3x3
+    var satirSayisi = parseInt(satirSayisiInput.value) || 3;
+    var sutunSayisi = parseInt(sutunSayisiInput.value) || 3;
+    
+    console.log("Satır sayısı:", satirSayisi, "Sütun sayısı:", sutunSayisi);
+    
+    // Input değerlerini düzelt
+    satirSayisiInput.value = satirSayisi;
+    sutunSayisiInput.value = sutunSayisi;
+    
+    // Başlıklar için gerekli olan inputları başlat
+    const satirBasliklarInput = document.getElementById('satir_basliklar');
+    const sutunBasliklarInput = document.getElementById('sutun_basliklar');
+    
+    if (sutunBasliklarInput && !sutunBasliklarInput.value) {
+      var sutunBasliklar = [];
+      for (var i = 0; i < sutunSayisi; i++) {
+        sutunBasliklar.push("Sütun " + (i+1));
+      }
+      sutunBasliklarInput.value = sutunBasliklar.join(', ');
+      console.log("Sütun başlıkları:", sutunBasliklarInput.value);
+    }
+    
+    if (satirBasliklarInput && !satirBasliklarInput.value) {
+      var satirBasliklar = [];
+      for (var i = 0; i < satirSayisi; i++) {
+        satirBasliklar.push("Satır " + (i+1));
+      }
+      satirBasliklarInput.value = satirBasliklar.join(', ');
+      console.log("Satır başlıkları:", satirBasliklarInput.value);
+    }
+  }
+  
+  // Tablo önizlemesini güncelle
+  function updateTablePreview() {
+    // Sayıları al
+    var satirSayisi = parseInt(document.getElementById('satir_sayisi').value) || 3;
+    var sutunSayisi = parseInt(document.getElementById('sutun_sayisi').value) || 3;
+    
+    console.log("Ön izleme güncelleniyor. Satır:", satirSayisi, "Sütun:", sutunSayisi);
+    
+    // Başlıkları al
+    var sutunBasliklarInput = document.getElementById('sutun_basliklar').value;
+    var satirBasliklarInput = document.getElementById('satir_basliklar').value;
+    
+    var sutunBasliklar = sutunBasliklarInput.split(',').map(s => s.trim()).filter(s => s);
+    var satirBasliklar = satirBasliklarInput.split(',').map(s => s.trim()).filter(s => s);
+    
+    // Eksik başlıkları tamamla
+    while (sutunBasliklar.length < sutunSayisi) {
+      sutunBasliklar.push("Sütun " + (sutunBasliklar.length + 1));
+    }
+    
+    while (satirBasliklar.length < satirSayisi) {
+      satirBasliklar.push("Satır " + (satirBasliklar.length + 1));
+    }
+    
+    // Tamamlanan başlıkları inpurlara geri yaz
+    document.getElementById('sutun_basliklar').value = sutunBasliklar.slice(0, sutunSayisi).join(', ');
+    document.getElementById('satir_basliklar').value = satirBasliklar.slice(0, satirSayisi).join(', ');
+    
+    // Tablo başlık satırını oluştur
+    var headerRow = document.getElementById('sutun-basliklar-onizleme');
+    var tableBody = document.getElementById('tablo-govde-onizleme');
+    
+    if (!headerRow || !tableBody) {
+      console.log("Tablo başlık satırı veya gövdesi bulunamadı");
+      return;
+    }
+    
+    // Tablo başlıklarını güncelle
+    headerRow.innerHTML = '<th></th>'; // Sol üst köşe boş hücre
+    
+    for (var i = 0; i < sutunSayisi; i++) {
+      var th = document.createElement('th');
+      th.textContent = sutunBasliklar[i] || ("Sütun " + (i+1));
+      headerRow.appendChild(th);
+    }
+    
+    // Tablo gövdesini güncelle
+    tableBody.innerHTML = '';
+    
+    for (var i = 0; i < satirSayisi; i++) {
+      var tr = document.createElement('tr');
+      
+      // Satır başlığı
+      var th = document.createElement('th');
+      th.textContent = satirBasliklar[i] || ("Satır " + (i+1));
+      tr.appendChild(th);
+      
+      // Satır içeriği
+      for (var j = 0; j < sutunSayisi; j++) {
+        var td = document.createElement('td');
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control form-control-sm';
+        input.disabled = true;
+        input.setAttribute('data-satir', i+1);
+        input.setAttribute('data-sutun', j+1);
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+      
+      tableBody.appendChild(tr);
+    }
+  }
+  
+  function updateFieldDefaults(type) {
+    var baslikInput = document.getElementById('baslik');
+    
+    if (!baslikInput || baslikInput.value) {
+      return; // Zaten bir değer varsa değiştirme
+    }
+    
+    const titles = {
+      'baslik': 'Yeni Bölüm Başlığı',
+      'aciklama': 'Açıklama Metni',
+      'checkbox': 'Onay Kutusu Ögesi',
+      'metin': 'Metin Alanı',
+      'tablo': 'Tablo Ögesi'
+    };
+    
+    baslikInput.value = titles[type] || 'Yeni Öğe';
+  }
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,1252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ kullanici.username }} - Kullanıcı Detayı
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    .page-banner {
+      padding: 80px 0;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.05);
+      z-index: 1;
+    }
+    
+    .banner-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .banner-content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin-bottom: 1rem;
+    }
+    
+    .welcome-message p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .user-badge {
+      display: inline-block;
+      padding: 6px 15px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      margin-top: 15px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .breadcrumb {
+      padding: 15px 20px;
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .breadcrumb-item a {
+      color: #6610f2;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+      text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {% if kullanici.is_superuser %}
+    <div class="container mt-5">
+      <div class="alert alert-warning">
+        <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Erişim Engellendi</h4>
+        <p>Admin kullanıcısının detaylarına erişim kısıtlanmıştır.</p>
+        <hr>
+        <p class="mb-0">
+          <a href="{% url 'kullanici_listesi' %}" class="btn btn-warning">
+            <i class="fas fa-arrow-left me-2"></i>Kullanıcı Listesine Dön
+          </a>
+        </p>
+      </div>
+    </div>
+  {% else %}
+    <div class="page-wrapper">
+      <!-- Header Banner -->
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <section class="page-banner">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="banner-content">
+                <h1 class="text-center text-white mb-3">Kullanıcı Detayı</h1>
+                <div class="welcome-message text-center">
+                  <p class="text-white">
+                    <i class="fas fa-user-circle me-2"></i>Hoş geldiniz, <span class="fw-bold">{{ request.user.fullname|default:request.user.username }}</span>
+                  </p>
+                  <div class="user-badge">
+                    <p class="text-white mb-0">
+                      <i class="fas fa-id-card me-2"></i>{{ kullanici.fullname|default:kullanici.username }} kullanıcısının detaylarını inceleyebilirsiniz
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kullanıcı Detay İçeriği -->
+      <section class="kullanici-detay section-space py-5">
+        <div class="container">
+          <!-- Mesajlar -->
+          {% if messages %}
+            <div class="row mb-4">
+              <div class="col-12">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Sayfa Başlığı ve Yönlendirme Linkleri -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'yonetim_paneli' %}"><i class="fas fa-tachometer-alt me-1"></i>Yönetim Paneli</a>
+                  </li>
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'kullanici_listesi' %}"><i class="fas fa-users me-1"></i>Kullanıcılar</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-user me-1"></i>{{ kullanici.fullname|default:kullanici.username }}
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+
+          <!-- Kullanıcı Özet Bilgileri -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fa fa-user me-2"></i>Kullanıcı Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <!-- Kullanıcı Profil Bilgileri -->
+                    <div class="col-md-6">
+                      <div class="kullanici-bilgileri p-3">
+                        <div class="mb-3 border-bottom pb-2">
+                          <h5 class="text-primary mb-1">Kullanıcı Adı</h5>
+                          <p class="mb-0 fs-5">{{ kullanici.username }}</p>
+                        </div>
+
+                        <div class="mb-3 border-bottom pb-2">
+                          <h5 class="text-primary mb-1">Ad Soyad</h5>
+                          <p class="mb-0 fs-5">
+                            {% if kullanici.fullname %}
+                              {{ kullanici.fullname }}
+                            {% else %}
+                              <span class="text-muted">Belirtilmemiş</span>
+                            {% endif %}
+                          </p>
+                        </div>
+
+                        <div class="mb-3 border-bottom pb-2">
+                          <h5 class="text-primary mb-1">E-posta</h5>
+                          <p class="mb-0 fs-5">
+                            {% if kullanici.email %}
+                              {{ kullanici.email }}
+                            {% else %}
+                              <span class="text-muted">Belirtilmemiş</span>
+                            {% endif %}
+                          </p>
+                        </div>
+
+                        <div class="mb-3 border-bottom pb-2">
+                          <h5 class="text-primary mb-1">Kayıt Tarihi</h5>
+                          <p class="mb-0 fs-5">{{ kullanici.date_joined|date:'d.m.Y H:i' }}</p>
+                        </div>
+
+                        <div class="mb-3 border-bottom pb-2">
+                          <h5 class="text-primary mb-1">Son Giriş</h5>
+                          <p class="mb-0 fs-5">
+                            {% if kullanici.last_login %}
+                              {{ kullanici.last_login|date:'d.m.Y H:i' }}
+                            {% else %}
+                              <span class="text-muted">Hiç giriş yapmadı</span>
+                            {% endif %}
+                          </p>
+                        </div>
+
+                        <div class="mb-3">
+                          <h5 class="text-primary mb-1">Kullanıcı Yetkileri</h5>
+                          <div>
+                            {% if kullanici.is_active %}
+                              <span class="badge bg-success me-1">Aktif</span>
+                            {% else %}
+                              <span class="badge bg-danger me-1">Pasif</span>
+                            {% endif %}
+
+                            {% if kullanici.is_staff %}
+                              <span class="badge bg-primary me-1">Yönetici</span>
+                            {% endif %}
+
+                            {% if kullanici.is_superuser %}
+                              <span class="badge bg-dark me-1">Süper Kullanıcı</span>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Kullanıcı İstatistikleri -->
+                    <div class="col-md-6">
+                      <div class="kullanici-istatistikleri p-3">
+                        <h4 class="mb-4">İlerleme İstatistikleri</h4>
+
+                        <div class="mb-4">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h5 class="mb-0">Modül Tamamlama</h5>
+                            <span class="badge bg-primary">{{ tamamlanan_modul_sayisi }}/{{ toplam_modul_sayisi }}</span>
+                          </div>
+                          <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ modul_tamamlama_yuzdesi }}%;" aria-valuenow="{{ modul_tamamlama_yuzdesi }}" aria-valuemin="0" aria-valuemax="100">%{{ modul_tamamlama_yuzdesi }}</div>
+                          </div>
+                          <small class="text-muted">Toplam {{ toplam_modul_sayisi }} modülden {{ tamamlanan_modul_sayisi }} tanesi tamamlandı</small>
+                        </div>
+
+                        <div class="mb-4">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h5 class="mb-0">Doğru Cevap Oranı</h5>
+                            <span class="badge bg-success">{{ dogru_cevap_sayisi }}/{{ toplam_soru_sayisi }}</span>
+                          </div>
+                          <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ dogru_cevap_yuzdesi }}%;" aria-valuenow="{{ dogru_cevap_yuzdesi }}" aria-valuemin="0" aria-valuemax="100">%{{ dogru_cevap_yuzdesi }}</div>
+                          </div>
+                          <small class="text-muted">Toplam {{ toplam_soru_sayisi }} sorudan {{ dogru_cevap_sayisi }} tanesi doğru cevaplandı</small>
+                        </div>
+
+                        <div class="row mt-4">
+                          <div class="col-sm-6 mb-3">
+                            <div class="card bg-light border-0">
+                              <div class="card-body text-center">
+                                <i class="fa fa-book fa-2x text-primary mb-2"></i>
+                                <h5>Tamamlanan Modüller</h5>
+                                <h3 class="mb-0">{{ tamamlanan_moduller.count }}</h3>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-6 mb-3">
+                            <div class="card bg-light border-0">
+                              <div class="card-body text-center">
+                                <i class="fa fa-play-circle fa-2x text-info mb-2"></i>
+                                <h5>İzlenen Videolar</h5>
+                                <h3 class="mb-0">{{ video_izlemeler.count }}</h3>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tamamlanan Modüller -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fa fa-check-circle me-2"></i>Tamamlanan Modüller</h4>
+                </div>
+                <div class="card-body">
+                  {% if tamamlanan_moduller %}
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Modül</th>
+                            <th>Kategori</th>
+                            <th>Başlama Tarihi</th>
+                            <th>Tamamlanma Tarihi</th>
+                            <th>Süre</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tamamlananModullerTbody">
+                          {% for ilerleme in tamamlanan_moduller|slice:':7' %}
+                            <tr>
+                              <td>{{ ilerleme.modul.baslik }}</td>
+                              <td>{{ ilerleme.modul.kategori.baslik }}</td>
+                              <td>{{ ilerleme.baslama_tarihi|date:'d.m.Y H:i' }}</td>
+                              <td>{{ ilerleme.tamamlanma_tarihi|date:'d.m.Y H:i' }}</td>
+                              <td>
+                                {% if ilerleme.tamamlanma_tarihi and ilerleme.baslama_tarihi %}
+                                  {% with sure=ilerleme.tamamlanma_tarihi|timeuntil:ilerleme.baslama_tarihi %}
+                                    {{ sure|cut:'minutes'|cut:'minute'|cut:'hours'|cut:'hour'|cut:'days'|cut:'day'|cut:'weeks'|cut:'week'|cut:'months'|cut:'month'|cut:'years'|cut:'year'|cut:','|cut:'and' }}
+                                    {% if 'hour' in sure or 'hours' in sure %}
+                                      saat
+                                    {% endif %}
+                                    {% if 'minute' in sure or 'minutes' in sure %}
+                                      dakika
+                                    {% endif %}
+                                    {% if not 'minute' in sure and not 'minutes' in sure and not 'hour' in sure and not 'hours' in sure %}
+                                      0 dakika
+                                    {% endif %}
+                                  {% endwith %}
+                                {% else %}
+                                  -
+                                {% endif %}
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      {% if tamamlanan_moduller.count > 7 %}
+                        <div class="text-center mt-3">
+                          <button id="showMoreTamamlananModuller" class="btn btn-outline-primary" data-count="{{ tamamlanan_moduller.count }}"><i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster ({{ tamamlanan_moduller.count|add:'-7' }} modül daha)</button>
+                        </div>
+
+                        <div id="kalan_tamamlanan_moduller" style="display:none;">
+                          {% for ilerleme in tamamlanan_moduller|slice:'7:' %}
+                            <div class="modul-data"
+                              data-baslik="{{ ilerleme.modul.baslik }}"
+                              data-kategori="{{ ilerleme.modul.kategori.baslik }}"
+                              data-baslama="{{ ilerleme.baslama_tarihi|date:'d.m.Y H:i' }}"
+                              data-tamamlanma="{{ ilerleme.tamamlanma_tarihi|date:'d.m.Y H:i' }}"
+                              data-sure="{% if ilerleme.tamamlanma_tarihi and ilerleme.baslama_tarihi %}
+                                {% with sure=ilerleme.tamamlanma_tarihi|timeuntil:ilerleme.baslama_tarihi %}
+                                  {{ sure|cut:'minutes'|cut:'minute'|cut:'hours'|cut:'hour'|cut:'days'|cut:'day'|cut:'weeks'|cut:'week'|cut:'months'|cut:'month'|cut:'years'|cut:'year'|cut:','|cut:'and' }}{% if 'hour' in sure or 'hours' in sure %}saat{% endif %}
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                {% if 'minute' in sure or 'minutes' in sure %}dakika{% endif %}
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                {% if not 'minute' in sure and not 'minutes' in sure and not 'hour' in sure and not 'hours' in sure %}0 dakika{% endif %}
+                              {% endwith %}
+                            {% else %}
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {% endif %}"></div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Kullanıcı henüz hiç modül tamamlamamış.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Devam Eden Modüller -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fa fa-spinner me-2"></i>Devam Eden Modüller</h4>
+                </div>
+                <div class="card-body">
+                  {% if devam_eden_moduller %}
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Modül</th>
+                            <th>Kategori</th>
+                            <th>Başlama Tarihi</th>
+                            <th>Son İzlenen Video</th>
+                            <th>İlerleme</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for ilerleme in devam_eden_moduller %}
+                            <tr>
+                              <td>{{ ilerleme.modul.baslik }}</td>
+                              <td>{{ ilerleme.modul.kategori.baslik }}</td>
+                              <td>{{ ilerleme.baslama_tarihi|date:'d.m.Y H:i' }}</td>
+                              <td>
+                                {% with son_izleme=ilerleme.get_son_izlenen_video %}
+                                  {% if son_izleme and son_izleme.video %}
+                                    {{ son_izleme.video.baslik }}
+                                  {% else %}
+                                    {% with video_set=ilerleme.modul.videolar.all|first %}
+                                      {% if video_set %}
+                                        {{ video_set.baslik }}
+                                      {% else %}
+                                        -
+                                      {% endif %}
+                                    {% endwith %}
+                                  {% endif %}
+                                {% endwith %}
+                              </td>
+                              <td>
+                                <div class="progress" style="height: 15px;">
+                                  <div class="progress-bar bg-info" role="progressbar" style="width: {{ ilerleme.ilerleme_yuzdesi }}%;" aria-valuenow="{{ ilerleme.ilerleme_yuzdesi }}" aria-valuemin="0" aria-valuemax="100">%{{ ilerleme.ilerleme_yuzdesi }}</div>
+                                </div>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Kullanıcının devam eden modülü bulunmamaktadır.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video İzleme Geçmişi -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h4 class="mb-0"><i class="fa fa-video me-2"></i>Video İzleme Geçmişi</h4>
+                </div>
+                <div class="card-body">
+                  {% if video_izlemeler %}
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Video</th>
+                            <th>Modül</th>
+                            <th>İzleme Durumu</th>
+                            <th>Son İzleme Tarihi</th>
+                            <th>İzleme Süresi</th>
+                          </tr>
+                        </thead>
+                        <tbody id="videoIzlemelerTbody">
+                          {% for izleme in video_izlemeler|slice:':7' %}
+                            <tr>
+                              <td>{{ izleme.video.baslik }}</td>
+                              <td>{{ izleme.video.modul.baslik }}</td>
+                              <td>
+                                {% if izleme.tamamlandi %}
+                                  <span class="badge bg-success">Tamamlandı</span>
+                                {% else %}
+                                  <span class="badge bg-warning text-dark">Devam Ediyor</span>
+                                {% endif %}
+                              </td>
+                              <td>{{ izleme.son_izleme_tarihi|date:'d.m.Y H:i' }}</td>
+                              <td>{{ izleme.izleme_suresi }} saniye</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      {% if video_izlemeler.count > 7 %}
+                        <div class="text-center mt-3">
+                          <button id="showMoreVideoIzlemeler" class="btn btn-outline-primary" data-count="{{ video_izlemeler.count }}"><i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster ({{ video_izlemeler.count|add:'-7' }} video daha)</button>
+                        </div>
+
+                        <div id="kalan_video_izlemeler" style="display:none;">
+                          {% for izleme in video_izlemeler|slice:'7:' %}
+                            <div class="izleme-data" data-baslik="{{ izleme.video.baslik }}" data-modul="{{ izleme.video.modul.baslik }}" data-tamamlandi="{{ izleme.tamamlandi }}" data-tarih="{{ izleme.son_izleme_tarihi|date:'d.m.Y H:i' }}" data-sure="{{ izleme.izleme_suresi }}"></div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Kullanıcı henüz hiç video izlememiş.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Soru Cevaplama İstatistikleri -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h4 class="mb-0"><i class="fa fa-question-circle me-2"></i>Soru Cevaplama İstatistikleri</h4>
+                  {% if yanlis_cevaplar.count > 0 %}
+                    <button id="yanlisCevaplarPdfBtn" class="btn btn-danger"><i class="fas fa-file-pdf me-2"></i> Yanlış Cevaplar Raporu İndir</button>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  {% if kullanici_cevaplar %}
+                    <div class="mb-4">
+                      <div class="row">
+                        <div class="col-md-4 mb-3">
+                          <div class="card bg-light border-0">
+                            <div class="card-body text-center">
+                              <h5>Toplam Soru</h5>
+                              <h3 class="mb-0">{{ toplam_soru_sayisi }}</h3>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                          <div class="card bg-success text-white border-0">
+                            <div class="card-body text-center">
+                              <h5>Doğru Cevaplar</h5>
+                              <h3 class="mb-0">{{ dogru_cevap_sayisi }}</h3>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                          <div class="card bg-danger text-white border-0">
+                            <div class="card-body text-center">
+                              <h5>Yanlış Cevaplar</h5>
+                              <h3 class="mb-0">{{ yanlis_cevaplar.count }}</h3>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h5 class="mb-3">Son Cevaplanan Sorular</h5>
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Soru</th>
+                            <th>Video</th>
+                            <th>Seçilen Cevap</th>
+                            <th>Durum</th>
+                            <th>Cevaplama Tarihi</th>
+                          </tr>
+                        </thead>
+                        <tbody id="cevaplarTbody">
+                          {% for cevap in kullanici_cevaplar|slice:':10' %}
+                            <tr>
+                              <td>{{ cevap.soru.soru_metni|truncatechars:50 }}</td>
+                              <td>{{ cevap.soru.video.baslik }}</td>
+                              <td>
+                                {% if cevap.secilen_secenek %}
+                                  {{ cevap.secilen_secenek.secenek_metni|truncatechars:30 }}
+                                {% else %}
+                                  <span class="text-muted">Cevap seçilmemiş</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                {% if cevap.dogru_mu %}
+                                  <span class="badge bg-success">Doğru</span>
+                                {% else %}
+                                  <span class="badge bg-danger">Yanlış</span>
+                                {% endif %}
+                              </td>
+                              <td>{{ cevap.cevaplama_tarihi|date:'d.m.Y H:i' }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+
+                      {% if kullanici_cevaplar.count > 10 %}
+                        <div class="text-center mt-3">
+                          <button id="showMoreCevaplar" class="btn btn-outline-primary" data-count="{{ kullanici_cevaplar.count }}"><i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster ({{ kullanici_cevaplar.count|add:'-10' }} cevap daha)</button>
+                        </div>
+
+                        <div id="kalan_cevaplar" style="display:none;">
+                          {% for cevap in kullanici_cevaplar|slice:'10:' %}
+                            <div class="cevap-data"
+                              data-soru="{{ cevap.soru.soru_metni|truncatechars:50 }}"
+                              data-video="{{ cevap.soru.video.baslik }}"
+                              data-secenek="{% if cevap.secilen_secenek %}
+                                {{ cevap.secilen_secenek.secenek_metni|truncatechars:30 }}
+                              {% else %}
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                              Cevap seçilmemiş
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {% endif %}"
+                              data-dogru="{{ cevap.dogru_mu }}"
+                              data-tarih="{{ cevap.cevaplama_tarihi|date:'d.m.Y H:i' }}"></div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="alert alert-info">Kullanıcı henüz hiç soru cevaplamamış.</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geri Dön Butonu -->
+          <div class="row">
+            <div class="col-12">
+              <a href="{% url 'kullanici_listesi' %}" class="btn btn-secondary"><i class="fa fa-arrow-left me-1"></i> Kullanıcı Listesine Dön</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <!-- Yanlis cevaplar verisi -->
+  <script>
+    // Türkçe karakterleri ASCII karakterlere dönüştüren yardımcı fonksiyon
+    function turkceKodla(text) {
+      if (!text) return ''
+      text = String(text)
+      return text.replace(/ğ/g, 'g').replace(/Ğ/g, 'G').replace(/ü/g, 'u').replace(/Ü/g, 'U').replace(/ş/g, 's').replace(/Ş/g, 'S').replace(/ı/g, 'i').replace(/İ/g, 'I').replace(/ö/g, 'o').replace(/Ö/g, 'O').replace(/ç/g, 'c').replace(/Ç/g, 'C')
+    }
+  </script>
+
+  <script>
+    // Yanlış cevaplar için JSON verisi
+    const yanlisCevaplarJSON = [
+      {% for cevap in yanlis_cevaplar %}
+      {% if not cevap.dogru_mu %}
+      {
+        modul: turkceKodla("{{ cevap.soru.video.modul.baslik|escapejs }}"),
+        soru: turkceKodla("{{ cevap.soru.soru_metni|truncatechars:40|escapejs }}"),
+        video: turkceKodla("{{ cevap.soru.video.baslik|truncatechars:30|escapejs }}"),
+        secilen: turkceKodla("{% if cevap.secilen_secenek %}{{ cevap.secilen_secenek.secenek_metni|truncatechars:30|escapejs }}{% else %}Cevap secilmemis{% endif %}"),
+        dogru: turkceKodla("{{ cevap.soru.dogru_cevap.metin|truncatechars:30|escapejs }}"),
+        tarih: turkceKodla("{{ cevap.cevaplama_tarihi|date:'d.m.Y H:i'|escapejs }}")
+      }{% if not forloop.last %},{% endif %}
+      {% endif %}
+      {% endfor %}
+    ];
+  </script>
+
+  <!-- jsPDF Kütüphanesi -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- PDF Oluşturma Fonksiyonu -->
+  <script>
+    function yanlisCevaplariPDFIndir() {
+      try {
+        if (typeof window.jspdf === 'undefined') {
+          alert("PDF kütüphanesi yüklenemedi. Sayfayı yenileyip tekrar deneyin.");
+          return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+        
+        // PDF oluştur
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+          compress: false,
+          putOnlyUsedFonts: true,
+          floatPrecision: 16,
+          hotfixes: ["px_scaling"]
+        });
+        
+        // Başlık bölümü ve kullanıcı bilgilerini çizme fonksiyonu
+        function cizSayfaBasligi() {
+          // Üst çizgi
+          doc.setDrawColor(111, 66, 193);
+          doc.setLineWidth(0.7);
+          doc.line(10, 10, 200, 10);
+          
+          // Başlık
+          doc.setTextColor(111, 66, 193);
+          doc.setFontSize(22);
+          doc.text("Yanlis Cevaplar Raporu", 105, 20, {align: 'center'});
+        }
+        
+        // Kullanıcı bilgilerini çizme fonksiyonu
+        function cizKullaniciBilgileri() {
+          // Kullanıcı bilgileri kutusu
+          doc.setFillColor(245, 245, 255);
+          doc.setDrawColor(200, 200, 250);
+          doc.roundedRect(10, 25, 190, 35, 3, 3, 'FD');
+          
+          doc.setFontSize(14);
+          doc.setTextColor(111, 66, 193);
+          doc.text("KULLANICI BILGILERI", 20, 35);
+          
+          // Kullanıcı bilgileri içeriği
+          doc.setTextColor(60, 60, 60);
+          doc.setFontSize(11);
+          
+          // Sol kolon
+          doc.text("Kullanici:", 20, 45);
+          doc.text(turkceKodla("{{ kullanici.username }}"), 60, 45);
+          
+          doc.text("Ad Soyad:", 20, 52);
+          doc.text(turkceKodla("{{ kullanici.fullname|default:'Belirtilmemis' }}"), 60, 52);
+          
+          // Sağ kolon
+          doc.text("Kayit Tarihi:", 120, 45);
+          doc.text(turkceKodla("{{ kullanici.date_joined|date:'d.m.Y' }}"), 160, 45);
+          
+          doc.text("Rapor Tarihi:", 120, 52);
+          const bugun = new Date().toLocaleDateString('tr-TR');
+          doc.text(turkceKodla(bugun), 160, 52);
+        }
+        
+        // Özet istatistikleri çizme fonksiyonu
+        function cizOzetIstatistikler() {
+          // Özet istatistikler kutusu
+          doc.setFillColor(240, 240, 255);
+          doc.roundedRect(10, 65, 190, 30, 3, 3, 'FD');
+          
+          doc.setTextColor(111, 66, 193);
+          doc.setFontSize(14);
+          doc.text("OZET ISTATISTIKLER", 20, 75);
+          
+          // İstatistik bilgileri
+          doc.setTextColor(60, 60, 60);
+          doc.setFontSize(11);
+          
+          doc.text("Toplam Soru Sayisi:", 20, 85);
+          doc.text("{{ kullanici_cevaplar.count }} soru", 80, 85);
+          
+          doc.text("Dogru Cevap Sayisi:", 120, 85);
+          doc.text("{{ dogru_cevaplar.count }} (%" + parseInt("{{ dogru_cevap_yuzdesi }}") + ")", 180, 85);
+          
+          doc.text("Yanlis Cevap Sayisi:", 20, 92);
+          doc.text("{{ yanlis_cevaplar.count }} (%" + (100 - parseInt("{{ dogru_cevap_yuzdesi }}")) + ")", 80, 92);
+        }
+        
+        // Altbilgi çizme fonksiyonu
+        function cizAltbilgi() {
+          // Alt çizgi
+          doc.setDrawColor(111, 66, 193);
+          doc.setLineWidth(0.5);
+          doc.line(10, 285, 200, 285);
+          
+          // Altbilgi metni
+          doc.setTextColor(111, 66, 193);
+          doc.setFontSize(8);
+          doc.text("Kendine Iyi Bak - " + turkceKodla("{{ kullanici.username }}") + " Yanlis Cevaplar Raporu - Sayfa " + doc.internal.getNumberOfPages(), 105, 292, {align: 'center'});
+        }
+        
+        // İlk sayfayı hazırla
+        cizSayfaBasligi();
+        cizKullaniciBilgileri();
+        cizOzetIstatistikler();
+        
+        // Ana başlık
+        let yPosition = 105;
+        doc.setTextColor(111, 66, 193);
+        doc.setFontSize(16);
+        doc.text("MODULLER BAZINDA YANLIS CEVAPLAR", 105, yPosition, {align: 'center'});
+        yPosition += 10;
+        
+        // Modüllere göre veri gruplandırma
+        const moduller = {};
+        
+        try {
+          // Yanlış cevapları modüllere göre grupla
+          if (yanlisCevaplarJSON && yanlisCevaplarJSON.length > 0) {
+            yanlisCevaplarJSON.forEach(cevap => {
+              if (!cevap || !cevap.modul) return;
+              
+              if (!moduller[cevap.modul]) {
+                moduller[cevap.modul] = [];
+              }
+              moduller[cevap.modul].push(cevap);
+            });
+          }
+          
+          // Her modül için ayrı tablo oluştur
+          const modulAdlari = Object.keys(moduller);
+          
+          if (modulAdlari.length === 0) {
+            // Kullanıcının yanlış cevabı yoksa bilgi mesajı göster
+            doc.setTextColor(60, 60, 60);
+            doc.text("Kullanicinin yanlis cevabi bulunmamaktadir.", 105, yPosition + 10, {align: 'center'});
+          } else {
+            // Her modül için ayrı ayrı içerik oluştur
+            for (let i = 0; i < modulAdlari.length; i++) {
+              const modulAdi = modulAdlari[i];
+              const modulCevaplar = moduller[modulAdi];
+              
+              // Sayfa sınırı kontrolü - Yeni sayfaya geçiş
+              if (yPosition > 250) {
+                // Sayfa altbilgisini çiz
+                cizAltbilgi();
+                
+                // Yeni sayfa ekle
+                doc.addPage();
+                
+                // Yeni sayfa başlık ekle
+                cizSayfaBasligi();
+                
+                // Yeni sayfa başlangıç pozisyonu
+                yPosition = 35;
+                
+                // Modül bölümü ana başlığını ekle
+                doc.setTextColor(111, 66, 193);
+                doc.setFontSize(16);
+                doc.text("MODULLER BAZINDA YANLIS CEVAPLAR (devam)", 105, yPosition, {align: 'center'});
+                yPosition += 10;
+              }
+              
+              // Modül adını içeren kutu
+              doc.setFillColor(240, 240, 255);
+              doc.roundedRect(10, yPosition, 190, 8, 2, 2, 'F');
+              
+              // Modül adı
+              doc.setTextColor(60, 60, 60);
+              doc.setFontSize(12);
+              doc.text((i+1) + ". " + modulAdi + " (" + modulCevaplar.length + " yanlis cevap)", 15, yPosition + 5.5);
+              
+              // Y pozisyonu güncelle
+              yPosition += 12;
+              
+              // Tablo verilerini hazırla
+              const tableData = [];
+              for (let j = 0; j < modulCevaplar.length; j++) {
+                const cevap = modulCevaplar[j];
+                tableData.push([
+                  (j+1).toString(),
+                  cevap.soru || "",
+                  cevap.secilen || "",
+                  cevap.dogru || ""
+                ]);
+              }
+              
+              // AutoTable ile tablo oluştur
+              doc.autoTable({
+                head: [["No", "Soru", "Secilen Cevap", "Dogru Cevap"]],
+                body: tableData,
+                startY: yPosition,
+                theme: 'grid',
+                styles: {
+                  fontSize: 9,
+                  cellPadding: 2,
+                  font: 'helvetica',
+                  overflow: 'linebreak',
+                  halign: 'left'
+                },
+                columnStyles: {
+                  0: { cellWidth: 8 },    // No
+                  1: { cellWidth: 65 },   // Soru
+                  2: { cellWidth: 58 },   // Seçilen Cevap
+                  3: { cellWidth: 58 }    // Doğru Cevap
+                },
+                headStyles: {
+                  fillColor: [111, 66, 193],
+                  textColor: [255, 255, 255],
+                  fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                  fillColor: [245, 245, 255]
+                },
+                didDrawPage: function(data) {
+                  // Her sayfaya başlık ve altbilgi ekle
+                  cizSayfaBasligi();
+                  cizAltbilgi();
+                }
+              });
+              
+              // Bir sonraki modül için pozisyon güncelle
+              yPosition = doc.lastAutoTable.finalY + 15;
+            }
+          }
+          
+          // Son sayfanın altbilgisini ekle
+          cizAltbilgi();
+          
+        } catch (err) {
+          console.error("Modül tablosu oluşturma hatası:", err);
+          doc.setTextColor(255, 0, 0);
+          doc.setFontSize(12);
+          doc.text("Rapor olusturulurken bir hata meydana geldi.", 105, 150, {align: 'center'});
+          doc.text("Hata mesaji: " + turkceKodla(err.message), 105, 160, {align: 'center'});
+        }
+        
+        // PDF'i indir
+        const fileName = "yanlis_cevaplar_" + turkceKodla("{{ kullanici.username }}").replace(/[^a-z0-9]/gi, '_') + "_" + new Date().toISOString().slice(0,10).replace(/-/g,'');
+        doc.save(fileName + ".pdf");
+        
+      } catch (error) {
+        console.error("PDF oluşturma hatası:", error);
+        alert("PDF oluşturulurken bir hata oluştu: " + error.message);
+      }
+    }
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Tamamlanan Modüller "Daha Fazla Göster" butonu
+      const showMoreTamamlananBtn = document.getElementById('showMoreTamamlananModuller')
+    if (showMoreTamamlananBtn) {
+        let gosterimBaslangic = 7
+        const modulVerileri = document.querySelectorAll('#kalan_tamamlanan_moduller .modul-data')
+        const toplamVeri = modulVerileri.length
+    
+        showMoreTamamlananBtn.addEventListener('click', function () {
+          const tbody = document.getElementById('tamamlananModullerTbody')
+          const kacTaneGoster = Math.min(7, toplamVeri - gosterimBaslangic + 7)
+        
+        // 7 veri göster veya kalan tüm verileri göster
+        for (let i = gosterimBaslangic - 7; i < gosterimBaslangic && i < toplamVeri; i++) {
+            const veri = modulVerileri[i]
+            const yeniSatir = document.createElement('tr')
+          yeniSatir.innerHTML = `
+            <td>${veri.dataset.baslik}</td>
+            <td>${veri.dataset.kategori}</td>
+            <td>${veri.dataset.baslama}</td>
+            <td>${veri.dataset.tamamlanma}</td>
+            <td>${veri.dataset.sure}</td>
+              `
+            tbody.appendChild(yeniSatir)
+        }
+        
+          gosterimBaslangic += 7
+        
+        // Kalan verileri güncelle veya butonu gizle
+        if (gosterimBaslangic > toplamVeri) {
+            showMoreTamamlananBtn.style.display = 'none'
+        } else {
+            const kalanVeri = toplamVeri - gosterimBaslangic + 7
+            showMoreTamamlananBtn.innerHTML = `<i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster (${kalanVeri} modül daha)`
+        }
+        })
+    }
+    
+    // Video İzlemeler "Daha Fazla Göster" butonu
+      const showMoreVideolarBtn = document.getElementById('showMoreVideoIzlemeler')
+    if (showMoreVideolarBtn) {
+        let gosterimBaslangic = 7
+        const izlemeVerileri = document.querySelectorAll('#kalan_video_izlemeler .izleme-data')
+        const toplamVeri = izlemeVerileri.length
+    
+        showMoreVideolarBtn.addEventListener('click', function () {
+          const tbody = document.getElementById('videoIzlemelerTbody')
+          const kacTaneGoster = Math.min(7, toplamVeri - gosterimBaslangic + 7)
+        
+        // 7 veri göster veya kalan tüm verileri göster
+        for (let i = gosterimBaslangic - 7; i < gosterimBaslangic && i < toplamVeri; i++) {
+            const veri = izlemeVerileri[i]
+            const yeniSatir = document.createElement('tr')
+            const tamamlandiDurumu = veri.dataset.tamamlandi === 'True' ? '<span class="badge bg-success">Tamamlandı</span>' : '<span class="badge bg-warning text-dark">Devam Ediyor</span>'
+            
+          yeniSatir.innerHTML = `
+            <td>${veri.dataset.baslik}</td>
+            <td>${veri.dataset.modul}</td>
+            <td>${tamamlandiDurumu}</td>
+            <td>${veri.dataset.tarih}</td>
+            <td>${veri.dataset.sure} saniye</td>
+              `
+            tbody.appendChild(yeniSatir)
+        }
+        
+          gosterimBaslangic += 7
+        
+        // Kalan verileri güncelle veya butonu gizle
+        if (gosterimBaslangic > toplamVeri) {
+            showMoreVideolarBtn.style.display = 'none'
+        } else {
+            const kalanVeri = toplamVeri - gosterimBaslangic + 7
+            showMoreVideolarBtn.innerHTML = `<i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster (${kalanVeri} video daha)`
+        }
+        })
+    }
+    
+    // Cevaplar "Daha Fazla Göster" butonu
+      const showMoreCevaplarBtn = document.getElementById('showMoreCevaplar')
+    if (showMoreCevaplarBtn) {
+        let gosterimBaslangic = 10
+        const cevapVerileri = document.querySelectorAll('#kalan_cevaplar .cevap-data')
+        const toplamVeri = cevapVerileri.length
+    
+        showMoreCevaplarBtn.addEventListener('click', function () {
+          const tbody = document.getElementById('cevaplarTbody')
+          const kacTaneGoster = Math.min(7, toplamVeri - gosterimBaslangic + 10)
+        
+        // 7 veri göster veya kalan tüm verileri göster
+        for (let i = gosterimBaslangic - 10; i < gosterimBaslangic - 10 + kacTaneGoster && i < toplamVeri; i++) {
+            const veri = cevapVerileri[i]
+            const yeniSatir = document.createElement('tr')
+            const dogruDurumu = veri.dataset.dogru === 'True' ? '<span class="badge bg-success">Doğru</span>' : '<span class="badge bg-danger">Yanlış</span>'
+            
+          yeniSatir.innerHTML = `
+            <td>${veri.dataset.soru}</td>
+            <td>${veri.dataset.video}</td>
+            <td>${veri.dataset.secenek}</td>
+            <td>${dogruDurumu}</td>
+            <td>${veri.dataset.tarih}</td>
+              `
+            tbody.appendChild(yeniSatir)
+        }
+        
+          gosterimBaslangic += kacTaneGoster
+        
+        // Kalan verileri güncelle veya butonu gizle
+        if (gosterimBaslangic - 10 >= toplamVeri) {
+            showMoreCevaplarBtn.style.display = 'none'
+        } else {
+            const kalanVeri = toplamVeri - (gosterimBaslangic - 10)
+            showMoreCevaplarBtn.innerHTML = `<i class="fas fa-plus-circle me-2"></i>Daha Fazla Göster (${kalanVeri} cevap daha)`
+        }
+        })
+    }
+
+    // Yanlış cevaplar PDF butonu için event listener
+      const pdfBtn = document.getElementById('yanlisCevaplarPdfBtn')
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', function () {
+          yanlisCevaplariPDFIndir()
+        })
+      }
+    })
+</script>
+{% endblock %}

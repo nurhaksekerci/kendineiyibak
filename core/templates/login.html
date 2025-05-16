@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Giriş Yap - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content"></div>
+          </div>
+        </div>
+      </div>
+      <!--  <div class="banner-shape">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#fff" fill-opacity="1" d="M0,96L120,128C240,160,480,224,720,234.7C960,245,1200,203,1320,181.3L1440,160L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z"></path>
+      </svg>
+    </div>  -->
+    </section>
+
+    <!-- Login Section -->
+    <section class="login-page section-space">
+      <div class="container">
+        <div class="row gutter-y-50 align-items-center">
+          <div class="col-lg-6">
+            <div class="login-page__image">
+              <div class="login-page__image__inner">
+                <img src="{% static 'assets/images/auth-resim.jpg' %}" alt="login" />
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <form class="login-page__form" method="post" action="{% url 'giris' %}">
+              {% csrf_token %}
+              <div class="login-page__form__inner">
+                <div class="login-page__form__top">
+                  <!-- <img src="{% static 'assets/images/logo.png' %}" alt="logo" width="167" class="login-page__form__logo" /> -->
+                  <h3 class="login-page__form__title">Giriş Yap</h3>
+                </div>
+                <div class="login-page__form__wrapp">
+                  <div class="login-page__form__input-box">
+                    <label for="login_email_or_phone" class="login-page__form__label">Email veya Telefon Numarası</label>
+                    <input type="text" id="login_email_or_phone" name="username" placeholder="Email veya telefon numarası" />
+                  </div>
+                  <div class="login-page__form__input-box">
+                    <label for="login_password" class="login-page__form__label">Şifre</label>
+                    <div class="login-page__form__input-box__inner">
+                      <input type="password" id="login_password" name="password" placeholder="Şifrenizi girin" class="toggle-password-input" />
+                      <i class="toggle-password-icon fa fa-fw fa-eye-slash"></i>
+                    </div>
+                  </div>
+                  <div class="login-page__form__input-box login-page__form__input-box--3">
+                    <label class="login-page__form__checked-box" for="remember-policy">
+                      <!-- <input type="checkbox" name="remember-policy" id="remember-policy" />
+                      <span></span> -->
+                      <!-- <p style="margin-left: 40px;">Beni hatırla</p> -->
+                    </label>
+                    <a href="#" class="login-page__form__forgot">Şifremi unuttum</a>
+                  </div>
+                  <div class="login-page__form__input-box login-page__form__input-box--4">
+                    <button type="submit" class="login-page__form__btn eduhive-btn eduhive-btn--normal">Giriş Yap</button>
+                  </div>
+                </div>
+                <div class="login-page__form__bottom">
+                  <p class="login-page__form__register-text">
+                    Hesabınız yok mu? <a href="{% url 'kayit' %}">Şimdi kaydolun</a>
+                  </p>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #f8f5ff;
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+    }
+    
+    .login-page {
+      padding: 80px 0;
+    }
+    
+    .login-page__form {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .login-page__form__inner {
+      padding: 40px;
+    }
+    
+    .login-page__form__top {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .login-page__form__title {
+      font-size: 24px;
+      margin-top: 20px;
+      color: #333;
+    }
+    
+    .login-page__form__input-box {
+      margin-bottom: 20px;
+    }
+    
+    .login-page__form__label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .login-page__form input[type='text'],
+    .login-page__form input[type='password'] {
+      width: 100%;
+      height: 50px;
+      border: 1px solid #e9e9e9;
+      border-radius: 5px;
+      padding: 0 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .login-page__form input[type='text']:focus,
+    .login-page__form input[type='password']:focus {
+      border-color: #6610f2;
+      box-shadow: 0 0 0 3px rgba(102, 16, 242, 0.1);
+    }
+    
+    .login-page__form__input-box--3 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .login-page__form__checked-box {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .login-page__form__checked-box input {
+      margin-right: 8px;
+    }
+    
+    .login-page__form__forgot {
+      color: #6610f2;
+      text-decoration: none;
+    }
+    
+    .login-page__form__btn {
+      width: 100%;
+      height: 50px;
+      background-color: #6610f2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .login-page__form__btn:hover {
+      background-color: #5a0dbb;
+    }
+    
+    .login-page__form__bottom {
+      text-align: center;
+      margin-top: 30px;
+    }
+    
+    .login-page__form__register-text a {
+      color: #6610f2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+{% endblock %}

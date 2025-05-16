@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Kullanıcı Listesi - Yönetim Paneli
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Kullanıcı Listesi</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.fullname|default:request.user.username }}! Sistem kullanıcılarını görüntüleyebilir ve yönetebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kullanıcı Listesi İçeriği -->
+    <section class="yonetim-kullanicilar section-space">
+      <div class="container">
+        <!-- Mesajlar -->
+        {% if messages %}
+          <div class="row mb-4">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Sayfa Başlığı ve Yönlendirme Linkleri -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Kullanıcılar</li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Kullanıcı Arama -->
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fa fa-search me-2"></i>Kullanıcı Ara</h4>
+              </div>
+              <div class="card-body">
+                <form method="get" action="{% url 'kullanici_listesi' %}" class="mb-0">
+                  <div class="row g-2 align-items-center">
+                    <div class="col-md-9">
+                      <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fa fa-search"></i></span>
+                        <input type="text" name="arama" class="form-control" placeholder="Kullanıcı adı, e-posta, veya isim ile arayın..." value="{{ arama }}" />
+                        {% if arama %}
+                          <a href="{% url 'kullanici_listesi' %}" class="btn btn-outline-secondary"><i class="fa fa-times"></i></a>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <button type="submit" class="btn btn-primary w-100 h-100"><i class="fa fa-search me-2"></i>Ara</button>
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-12">
+                      <small class="text-muted">İsim, e-posta veya kullanıcı adına göre arama yapabilirsiniz</small>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kullanıcı Listesi Tablosu -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fa fa-users me-2"></i>Kullanıcılar</h4>
+                <div>
+                  <span class="badge bg-info text-white">Toplam: {{ toplam_kullanici }}</span>
+                  {% if arama %}
+                    <span class="badge bg-primary text-white ms-2">Arama Sonucu: {{ kullanicilar.paginator.count }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="card-body">
+                {% if kullanicilar %}
+                  <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                      <thead class="table-light">
+                        <tr>
+                          <th>
+                            <a href="?{% if arama %}
+                                
+                                
+                                
+                                arama={{ arama }}&
+
+
+
+                              {% endif %}siralama=id{% if siralama == 'id' %}_desc{% endif %}"
+                              class="text-decoration-none text-dark sortable-header">
+                              ID{% if siralama == 'id' %}
+                                <i class="fas fa-sort-down ms-1"></i>
+                              {% elif siralama == 'id_desc' %}
+                                <i class="fas fa-sort-up ms-1"></i>
+                              {% else %}
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                              {% endif %}
+                            </a>
+                          </th>
+                          <th>Telefon Numarası</th>
+                          <th>
+                            <a href="?{% if arama %}
+                                
+                                
+                                
+                                arama={{ arama }}&
+
+
+
+                              {% endif %}siralama=isim{% if siralama == 'isim' %}_desc{% endif %}"
+                              class="text-decoration-none text-dark sortable-header">
+                              Ad Soyad{% if siralama == 'isim' %}
+                                <i class="fas fa-sort-down ms-1"></i>
+                              {% elif siralama == 'isim_desc' %}
+                                <i class="fas fa-sort-up ms-1"></i>
+                              {% else %}
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                              {% endif %}
+                            </a>
+                          </th>
+                          <th>E-posta</th>
+                          <th>
+                            <a href="?{% if arama %}
+                                
+                                
+                                
+                                arama={{ arama }}&
+
+
+
+                              {% endif %}siralama={% if siralama == 'kayit_tarihi_yeni' %}
+                                
+                                
+                                
+                                kayit_tarihi_eski
+
+
+
+                              {% else %}
+                                
+                                
+                                
+                                kayit_tarihi_yeni
+
+
+
+                              {% endif %}"
+                              class="text-decoration-none text-dark sortable-header">
+                              Kayıt Tarihi{% if siralama == 'kayit_tarihi_yeni' %}
+                                <i class="fas fa-sort-up ms-1"></i>
+                              {% elif siralama == 'kayit_tarihi_eski' %}
+                                <i class="fas fa-sort-down ms-1"></i>
+                              {% else %}
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                              {% endif %}
+                            </a>
+                          </th>
+                          <th>
+                            <a href="?{% if arama %}
+                                
+                                
+                                
+                                arama={{ arama }}&
+
+
+
+                              {% endif %}siralama={% if siralama == 'son_giris_yeni' %}
+                                
+                                
+                                
+                                son_giris_eski
+
+
+
+                              {% else %}
+                                
+                                
+                                
+                                son_giris_yeni
+
+
+
+                              {% endif %}"
+                              class="text-decoration-none text-dark sortable-header">
+                              Son Giriş{% if siralama == 'son_giris_yeni' %}
+                                <i class="fas fa-sort-up ms-1"></i>
+                              {% elif siralama == 'son_giris_eski' %}
+                                <i class="fas fa-sort-down ms-1"></i>
+                              {% else %}
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                              {% endif %}
+                            </a>
+                          </th>
+                          <th>Durum</th>
+                          <th>İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for kullanici in kullanicilar %}
+                          {% if not kullanici.is_superuser %}
+                            <tr>
+                              <td>{{ forloop.counter }}</td>
+                              <td>
+                                {% if kullanici.phone_number %}
+                                  {{ kullanici.phone_number }}
+                                {% else %}
+                                  {{ kullanici.username|default:'-' }}
+                                {% endif %}
+                              </td>
+                              <td>
+                                <a href="{% url 'kullanici_detay' kullanici.id %}" class="text-decoration-none">{{ kullanici.fullname|default:kullanici.username }}</a>
+                              </td>
+                              <td>
+                                {% if kullanici.email %}
+                                  <a href="mailto:{{ kullanici.email }}">{{ kullanici.email }}</a>
+                                {% else %}
+                                  <span class="text-muted">-</span>
+                                {% endif %}
+                              </td>
+                              <td>{{ kullanici.date_joined|date:'d.m.Y H:i' }}</td>
+                              <td>
+                                {% if kullanici.last_login %}
+                                  {{ kullanici.last_login|date:'d.m.Y H:i' }}
+                                {% else %}
+                                  <span class="text-muted">Giriş yapmadı</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                {% if kullanici.is_active %}
+                                  <span class="badge bg-success">Aktif</span>
+                                {% else %}
+                                  <span class="badge bg-danger">Pasif</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <a href="{% url 'kullanici_detay' kullanici.id %}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> Detay</a>
+                              </td>
+                            </tr>
+                          {% endif %}
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Sayfalama -->
+                  {% if kullanicilar.paginator.num_pages > 1 %}
+                    <div class="mt-4 d-flex justify-content-center">
+                      <nav aria-label="Kullanıcı Listesi Sayfaları">
+                        <ul class="pagination">
+                          {% if kullanicilar.has_previous %}
+                            <li class="page-item">
+                              <a class="page-link"
+                                href="?{% if arama %}
+                                  
+                                  
+                                  
+                                  arama={{ arama }}&
+
+
+
+                                {% endif %}{% if siralama %}
+                                  
+                                  
+                                  
+                                  siralama={{ siralama }}&
+
+
+
+                                {% endif %}sayfa=1"
+                                aria-label="İlk">
+                                <i class="fas fa-angle-double-left"></i>
+                                <span class="visually-hidden">İlk</span>
+                              </a>
+                            </li>
+                            <li class="page-item">
+                              <a class="page-link"
+                                href="?{% if arama %}
+                                  
+                                  
+                                  
+                                  arama={{ arama }}&
+
+
+
+                                {% endif %}{% if siralama %}
+                                  
+                                  
+                                  
+                                  siralama={{ siralama }}&
+
+
+
+                                {% endif %}sayfa={{ kullanicilar.previous_page_number }}"
+                                aria-label="Önceki">
+                                <i class="fas fa-angle-left"></i>
+                                <span class="visually-hidden">Önceki</span>
+                              </a>
+                            </li>
+                          {% else %}
+                            <li class="page-item disabled">
+                              <span class="page-link">
+                                <i class="fas fa-angle-double-left"></i>
+                                <span class="visually-hidden">İlk</span>
+                              </span>
+                            </li>
+                            <li class="page-item disabled">
+                              <span class="page-link">
+                                <i class="fas fa-angle-left"></i>
+                                <span class="visually-hidden">Önceki</span>
+                              </span>
+                            </li>
+                          {% endif %}
+
+                          {% for num in kullanicilar.paginator.page_range %}
+                            {% if kullanicilar.number == num %}
+                              <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                              </li>
+                            {% elif num > kullanicilar.number|add:'-3' and num < kullanicilar.number|add:'3' %}
+                              <li class="page-item">
+                                <a class="page-link"
+                                  href="?{% if arama %}
+                                    
+                                    
+                                    
+                                    arama={{ arama }}&
+
+
+
+                                  {% endif %}{% if siralama %}
+                                    
+                                    
+                                    
+                                    siralama={{ siralama }}&
+
+
+
+                                  {% endif %}sayfa={{ num }}">
+                                  {{ num }}
+                                </a>
+                              </li>
+                            {% endif %}
+                          {% endfor %}
+
+                          {% if kullanicilar.has_next %}
+                            <li class="page-item">
+                              <a class="page-link"
+                                href="?{% if arama %}
+                                  
+                                  
+                                  
+                                  arama={{ arama }}&
+
+
+
+                                {% endif %}{% if siralama %}
+                                  
+                                  
+                                  
+                                  siralama={{ siralama }}&
+
+
+
+                                {% endif %}sayfa={{ kullanicilar.next_page_number }}"
+                                aria-label="Sonraki">
+                                <i class="fas fa-angle-right"></i>
+                                <span class="visually-hidden">Sonraki</span>
+                              </a>
+                            </li>
+                            <li class="page-item">
+                              <a class="page-link"
+                                href="?{% if arama %}
+                                  
+                                  
+                                  
+                                  arama={{ arama }}&
+
+
+
+                                {% endif %}{% if siralama %}
+                                  
+                                  
+                                  
+                                  siralama={{ siralama }}&
+
+
+
+                                {% endif %}sayfa={{ kullanicilar.paginator.num_pages }}"
+                                aria-label="Son">
+                                <i class="fas fa-angle-double-right"></i>
+                                <span class="visually-hidden">Son</span>
+                              </a>
+                            </li>
+                          {% else %}
+                            <li class="page-item disabled">
+                              <span class="page-link">
+                                <i class="fas fa-angle-right"></i>
+                                <span class="visually-hidden">Sonraki</span>
+                              </span>
+                            </li>
+                            <li class="page-item disabled">
+                              <span class="page-link">
+                                <i class="fas fa-angle-double-right"></i>
+                                <span class="visually-hidden">Son</span>
+                              </span>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </nav>
+                    </div>
+                    <div class="text-center mt-2">
+                      <small class="text-muted">{{ kullanicilar.paginator.count }} kullanıcı içinden {{ kullanicilar.start_index }} - {{ kullanicilar.end_index }} arası gösteriliyor.</small>
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="fa fa-users fa-4x text-muted mb-3"></i>
+                    <h5>Kullanıcı Bulunamadı</h5>
+                    <p class="text-muted">Arama kriterlerinize uygun kullanıcı bulunamadı.</p>
+                    {% if arama %}
+                      <a href="{% url 'kullanici_listesi' %}" class="btn btn-primary mt-2"><i class="fa fa-list me-2"></i> Tüm Kullanıcıları Göster</a>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .page-banner h1 {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    
+    .yonetim-kullanicilar {
+      padding: 80px 0;
+    }
+    
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+      border: none;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      padding: 15px 20px;
+      font-weight: 600;
+    }
+    
+    .table th,
+    .table td {
+      vertical-align: middle;
+      padding: 12px 15px;
+    }
+    
+    .table thead th {
+      font-weight: 600;
+    }
+    
+    /* Responsive İyileştirmeler */
+    @media (max-width: 768px) {
+      .table {
+        white-space: nowrap;
+      }
+    
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Sıralama butonlarına tıklanma olayı
+      const sortableHeaders = document.querySelectorAll('.sortable-header')
+      sortableHeaders.forEach((header) => {
+        header.addEventListener('click', function (e) {
+          e.preventDefault()
+          const url = this.getAttribute('href')
+    
+          // Sayfa içeriğini AJAX ile güncelleyelim
+          fetchSortedTable(url)
+        })
+      })
+    
+      // AJAX ile sıralanmış tablo getirme fonksiyonu
+      function fetchSortedTable(url) {
+        // Tablo yüklenirken gösterilecek loading göstergesi
+        const tableContainer = document.querySelector('.table-responsive')
+        tableContainer.innerHTML = '<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-3x"></i><p class="mt-3">Yükleniyor...</p></div>'
+    
+        // Sayfanın URL'sini geçmişte güncelle
+        history.pushState({}, '', url)
+    
+        // Sayfayı AJAX ile getir
+        fetch(url)
+          .then((response) => response.text())
+          .then((html) => {
+            // Gelen HTML içinden sadece tablo kısmını al
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(html, 'text/html')
+            const newTableContainer = doc.querySelector('.table-responsive')
+            const pagination = doc.querySelector('.mt-4.d-flex.justify-content-center')
+            const paginationInfo = doc.querySelector('.text-center.mt-2')
+    
+            // Tabloyu güncelle
+            if (newTableContainer) {
+              tableContainer.outerHTML = newTableContainer.outerHTML
+    
+              // Sayfalamayı güncelle
+              const currentPagination = document.querySelector('.mt-4.d-flex.justify-content-center')
+              if (currentPagination && pagination) {
+                currentPagination.outerHTML = pagination.outerHTML
+              } else if (pagination) {
+                const paginationParent = document.querySelector('.card-body')
+                paginationParent.appendChild(pagination)
+              }
+    
+              // Sayfalama bilgisini güncelle
+              const currentPaginationInfo = document.querySelector('.text-center.mt-2')
+              if (currentPaginationInfo && paginationInfo) {
+                currentPaginationInfo.outerHTML = paginationInfo.outerHTML
+              } else if (paginationInfo) {
+                const paginationParent = document.querySelector('.card-body')
+                paginationParent.appendChild(paginationInfo)
+              }
+    
+              // Yeni eklenen sıralama butonlarına da olay dinleyicileri ekle
+              addEventListenersToNewElements()
+            }
+          })
+          .catch((error) => {
+            console.error('Sıralama işlemi sırasında hata oluştu:', error)
+            tableContainer.innerHTML = '<div class="alert alert-danger">Sıralama işlemi sırasında bir hata oluştu. Lütfen sayfayı yenileyiniz.</div>'
+          })
+      }
+    
+      // Sayfalama butonlarına tıklandığında AJAX ile yükleme
+      function addEventListenersToNewElements() {
+        // Yeni sıralama başlıkları için olay dinleyiciler
+        const newSortableHeaders = document.querySelectorAll('.sortable-header')
+        newSortableHeaders.forEach((header) => {
+          header.addEventListener('click', function (e) {
+            e.preventDefault()
+            const url = this.getAttribute('href')
+            fetchSortedTable(url)
+          })
+        })
+    
+        // Sayfalama linkleri için olay dinleyiciler
+        const paginationLinks = document.querySelectorAll('.pagination .page-link')
+        paginationLinks.forEach((link) => {
+          link.addEventListener('click', function (e) {
+            if (!this.parentElement.classList.contains('disabled')) {
+              e.preventDefault()
+              const url = this.getAttribute('href')
+              fetchSortedTable(url)
+            }
+          })
+        })
+      }
+    
+      // İlk sayfa yüklendiğinde de sayfalama butonlarına tıklama olaylarını ekle
+      addEventListenersToNewElements()
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yeni Konu - Forum - Kendine İyi Bak{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Yeni Konu Oluştur</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Forum topluluğumuz ile paylaşmak istediğiniz konuyu oluşturun.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Yeni Konu Formu -->
+    <section class="forum-section py-5">
+      <div class="container">
+        <!-- Mesaj Bildirimleri -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Üst Navigasyon -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="forum-breadcrumb">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-0">
+                  <li class="breadcrumb-item"><a href="{% url 'forum:forum_main' %}">Forum</a></li>
+                  {% if secili_kategori %}
+                    <li class="breadcrumb-item"><a href="{% url 'forum:kategori_detay' kategori_slug=secili_kategori.slug %}">{{ secili_kategori.baslik }}</a></li>
+                  {% endif %}
+                  <li class="breadcrumb-item active" aria-current="page">Yeni Konu</li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <!-- Staff olmayan kullanıcılar için onay bilgisi uyarısı ekle -->
+        {% if not user.is_staff %}
+        <div class="alert alert-info mb-4">
+          <i class="fas fa-info-circle me-2"></i> <strong>Bilgilendirme:</strong> Yeni oluşturduğunuz konular, site yöneticileri tarafından onaylandıktan sonra yayınlanacaktır.
+        </div>
+        {% endif %}
+
+        <!-- Konu Formu -->
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-edit me-2" style="color: #6610f2;"></i>Yeni Konu Oluştur</h4>
+              </div>
+              <div class="card-body">
+                <form method="post">
+                  {% csrf_token %}
+                  
+                  <div class="form-group mb-3">
+                    <label for="kategori" class="form-label fw-bold">Kategori</label>
+                    <select name="kategori" id="kategori" class="form-select" required>
+                      <option value="">Kategori Seçin</option>
+                      {% for kategori in kategoriler %}
+                        <option value="{{ kategori.id }}" {% if secili_kategori and secili_kategori.id == kategori.id %}selected{% endif %}>
+                          {{ kategori.baslik }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  
+                  <div class="form-group mb-3">
+                    <label for="baslik" class="form-label fw-bold">Başlık</label>
+                    <input type="text" name="baslik" id="baslik" class="form-control" placeholder="Konu başlığı girin" required>
+                    <div class="form-text">Konu başlığı açıklayıcı ve kısa olmalıdır.</div>
+                  </div>
+                  
+                  <div class="form-group mb-4">
+                    <label for="icerik" class="form-label fw-bold">İçerik</label>
+                    <textarea name="icerik" id="icerik" class="form-control" rows="10" placeholder="Konu içeriğini yazın..." required></textarea>
+                  </div>
+                  
+                  {% if request.user.is_staff %}
+                    <div class="form-group mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="sabit" name="sabit">
+                        <label class="form-check-label" for="sabit">
+                          <span class="fw-bold text-primary">Sabit Konu</span> - Konu listesinin en üstünde görüntülenir.
+                        </label>
+                      </div>
+                    </div>
+                  {% endif %}
+                  
+                  <div class="form-group mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="kapali" name="kapali">
+                      <label class="form-check-label" for="kapali">
+                        <span class="fw-bold text-warning">Yorumlara Kapalı</span> - Bu konuya yeni yorum yapılamaz.
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="forum-kurallar alert alert-info mb-4">
+                    <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i> Forum Kuralları</h5>
+                    <ul class="mb-0">
+                      <li>Saygılı ve kibar bir dil kullanın.</li>
+                      <li>Tıbbi tavsiye vermek yerine deneyim paylaşın.</li>
+                      <li>Kişisel bilgilerinizi paylaşmamaya özen gösterin.</li>
+                      <li>Başlık ve içerik konunun amacını açıkça belirtmelidir.</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="d-flex justify-content-end">
+                    <a href="{% url 'forum:forum_main' %}" class="btn btn-outline-secondary me-2">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-paper-plane me-2"></i> Konuyu Oluştur
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* Banner Tasarımı - courses.html'den alındı */
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    /* Forum Stilleri */
+    .badge.bg-primary {
+      background-color: #6610f2 !important;
+    }
+    
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .forum-section h5 {
+      color: #6610f2;
+    }
+    
+    .forum-section .btn-primary {
+      background-color: #6610f2;
+      border-color: #6610f2;
+    }
+    
+    .forum-section .btn-primary:hover {
+      background-color: #5a0dd7;
+      border-color: #5a0dd7;
+    }
+    
+    .form-label {
+      color: #212529;
+    }
+    
+    .form-check-input:checked {
+      background-color: #6610f2;
+      border-color: #6610f2;
+    }
+    
+    .breadcrumb-item a {
+      color: #6610f2;
+      text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+      text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+      color: #495057;
+    }
+  </style>
+{% endblock %} 

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Tüm Öğeleri Temizle - {{ aktivite.baslik }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <p><strong>Uyarı:</strong> Bu aktivitenin tüm öğeleri silinecektir. Bu işlem geri alınamaz!</p>
+                        <p>Aktivite: <strong>{{ aktivite.baslik }}</strong></p>
+                        <p>Toplam öğe sayısı: <strong>{{ aktivite.ogeleri_getir.count }}</strong></p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa fa-trash"></i> Tüm Öğeleri Sil
+                            </button>
+                            <a href="{% url 'yonetim_aktivite_duzenle' aktivite.id %}" class="btn btn-secondary">
+                                <i class="fa fa-times"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+{% endblock %}

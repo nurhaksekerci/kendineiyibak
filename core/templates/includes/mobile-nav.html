@@ -1,0 +1,46 @@
+{% load static %}
+<div class="mobile-nav__wrapper">
+  <div class="mobile-nav__overlay mobile-nav__toggler"></div>
+  <!-- /.mobile-nav__overlay -->
+  <div class="mobile-nav__content">
+    <span class="mobile-nav__close mobile-nav__toggler"><i class="icon-close"></i></span>
+    <div class="logo-box logo-retina">
+      <a href="{% url 'index' %}" aria-label="logo image"><img src="{% static 'assets/images/default-course.jpg' %}" width="209" alt="Kendine İyi Bak" /></a>
+    </div>
+    <!-- /.logo-box -->
+    <div class="mobile-nav__container">
+      <ul class="main-menu__list">
+        <li><a href="{% url 'index' %}">Ana Sayfa</a></li>
+        <li><a href="{% url 'index' %}#about">Hakkımızda</a></li>
+        {% if user.is_authenticated %}
+          <li><a href="{% url 'courses' %}">Eğitimler</a></li>
+          <li><a href="{% url 'aktivite_listesi' %}">Aktiviteler</a></li>
+          <li><a href="{% url 'profil' %}">Profilim</a></li>
+          {% if user.is_staff or user.is_superuser %}
+            <li><a href="{% url 'yonetim_paneli' %}">Yönetim Paneli</a></li>
+          {% endif %}
+          <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
+        {% else %}
+          <li><a href="{% url 'access_denied' %}">Eğitimler</a></li>
+          <li><a href="{% url 'giris' %}">Giriş Yap</a></li>
+          <li><a href="{% url 'kayit' %}">Kayıt Ol</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    <!-- /.mobile-nav__container -->
+    <ul class="mobile-nav__contact list-unstyled">
+      <li>
+        <span class="mobile-nav__contact__icon"><i class="fa fa-envelope"></i></span>
+        <a href="mailto:info@kendineiyibak.com">aysunmutlu25@gmail.com</a>
+      </li>
+      <li>
+        <span class="mobile-nav__contact__icon"><i class="fa fa-phone-alt"></i></span>
+        <a href="tel:+905367655107">+90 536 765 51 07</a>
+      </li>
+    </ul>
+    <!-- /.mobile-nav__contact -->
+
+    <!-- /.mobile-nav__social -->
+  </div>
+  <!-- /.mobile-nav__content -->
+</div>

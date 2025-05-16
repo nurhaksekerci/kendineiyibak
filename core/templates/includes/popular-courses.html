@@ -1,0 +1,190 @@
+{% load static %}
+<section class="courses-one section-space-top2" id="courses">
+    <div class="container">
+        <div class="sec-title sec-title--center wow fadeInUp" data-wow-duration="1500ms">
+            <h6 class="sec-title__tagline">Video Eğitimlerimiz</h6>
+            <h3 class="sec-title__title">Kapsamlı <span class="sec-title__title__text">Video</span> <span class="sec-title__title__shape">Eğitimleri</span></h3>
+        </div>
+        <div class="text-center mb-4">
+            {% if user.is_authenticated %}
+            <a href="{% url 'courses' %}" class="eduhive-btn">
+            {% else %}
+            <a href="{% url 'login' %}" class="eduhive-btn">
+            {% endif %}
+                <span>Tüm Videoları Görüntüle</span>
+                <span class="eduhive-btn__icon">
+                    <span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span>
+                </span>
+            </a>
+        </div>
+    </div>
+    <div class="courses-one__container container">
+        <div class="courses-one__carousel eduhive-owl__carousel--with-shadow eduhive-owl__carousel eduhive-owl__carousel--basic-nav owl-carousel owl-theme" data-owl-options="{
+            &quot;items&quot;: 3,
+            &quot;margin&quot;: 30,
+            &quot;smartSpeed&quot;: 700,
+            &quot;loop&quot;: true,
+            &quot;autoplay&quot;: true,
+            &quot;nav&quot;: true,
+            &quot;dots&quot;: false,
+            &quot;responsive&quot;: {
+                &quot;0&quot;: {&quot;items&quot;: 1},
+                &quot;768&quot;: {&quot;items&quot;: 2},
+                &quot;992&quot;: {&quot;items&quot;: 3}
+            }
+        }">
+            <!-- Temel Bakım Video Eğitimi -->
+            <div class="item">
+                <div class="course-card">
+                    <div class="course-card__image">
+                        <div class="course-card__video-preview">
+                            <img src="{% static 'assets/images/course/temel-bakim-video.jpg' %}" alt="Temel Bakım">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'modul_detay' 1 %}" class="course-card__video-btn">
+                            {% else %}
+                            <a href="{% url 'login' %}" class="course-card__video-btn">
+                            {% endif %}
+                                <i class="fa fa-play"></i>
+                            </a>
+                        </div>
+                        <div class="course-card__video-length">12:30</div>
+                    </div>
+                    <div class="course-card__content">
+                        <div class="course-card__content__inner">
+                            <div class="course-card__title">
+                                {% if user.is_authenticated %}
+                                <h3><a href="{% url 'modul_detay' 1 %}">Temel Demans Hasta Bakımı</a></h3>
+                                {% else %}
+                                <h3><a href="{% url 'login' %}">Temel Demans Hasta Bakımı</a></h3>
+                                {% endif %}
+                            </div>
+                            <div class="course-card__info">
+                                <div class="course-card__info__item">
+                                    <i class="far fa-play-circle"></i>
+                                    <span>24 Video</span>
+                                </div>
+                                <div class="course-card__info__item">
+                                    <i class="far fa-clock"></i>
+                                    <span>12 Saat</span>
+                                </div>
+                            </div>
+                            <div class="course-card__bottom">
+                                <div class="course-card__bottom__left">
+                                    <div class="course-card__instructor">
+                                        <img src="{% static 'assets/images/team/instructor-1.jpg' %}" alt="">
+                                        <a href="instructor-details.html">Dr. Ayşe Yılmaz</a>
+                                    </div>
+                                </div>
+                                <div class="course-card__bottom__right">
+                                    <span class="course-card__price">₺1,499</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İletişim Teknikleri Video Eğitimi -->
+            <div class="item">
+                <div class="course-card">
+                    <div class="course-card__image">
+                        <div class="course-card__video-preview">
+                            <img src="{% static 'assets/images/course/iletisim-video.jpg' %}" alt="İletişim">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'modul_detay' 2 %}" class="course-card__video-btn">
+                            {% else %}
+                            <a href="{% url 'login' %}" class="course-card__video-btn">
+                            {% endif %}
+                                <i class="fa fa-play"></i>
+                            </a>
+                        </div>
+                        <div class="course-card__video-length">08:45</div>
+                    </div>
+                    <div class="course-card__content">
+                        <div class="course-card__content__inner">
+                            <div class="course-card__title">
+                                {% if user.is_authenticated %}
+                                <h3><a href="{% url 'modul_detay' 2 %}">Demans Hastalarıyla İletişim</a></h3>
+                                {% else %}
+                                <h3><a href="{% url 'login' %}">Demans Hastalarıyla İletişim</a></h3>
+                                {% endif %}
+                            </div>
+                            <div class="course-card__info">
+                                <div class="course-card__info__item">
+                                    <i class="far fa-play-circle"></i>
+                                    <span>16 Video</span>
+                                </div>
+                                <div class="course-card__info__item">
+                                    <i class="far fa-clock"></i>
+                                    <span>8 Saat</span>
+                                </div>
+                            </div>
+                            <div class="course-card__bottom">
+                                <div class="course-card__bottom__left">
+                                    <div class="course-card__instructor">
+                                        <img src="{% static 'assets/images/team/instructor-2.jpg' %}" alt="">
+                                        <a href="instructor-details.html">Uzm. Psk. Mehmet Demir</a>
+                                    </div>
+                                </div>
+                                <div class="course-card__bottom__right">
+                                    <span class="course-card__price">₺999</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Günlük Yaşam Aktiviteleri Video Eğitimi -->
+            <div class="item">
+                <div class="course-card">
+                    <div class="course-card__image">
+                        <div class="course-card__video-preview">
+                            <img src="{% static 'assets/images/course/aktivite-video.jpg' %}" alt="Günlük Yaşam">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'modul_detay' 3 %}" class="course-card__video-btn">
+                            {% else %}
+                            <a href="{% url 'login' %}" class="course-card__video-btn">
+                            {% endif %}
+                                <i class="fa fa-play"></i>
+                            </a>
+                        </div>
+                        <div class="course-card__video-length">10:15</div>
+                    </div>
+                    <div class="course-card__content">
+                        <div class="course-card__content__inner">
+                            <div class="course-card__title">
+                                {% if user.is_authenticated %}
+                                <h3><a href="{% url 'modul_detay' 3 %}">Günlük Yaşam Aktiviteleri</a></h3>
+                                {% else %}
+                                <h3><a href="{% url 'login' %}">Günlük Yaşam Aktiviteleri</a></h3>
+                                {% endif %}
+                            </div>
+                            <div class="course-card__info">
+                                <div class="course-card__info__item">
+                                    <i class="far fa-play-circle"></i>
+                                    <span>20 Video</span>
+                                </div>
+                                <div class="course-card__info__item">
+                                    <i class="far fa-clock"></i>
+                                    <span>10 Saat</span>
+                                </div>
+                            </div>
+                            <div class="course-card__bottom">
+                                <div class="course-card__bottom__left">
+                                    <div class="course-card__instructor">
+                                        <img src="{% static 'assets/images/team/instructor-3.jpg' %}" alt="">
+                                        <a href="instructor-details.html">Fizyoterapist Zeynep Kaya</a>
+                                    </div>
+                                </div>
+                                <div class="course-card__bottom__right">
+                                    <span class="course-card__price">₺1,299</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> 

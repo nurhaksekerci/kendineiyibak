@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Soru Ekle - {{ video.baslik }} - Yönetim Paneli - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Header Banner -->
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <section class="page-banner">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="banner-content">
+            <h1 class="text-center text-white">Soru Ekle</h1>
+            <div class="welcome-message text-center mt-3">
+              <p class="text-white">Hoş geldiniz, {{ request.user.first_name|default:request.user.username }}! "{{ video.baslik }}" videosuna yeni bir soru ekleyebilirsiniz.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Soru Ekleme Formu -->
+  <section class="yonetim-form section-space">
+    <div class="container">
+      <!-- Mesajlar -->
+      {% if messages %}
+        <div class="row mb-4">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0">{{ video.modul.baslik }} > {{ video.baslik }} - Yeni Soru</h4>
+              <a href="{% url 'video_sorulari' video.id %}" class="btn btn-secondary btn-sm">
+                <i class="fa fa-arrow-left"></i> Geri Dön
+              </a>
+            </div>
+            <div class="card-body">
+              <form method="post" action="{% url 'soru_ekle' video.id %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                  <label for="metin" class="form-label">Soru Metni <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="metin" name="metin" rows="3" required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="soru_tipi" class="form-label">Soru Tipi <span class="text-danger">*</span></label>
+                  <select class="form-select" id="soru_tipi" name="soru_tipi" required>
+                    <option value="coktan_secmeli" selected>Çoktan Seçmeli</option>
+                    <option value="dogru_yanlis">Doğru/Yanlış</option>
+                    <option value="metin">Metin Cevaplı</option>
+                  </select>
+                  <div class="form-text">Soru tipini seçin. Seçiminize göre aşağıdaki alanlar değişecektir.</div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="aktif" name="aktif" checked>
+                  <label class="form-check-label" for="aktif">Aktif</label>
+                  <div class="form-text">Soru aktif olarak işaretlenirse kullanıcılar tarafından görüntülenebilir.</div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- Çoktan Seçmeli Soru Alanları -->
+                <div id="coktan_secmeli_alanlari" class="soru-tipi-alan coktan_secmeli-alani" style="display: block;">
+                  <h5 class="mb-3">Seçenekler</h5>
+                  <p class="text-muted mb-3">En az 2 seçenek eklemelisiniz ve bir tanesini doğru cevap olarak işaretlemelisiniz.</p>
+                  
+                  <div id="secenekler">
+                    <!-- Seçenek 1 -->
+                    <div class="mb-3 secenek-grup">
+                      <div class="input-group">
+                        <div class="input-group-text">
+                          <input class="form-check-input mt-0 dogru-secenek" type="radio" name="dogru_secenek" value="0" checked>
+                        </div>
+                        <input type="text" class="form-control" name="secenek_metin" placeholder="Seçenek 1" required>
+                        <button type="button" class="btn btn-outline-danger sil-btn" disabled>
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Seçenek 2 -->
+                    <div class="mb-3 secenek-grup">
+                      <div class="input-group">
+                        <div class="input-group-text">
+                          <input class="form-check-input mt-0 dogru-secenek" type="radio" name="dogru_secenek" value="1">
+                        </div>
+                        <input type="text" class="form-control" name="secenek_metin" placeholder="Seçenek 2" required>
+                        <button type="button" class="btn btn-outline-danger sil-btn" disabled>
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4">
+                    <button type="button" id="secenek-ekle" class="btn btn-outline-primary">
+                      <i class="fa fa-plus"></i> Seçenek Ekle
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Doğru/Yanlış Soru Alanları -->
+                <div id="dogru_yanlis_alanlari" class="soru-tipi-alan dogru_yanlis-alani" style="display: none;">
+                  <h5 class="mb-3">Doğru/Yanlış Cevabı</h5>
+                  <p class="text-muted mb-3">Yukarıdaki ifadenin doğru mu yanlış mı olduğunu belirtin.</p>
+                  
+                  <div class="mb-3">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="dogru_yanlis_cevap" id="dogru_cevap" value="dogru" checked>
+                      <label class="form-check-label" for="dogru_cevap">Doğru</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="dogru_yanlis_cevap" id="yanlis_cevap" value="yanlis">
+                      <label class="form-check-label" for="yanlis_cevap">Yanlış</label>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Metin Cevaplı Soru Alanları -->
+                <div id="metin_alanlari" class="soru-tipi-alan metin-alani" style="display: none;">
+                  <h5 class="mb-3">Doğru Cevap</h5>
+                  <p class="text-muted mb-3">Kullanıcının girmesi gereken doğru cevabı yazın.</p>
+                  
+                  <div class="mb-3">
+                    <label for="dogru_cevap_metni" class="form-label">Doğru Cevap <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="dogru_cevap_metni" name="dogru_cevap_metni" placeholder="Doğru cevabı girin">
+                    <div class="form-text">Kullanıcının cevabı bu metinle karşılaştırılacaktır.</div>
+                  </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save"></i> Soru Oluştur
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .page-banner {
+    padding: 100px 0 120px;
+    background-color: #6610f2;
+    background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px;
+    color: white;
+  }
+  
+  .yonetim-form {
+    padding: 80px 0;
+  }
+  
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+  }
+  
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .form-control:focus {
+    border-color: #6610f2;
+    box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25);
+  }
+  
+  .input-group-text {
+    background-color: #f8f9fa;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const seceneklerDiv = document.getElementById('secenekler');
+    const secenekEkleBtn = document.getElementById('secenek-ekle');
+    const soruTipiSelect = document.getElementById('soru_tipi');
+    const coktanSecmeliAlanlari = document.getElementById('coktan_secmeli_alanlari');
+    const dogruYanlisAlanlari = document.getElementById('dogru_yanlis_alanlari');
+    const metinAlanlari = document.getElementById('metin_alanlari');
+    
+    // Sayfa yüklendiğinde varsayılan olarak çoktan seçmeli alanları göster
+    coktanSecmeliAlanlari.style.display = 'block';
+    
+    // Soru tipi değiştiğinde
+    soruTipiSelect.addEventListener('change', function() {
+      const soruTipi = this.value;
+      
+      // Tüm soru tipi alanlarını gizle
+      coktanSecmeliAlanlari.style.display = 'none';
+      dogruYanlisAlanlari.style.display = 'none';
+      metinAlanlari.style.display = 'none';
+      
+      // Seçilen soru tipine göre ilgili alanı göster
+      if (soruTipi === 'coktan_secmeli') {
+        coktanSecmeliAlanlari.style.display = 'block';
+        
+        // Çoktan seçmeli için gerekli alanları required yap
+        const secenekInputlar = coktanSecmeliAlanlari.querySelectorAll('input[name="secenek_metin"]');
+        secenekInputlar.forEach(input => {
+          input.setAttribute('required', '');
+        });
+        
+        // Diğer alanların required özelliğini kaldır
+        document.querySelector('#dogru_cevap_metni').removeAttribute('required');
+        
+      } else if (soruTipi === 'dogru_yanlis') {
+        dogruYanlisAlanlari.style.display = 'block';
+        
+        // Çoktan seçmeli alanların required özelliğini kaldır
+        const secenekInputlar = coktanSecmeliAlanlari.querySelectorAll('input[name="secenek_metin"]');
+        secenekInputlar.forEach(input => {
+          input.removeAttribute('required');
+        });
+        
+        // Metin alanının required özelliğini kaldır
+        document.querySelector('#dogru_cevap_metni').removeAttribute('required');
+        
+      } else if (soruTipi === 'metin') {
+        metinAlanlari.style.display = 'block';
+        
+        // Metin alanını required yap
+        document.querySelector('#dogru_cevap_metni').setAttribute('required', '');
+        
+        // Çoktan seçmeli alanların required özelliğini kaldır
+        const secenekInputlar = coktanSecmeliAlanlari.querySelectorAll('input[name="secenek_metin"]');
+        secenekInputlar.forEach(input => {
+          input.removeAttribute('required');
+        });
+      }
+    });
+    
+    // Seçenek ekleme
+    secenekEkleBtn.addEventListener('click', function() {
+      const secenekSayisi = seceneklerDiv.querySelectorAll('.secenek-grup').length;
+      
+      const yeniSecenek = document.createElement('div');
+      yeniSecenek.className = 'mb-3 secenek-grup';
+      yeniSecenek.innerHTML = `
+        <div class="input-group">
+          <div class="input-group-text">
+            <input class="form-check-input mt-0 dogru-secenek" type="radio" name="dogru_secenek" value="${secenekSayisi}">
+          </div>
+          <input type="text" class="form-control" name="secenek_metin" placeholder="Seçenek ${secenekSayisi + 1}" required>
+          <button type="button" class="btn btn-outline-danger sil-btn">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      `;
+      
+      seceneklerDiv.appendChild(yeniSecenek);
+      
+      // Silme butonlarını etkinleştir
+      guncelleSilButonlari();
+    });
+    
+    // Seçenek silme
+    seceneklerDiv.addEventListener('click', function(e) {
+      if (e.target.closest('.sil-btn')) {
+        const secenekGrup = e.target.closest('.secenek-grup');
+        secenekGrup.remove();
+        
+        // Seçenek değerlerini güncelle
+        guncelleDegerler();
+        
+        // Silme butonlarını güncelle
+        guncelleSilButonlari();
+      }
+    });
+    
+    // Değerleri güncelle
+    function guncelleDegerler() {
+      const secenekGruplari = seceneklerDiv.querySelectorAll('.secenek-grup');
+      
+      secenekGruplari.forEach((grup, index) => {
+        const radio = grup.querySelector('.dogru-secenek');
+        const input = grup.querySelector('input[name="secenek_metin"]');
+        
+        radio.value = index;
+        input.placeholder = `Seçenek ${index + 1}`;
+      });
+    }
+    
+    // Silme butonlarını güncelle
+    function guncelleSilButonlari() {
+      const secenekGruplari = seceneklerDiv.querySelectorAll('.secenek-grup');
+      const silButonlari = seceneklerDiv.querySelectorAll('.sil-btn');
+      
+      // En az 2 seçenek olmalı
+      if (secenekGruplari.length <= 2) {
+        silButonlari.forEach(btn => {
+          btn.disabled = true;
+        });
+      } else {
+        silButonlari.forEach(btn => {
+          btn.disabled = false;
+        });
+      }
+    }
+  });
+</script>
+{% endblock %} 

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Metinsel Soru Değerlendirme - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <br />
+  <br />
+  <br />
+  <br />
+  <br>
+  <br>
+  
+
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <h1>Metinsel Soru Değerlendirme</h1>
+            <p class="lead text-white mt-3">Kullanıcının verdiği metinsel cevabı değerlendirin.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Değerlendirme Formu -->
+    <section class="content-section py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card mb-4 shadow-sm">
+              <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h4 class="mb-0"><i class="fas fa-question-circle me-2"></i>Metinsel Soru</h4>
+                  <a href="{% url 'metinsel_sorular' %}" class="btn btn-outline-light btn-sm"><i class="fas fa-arrow-left me-1"></i>Geri Dön</a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Soru:</label>
+                  <div class="p-3 bg-light rounded">
+                    <p class="mb-0">{{ kullanici_cevap.soru.soru_metni }}</p>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Kullanıcı:</label>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle fa-2x me-2 text-primary"></i>
+                    <div>
+                      <p class="mb-0 fw-bold">{{ kullanici_cevap.kullanici.fullname|default:kullanici_cevap.kullanici.username }}</p>
+                      <p class="text-muted small mb-0">{{ kullanici_cevap.kullanici.email }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Cevap:</label>
+                  <div class="p-3 rounded border border-2 border-primary">
+                    <p class="mb-0">{{ kullanici_cevap.secilen_secenek.secenek_metni }}</p>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Cevaplama Tarihi:</label>
+                  <p class="mb-0">{{ kullanici_cevap.cevaplama_tarihi|date:'d F Y, H:i' }}</p>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Video:</label>
+                  <a href="{% url 'video_izle' kullanici_cevap.soru.video.id %}" class="d-flex align-items-center text-decoration-none" target="_blank">
+                    <i class="fas fa-film me-2 text-primary"></i>
+                    <span>{{ kullanici_cevap.soru.video.baslik }}</span>
+                  </a>
+                </div>
+
+                <hr class="my-4" />
+
+                <form method="post" action="{% url 'metinsel_soru_degerlendir' kullanici_cevap.id %}">
+                  {% csrf_token %}
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">Değerlendirme:</label>
+                    <div class="d-flex flex-column flex-md-row gap-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="degerlendirme" id="dogru" value="dogru" />
+                        <label class="form-check-label" for="dogru"><span class="badge bg-success px-3"><i class="fas fa-check me-1"></i>Doğru</span></label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="degerlendirme" id="yanlis" value="yanlis" />
+                        <label class="form-check-label" for="yanlis"><span class="badge bg-danger px-3"><i class="fas fa-times me-1"></i>Yanlış</span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>Kaydet</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6f42c1;
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .content-section {
+      background-color: #f8f9fa;
+      min-height: calc(100vh - 400px);
+    }
+    
+    .bg-primary {
+      background-color: #6f42c1 !important;
+    }
+    
+    .text-primary {
+      color: #6f42c1 !important;
+    }
+    
+    .border-primary {
+      border-color: #6f42c1 !important;
+    }
+    
+    .btn-primary {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .btn-primary:hover {
+      background-color: #5a32a3;
+      border-color: #5a32a3;
+    }
+    
+    .btn-outline-primary {
+      color: #6f42c1;
+      border-color: #6f42c1;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: #6f42c1;
+      color: white;
+    }
+  </style>
+{% endblock %}

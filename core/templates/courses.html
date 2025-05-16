@@ -1,0 +1,1047 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load video_filters %}
+
+{% block title %}
+  Video Eğitimler - Kendine İyi Bak
+{% endblock %}
+
+{% block content %}
+  <div class="page-wrapper">
+    <!-- Header Banner -->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <section class="page-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="banner-content">
+              <h1 class="text-center text-white">Eğitimler</h1>
+              <div class="welcome-message text-center mt-3">
+                <p class="text-white">Hoş geldiniz, {{ request.user.fullname|default:request.user.username }}! Eğitim içeriklerine erişim sağlayabilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="courses-section py-5">
+      <div class="container">
+        <!-- Uyarı İkonu (Fixed) -->
+        <div class="info-icon-fixed" data-bs-toggle="modal" data-bs-target="#infoModal">
+          <i class="fas fa-info-circle"></i>
+        </div>
+
+        <!-- Bilgilendirme Modal -->
+        <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="infoModalLabel"><i class="fas fa-info-circle me-2"></i>Eğitim Modüllerini Nasıl Tamamlayabilirsiniz?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>Eğitim modüllerimiz haftalık olarak düzenlenmiştir:</p>
+                <ul>
+                  <li>Her hafta için belirlenen modülleri tamamlamanız gerekmektedir.</li>
+                  <li>Bir sonraki haftaya geçmek için önceki haftanın tüm modüllerini ve aktivitelerini tamamlamalısınız.</li>
+                  <li>Her hafta, kayıt tarihine göre otomatik olarak açılır.</li>
+                  <li>Bir hafta açıldığında, o haftanın tüm modüllerini ve aktiviteleri de aynı anda erişime açılır.</li>
+                  <li>Kilitli modüller ve aktiviteler, önceki haftaların tüm içeriklerini tamamladıktan sonra erişilebilir olacaktır.</li>
+                </ul>
+                <p class="mb-0">İyi öğrenmeler dileriz!</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% regroup moduller by hafta as haftalik_moduller %}
+        {% for hafta in haftalik_moduller %}
+          <div class="week-section mb-5">
+            <div class="week-header mb-4">
+              <div class="d-flex align-items-center">
+                <div class="week-badge me-3">
+                  <span class="badge bg-primary rounded-pill px-3 py-2">{{ hafta.grouper }}. Hafta</span>
+                  {% with ilk_modul=hafta.list|first %}
+                    {% if ilk_modul.baslangic_tarihi %}
+                      <span class="badge bg-info rounded-pill px-3 py-2 ms-2">{{ ilk_modul.baslangic_tarihi|date:'d.m.Y' }}</span>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+                <div class="week-progress flex-grow-1">
+                  <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ haftalik_ilerleme|get_item:hafta.grouper }}%;" aria-valuenow="{{ haftalik_ilerleme|get_item:hafta.grouper }}" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small class="text-muted mt-1 d-block">
+                    {% with hafta_yuzdesi=haftalik_ilerleme|get_item:hafta.grouper %}
+                      {% if hafta_yuzdesi > 0 %}
+                        Hafta İlerlemesi: %{{ hafta_yuzdesi }}
+                      {% else %}
+                        Henüz başlanmadı
+                      {% endif %}
+                    {% endwith %}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Tab Sistemi - Eğitimler/Hedefler -->
+              <ul class="nav nav-tabs mt-4" id="week{{ hafta.grouper }}Tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="courses-tab-{{ hafta.grouper }}" data-bs-toggle="tab" data-bs-target="#courses-{{ hafta.grouper }}" type="button" role="tab" aria-controls="courses-{{ hafta.grouper }}" aria-selected="true"><i class="fas fa-book-open me-2"></i>Eğitimler</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="activities-tab-{{ hafta.grouper }}" data-bs-toggle="tab" data-bs-target="#activities-{{ hafta.grouper }}" type="button" role="tab" aria-controls="activities-{{ hafta.grouper }}" aria-selected="false"><i class="fas fa-tasks me-2"></i>Aktiviteler</button>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tab İçerikleri -->
+            <div class="tab-content" id="week{{ hafta.grouper }}TabContent">
+              <!-- Eğitimler Tab İçeriği -->
+              <div class="tab-pane fade show active" id="courses-{{ hafta.grouper }}" role="tabpanel" aria-labelledby="courses-tab-{{ hafta.grouper }}">
+                <div class="modules-slider">
+                  <div class="modules-scroll">
+                    {% for modul in hafta.list %}
+                      <div class="module-card-container">
+                        <div class="course-card h-100 rounded-4 overflow-hidden shadow-sm">
+                          {% if modul.id in erisim_izni_olan_moduller %}
+                            <a href="{% url 'modul_detay' modul.id %}" class="text-decoration-none">
+                              <div class="course-thumbnail position-relative">
+                                <div class="course-image">
+                                  {% if modul.resim %}
+                                    <img src="{{ modul.resim.url }}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover" />
+                                  {% elif modul.videolar.first.get_thumbnail %}
+                                    <img src="{{ modul.videolar.first.get_thumbnail }}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover" />
+                                  {% else %}
+                                    <img src="{% static 'assets/images/default-course.jpg' %}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover" />
+                                  {% endif %}
+                                </div>
+                                <div class="play-button position-absolute top-50 start-50 translate-middle">
+                                  <i class="fa fa-play text-white"></i>
+                                </div>
+                                <span class="duration position-absolute bottom-0 end-0 m-3 px-2 py-1 rounded-pill bg-dark bg-opacity-75 text-white">{{ modul.toplam_sure|format_duration }}</span>
+
+                                {% if ilerleme_dict|get_item:modul.id == 100 %}
+                                  <div class="completed-badge position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i> Tamamlandı</span>
+                                  </div>
+                                {% elif ilerleme_dict|get_item:modul.id > 0 %}
+                                  <div class="progress-badge position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-warning px-2 py-1 rounded-pill"><i class="fas fa-spinner me-1"></i> {{ ilerleme_dict|get_item:modul.id }}%</span>
+                                  </div>
+                                {% elif modul.id in baslanmamis_moduller %}
+                                  <div class="progress-badge position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-secondary px-2 py-1 rounded-pill"><i class="fas fa-hourglass-start me-1"></i> Başlanmadı</span>
+                                  </div>
+                                {% endif %}
+                              </div>
+                              <div class="course-content p-4">
+                                <h3 class="course-title h5 mb-3 text-dark">{{ modul.baslik }}</h3>
+
+                                {% if modul.aciklama %}
+                                  <p class="course-description text-muted mb-3 small">{{ modul.aciklama|truncatechars:100 }}</p>
+                                {% endif %}
+
+                                <div class="course-meta d-flex flex-wrap justify-content-between mb-3">
+                                  <div class="d-flex align-items-center me-3 mb-2">
+                                    <i class="far fa-play-circle me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ modul.video_sayisi }} Video</span>
+                                  </div>
+                                  <div class="d-flex align-items-center me-3 mb-2">
+                                    <i class="far fa-clock me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ modul.toplam_sure|format_duration }}</span>
+                                  </div>
+                                  {% if modul.soru_sayisi > 0 %}
+                                    <div class="d-flex align-items-center mb-2">
+                                      <i class="far fa-question-circle me-2" style="color: #6f42c1;"></i>
+                                      <span>{{ modul.soru_sayisi }} Soru</span>
+                                    </div>
+                                  {% endif %}
+                                </div>
+
+                                <div class="course-footer d-flex justify-content-between align-items-center">
+                                  {% if modul.egitmen %}
+                                    <div class="instructor d-flex align-items-center">
+                                      <div class="rounded-circle bg-light me-2 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-user text-secondary" style="font-size: 14px;"></i>
+                                      </div>
+                                      <span class="text-muted small">{{ modul.egitmen.ad_soyad }}</span>
+                                    </div>
+                                  {% endif %}
+
+                                  <span class="course-action">
+                                    <span class="btn btn-sm" style="background-color: #6f42c1; color: white; border-radius: 20px; padding: 5px 15px;">
+                                      {% if ilerleme_dict|get_item:modul.id == 100 %}
+                                        <i class="fas fa-check me-1"></i> Tamamlandı
+                                      {% elif ilerleme_dict|get_item:modul.id > 0 %}
+                                        <i class="fas fa-play me-1"></i> Devam Et
+                                      {% else %}
+                                        <i class="fas fa-arrow-right me-1"></i> Başla
+                                      {% endif %}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            </a>
+                          {% else %}
+                            <div class="locked-course">
+                              <div class="course-thumbnail position-relative">
+                                <div class="course-image">
+                                  {% if modul.resim %}
+                                    <img src="{{ modul.resim.url }}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover opacity-50" />
+                                  {% elif modul.videolar.first.get_thumbnail %}
+                                    <img src="{{ modul.videolar.first.get_thumbnail }}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover opacity-50" />
+                                  {% else %}
+                                    <img src="{% static 'assets/images/default-course.jpg' %}" alt="{{ modul.baslik }}" class="w-100 h-100 object-fit-cover opacity-50" />
+                                  {% endif %}
+                                </div>
+                                <div class="lock-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
+                                  <div class="text-center">
+                                    <i class="fas fa-lock text-white mb-2" style="font-size: 40px;"></i>
+                                    {% if modul.baslangic_tarihi and modul.baslangic_tarihi > today %}
+                                      <p class="text-white mb-0">Bu modül {{ modul.baslangic_tarihi|date:'d.m.Y' }} tarihinde açılacak</p>
+                                    {% elif modul.hafta > 1 %}
+                                      <p class="text-white mb-0">
+                                        {% with kayit_tarihi=request.user.kayit_tarihi|default:request.user.date_joined.date %}
+                                          {% with gun_sayisi=modul.hafta|add:'-1'|multiply:'7' %}
+                                            Bu modül kayıt tarihinizden {{ gun_sayisi }} gün sonra ({{ kayit_tarihi|add_days:gun_sayisi|date:'d.m.Y' }}) erişime açılacak
+                                          {% endwith %}
+                                        {% endwith %}
+                                      </p>
+                                    {% else %}
+                                      <p class="text-white mb-0">Önceki modülü tamamlayın</p>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                                <span class="duration position-absolute bottom-0 end-0 m-3 px-2 py-1 rounded-pill bg-dark bg-opacity-75 text-white">{{ modul.toplam_sure|format_duration }}</span>
+                              </div>
+                              <div class="course-content p-4">
+                                <h3 class="course-title h5 mb-3 text-dark">{{ modul.baslik }}</h3>
+
+                                {% if modul.aciklama %}
+                                  <p class="course-description text-muted mb-3 small">{{ modul.aciklama|truncatechars:100 }}</p>
+                                {% endif %}
+
+                                <div class="course-meta d-flex flex-wrap justify-content-between mb-3">
+                                  <div class="d-flex align-items-center me-3 mb-2">
+                                    <i class="far fa-play-circle me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ modul.video_sayisi }} Video</span>
+                                  </div>
+                                  <div class="d-flex align-items-center me-3 mb-2">
+                                    <i class="far fa-clock me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ modul.toplam_sure|format_duration }}</span>
+                                  </div>
+                                  {% if modul.soru_sayisi > 0 %}
+                                    <div class="d-flex align-items-center mb-2">
+                                      <i class="far fa-question-circle me-2" style="color: #6f42c1;"></i>
+                                      <span>{{ modul.soru_sayisi }} Soru</span>
+                                    </div>
+                                  {% endif %}
+                                </div>
+
+                                <div class="course-footer d-flex justify-content-between align-items-center">
+                                  {% if modul.egitmen %}
+                                    <div class="instructor d-flex align-items-center">
+                                      <div class="rounded-circle bg-light me-2 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-user text-secondary" style="font-size: 14px;"></i>
+                                      </div>
+                                      <span class="text-muted small">{{ modul.egitmen.ad_soyad }}</span>
+                                    </div>
+                                  {% endif %}
+
+                                  <span class="course-action"><span class="btn btn-sm btn-outline-secondary disabled"><i class="fas fa-lock me-1"></i> Kilitli</span></span>
+                                </div>
+                              </div>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="slider-controls">
+                    <button class="slider-prev" aria-label="Önceki"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-next" aria-label="Sonraki"><i class="fas fa-chevron-right"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aktiviteler Tab İçeriği -->
+              <div class="tab-pane fade" id="activities-{{ hafta.grouper }}" role="tabpanel" aria-labelledby="activities-tab-{{ hafta.grouper }}">
+                <div class="row g-4">
+                  {% if aktiviteler %}
+                    {% for aktivite in aktiviteler reversed %}
+                      {% if aktivite.hafta == hafta.grouper %}
+                        <div class="col-lg-4 col-md-6">
+                          {% if aktivite.erisim_var and hafta_tamamlanan_moduller|get_item:hafta.grouper %}
+                            <div class="activity-card h-100 rounded-4 overflow-hidden shadow-sm">
+                              <a href="{% url 'aktivite_detay' aktivite.id %}" class="text-decoration-none">
+                                <div class="activity-header position-relative">
+                                  <div class="activity-image">
+                                    <div class="activity-bg" style="background-color: #6f42c1; height: 120px;"></div>
+                                  </div>
+                                  <div class="activity-icon position-absolute top-50 start-50 translate-middle">
+                                    {% if aktivite.tip == 'checkbox' %}
+                                      <i class="fas fa-tasks text-white" style="font-size: 40px;"></i>
+                                    {% elif aktivite.tip == 'tablo' %}
+                                      <i class="fas fa-table text-white" style="font-size: 40px;"></i>
+                                    {% elif aktivite.tip == 'metin' %}
+                                      <i class="fas fa-align-left text-white" style="font-size: 40px;"></i>
+                                    {% else %}
+                                      <i class="fas fa-clipboard-list text-white" style="font-size: 40px;"></i>
+                                    {% endif %}
+                                  </div>
+
+                                  {% if aktivite.kullanici_yaniti_var %}
+                                    {% if aktivite.tamamlandi %}
+                                      <div class="completed-badge position-absolute top-0 end-0 m-3">
+                                        <span class="badge bg-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i> Tamamlandı</span>
+                                      </div>
+                                    {% else %}
+                                      <div class="progress-badge position-absolute top-0 end-0 m-3">
+                                        <span class="badge bg-warning px-2 py-1 rounded-pill"><i class="fas fa-spinner me-1"></i> Devam Ediyor</span>
+                                      </div>
+                                    {% endif %}
+                                  {% else %}
+                                    <div class="progress-badge position-absolute top-0 end-0 m-3">
+                                      <span class="badge bg-secondary px-2 py-1 rounded-pill"><i class="fas fa-hourglass-start me-1"></i> Başlanmadı</span>
+                                    </div>
+                                  {% endif %}
+                                </div>
+                                <div class="activity-content p-4">
+                                  <h3 class="activity-title h5 mb-3 text-dark">{{ aktivite.baslik }}</h3>
+
+                                  {% if aktivite.aciklama %}
+                                    <p class="activity-description text-muted mb-3 small">{{ aktivite.aciklama|truncatechars:100 }}</p>
+                                  {% endif %}
+
+                                  <div class="activity-meta d-flex flex-wrap justify-content-between mb-3">
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                      <i class="far fa-calendar-alt me-2" style="color: #6f42c1;"></i>
+                                      <span>{{ aktivite.hafta }}. Hafta</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                      <i class="far fa-clock me-2" style="color: #6f42c1;"></i>
+                                      <span>{{ aktivite.olusturma_tarihi|date:'d.m.Y' }}</span>
+                                    </div>
+                                  </div>
+
+                                  {% if aktivite.baslangic_tarihi or aktivite.bitis_tarihi %}
+                                    <div class="activity-dates mb-3 small">
+                                      {% if aktivite.baslangic_tarihi %}
+                                        <div class="d-flex align-items-center mb-1">
+                                          <i class="fas fa-play-circle me-2" style="color: #6f42c1;"></i>
+                                          <span>Başlangıç: {{ aktivite.baslangic_tarihi|date:'d.m.Y' }}</span>
+                                        </div>
+                                      {% endif %}
+                                      {% if aktivite.bitis_tarihi %}
+                                        <div class="d-flex align-items-center">
+                                          <i class="fas fa-flag-checkered me-2" style="color: #6f42c1;"></i>
+                                          <span>Bitiş: {{ aktivite.bitis_tarihi|date:'d.m.Y' }}</span>
+                                        </div>
+                                      {% endif %}
+                                    </div>
+                                  {% endif %}
+
+                                  <div class="activity-footer d-flex justify-content-between align-items-center">
+                                    <div></div>
+                                    <span class="activity-action">
+                                      <span class="btn btn-sm" style="background-color: #6f42c1; color: white; border-radius: 20px; padding: 5px 15px;">
+                                        {% if aktivite.kullanici_yaniti_var and aktivite.tamamlandi %}
+                                          <i class="fas fa-check me-1"></i> Tamamlandı
+                                        {% elif aktivite.kullanici_yaniti_var %}
+                                          <i class="fas fa-play me-1"></i> Devam Et
+                                        {% else %}
+                                          <i class="fas fa-arrow-right me-1"></i> Başla
+                                        {% endif %}
+                                      </span>
+                                    </span>
+                                  </div>
+                                </div>
+                              </a>
+                            </div>
+                          {% else %}
+                            <div class="activity-card h-100 rounded-4 overflow-hidden shadow-sm locked-activity">
+                              <div class="activity-header position-relative">
+                                <div class="activity-image">
+                                  <div class="activity-bg opacity-50" style="background-color: #6f42c1; height: 120px;"></div>
+                                </div>
+                                <div class="activity-icon position-absolute top-50 start-50 translate-middle">
+                                  {% if aktivite.tip == 'checkbox' %}
+                                    <i class="fas fa-tasks text-white opacity-50" style="font-size: 40px;"></i>
+                                  {% elif aktivite.tip == 'tablo' %}
+                                    <i class="fas fa-table text-white opacity-50" style="font-size: 40px;"></i>
+                                  {% elif aktivite.tip == 'metin' %}
+                                    <i class="fas fa-align-left text-white opacity-50" style="font-size: 40px;"></i>
+                                  {% else %}
+                                    <i class="fas fa-clipboard-list text-white opacity-50" style="font-size: 40px;"></i>
+                                  {% endif %}
+                                </div>
+                                <div class="lock-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
+                                  <div class="text-center">
+                                    <i class="fas fa-lock text-white mb-2" style="font-size: 40px;"></i>
+                                    {% if aktivite.hafta > 1 and aktivite.hafta not in erisim_izni_olan_haftalar %}
+                                      <p class="text-white mb-0">Önceki haftayı tamamlayın</p>
+                                    {% elif aktivite.baslangic_tarihi and aktivite.baslangic_tarihi > today %}
+                                      <p class="text-white mb-0">{{ aktivite.baslangic_tarihi|date:'d.m.Y' }} tarihinde açılacak</p>
+                                    {% elif aktivite.bitis_tarihi and aktivite.bitis_tarihi < today %}
+                                      <p class="text-white mb-0">Bu aktivitenin süresi doldu</p>
+                                    {% else %}
+                                      <p class="text-white mb-0">Bu aktiviteye erişim iznine sahip değilsiniz</p>
+                                      {% if debug %}
+                                        <p class="text-white small mt-2">
+                                          <small>Erişim durumu: {{ aktivite.erisim_var }}</small>
+                                        </p>
+                                      {% endif %}
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="activity-content p-4">
+                                <h3 class="activity-title h5 mb-3 text-dark opacity-50">{{ aktivite.baslik }}</h3>
+
+                                {% if aktivite.aciklama %}
+                                  <p class="activity-description text-muted mb-3 small opacity-50">{{ aktivite.aciklama|truncatechars:100 }}</p>
+                                {% endif %}
+
+                                <div class="activity-meta d-flex flex-wrap justify-content-between mb-3 opacity-50">
+                                  <div class="d-flex align-items-center me-3 mb-2">
+                                    <i class="far fa-calendar-alt me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ aktivite.hafta }}. Hafta</span>
+                                  </div>
+                                  <div class="d-flex align-items-center mb-2">
+                                    <i class="far fa-clock me-2" style="color: #6f42c1;"></i>
+                                    <span>{{ aktivite.olusturma_tarihi|date:'d.m.Y' }}</span>
+                                  </div>
+                                </div>
+
+                                {% if aktivite.baslangic_tarihi or aktivite.bitis_tarihi %}
+                                  <div class="activity-dates mb-3 small opacity-50">
+                                    {% if aktivite.baslangic_tarihi %}
+                                      <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-play-circle me-2" style="color: #6f42c1;"></i>
+                                        <span>Başlangıç: {{ aktivite.baslangic_tarihi|date:'d.m.Y' }}</span>
+                                      </div>
+                                    {% endif %}
+                                    {% if aktivite.bitis_tarihi %}
+                                      <div class="d-flex align-items-center">
+                                        <i class="fas fa-flag-checkered me-2" style="color: #6f42c1;"></i>
+                                        <span>Bitiş: {{ aktivite.bitis_tarihi|date:'d.m.Y' }}</span>
+                                      </div>
+                                    {% endif %}
+                                  </div>
+                                {% endif %}
+
+                                <div class="activity-footer d-flex justify-content-between align-items-center">
+                                  <div></div>
+                                  <span class="activity-action"><span class="btn btn-sm btn-outline-secondary disabled"><i class="fas fa-lock me-1"></i> Kilitli</span></span>
+                                </div>
+                              </div>
+                            </div>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    {% empty %}
+                      <div class="col-12">
+                        <div class="alert alert-info">
+                          <i class="fas fa-info-circle me-2"></i> {{ hafta.grouper }}. hafta için henüz aktivite bulunmamaktadır.
+                        </div>
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="col-12">
+                      <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Bu hafta için henüz aktivite bulunmamaktadır.
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="alert alert-info">Henüz eğitim modülü bulunmamaktadır. Lütfen daha sonra tekrar kontrol ediniz.</div>
+        {% endfor %}
+
+        <!-- Sayfalama (Pagination) -->
+        {% if moduller.paginator.num_pages > 1 %}
+          <div class="row mt-5">
+            <div class="col-12">
+              <nav aria-label="Eğitim Sayfaları">
+                <ul class="pagination justify-content-center">
+                  {% if moduller.has_previous %}
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa=1" aria-label="İlk"><i class="fas fa-angle-double-left"></i></a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa={{ moduller.previous_page_number }}" aria-label="Önceki"><i class="fas fa-angle-left"></i></a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                      <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                    </li>
+                  {% endif %}
+
+                  {% for i in moduller.paginator.page_range %}
+                    {% if moduller.number == i %}
+                      <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ i }}</span>
+                      </li>
+                    {% elif i > moduller.number|add:'-3' and i < moduller.number|add:'3' %}
+                      <li class="page-item">
+                        <a class="page-link" href="?sayfa={{ i }}">{{ i }}</a>
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if moduller.has_next %}
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa={{ moduller.next_page_number }}" aria-label="Sonraki"><i class="fas fa-angle-right"></i></a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="?sayfa={{ moduller.paginator.num_pages }}" aria-label="Son"><i class="fas fa-angle-double-right"></i></a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                      <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                    </li>
+                  {% endif %}
+                </ul>
+              </nav>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .page-banner {
+      padding: 100px 0 120px;
+      background-color: #6610f2;
+      background-image: linear-gradient(135deg, #6610f2 0%, #7a36f7 100%);
+      position: relative;
+      overflow: hidden;
+      margin-top: -60px;
+      color: white;
+    }
+    
+    .section-title {
+      font-size: 2.5rem;
+      color: #333;
+      font-weight: 600;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: #6610f2;
+      border-radius: 3px;
+    }
+    
+    .course-card {
+      transition: all 0.4s ease;
+      background: #fff;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .course-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(111, 66, 193, 0.15) !important;
+    }
+    
+    .course-thumbnail {
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .course-thumbnail img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .course-card:hover .course-thumbnail img {
+      transform: scale(1.1);
+    }
+    
+    .course-thumbnail::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 30%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+      z-index: 1;
+    }
+    
+    .play-button {
+      width: 60px;
+      height: 60px;
+      background: rgba(111, 66, 193, 0.8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 2;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .course-card:hover .play-button {
+      background: rgba(111, 66, 193, 1);
+      transform: scale(1.1);
+    }
+    
+    .course-content {
+      padding: 25px !important;
+    }
+    
+    .course-title {
+      font-weight: 600;
+      color: #333;
+      transition: color 0.3s ease;
+    }
+    
+    .course-card:hover .course-title {
+      color: #6f42c1;
+    }
+    
+    .course-description {
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .course-meta {
+      margin-bottom: 20px;
+    }
+    
+    .course-meta i {
+      font-size: 16px;
+    }
+    
+    .course-footer {
+      border-top: 1px solid #f0f0f0;
+      padding-top: 15px;
+    }
+    
+    /* Rozetler ve İkonlar */
+    .badge {
+      font-weight: 500;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .category-badge .badge {
+      border: none;
+      backdrop-filter: blur(8px);
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .completed-badge .badge,
+    .progress-badge .badge {
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .duration {
+      font-size: 0.85rem;
+      z-index: 2;
+    }
+    
+    /* Kilitli Kurs */
+    .locked-course {
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+    
+    .lock-overlay {
+      z-index: 3;
+      background: rgba(0, 0, 0, 0.7) !important;
+      backdrop-filter: blur(3px);
+    }
+    
+    .lock-overlay i {
+      animation: pulse 2s infinite;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    /* Bilgi ikonu */
+    .info-icon-fixed {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #6f42c1;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+    
+    .info-icon-fixed i {
+      font-size: 24px;
+    }
+    
+    .info-icon-fixed:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(111, 66, 193, 0.4);
+      background: #7e57c2;
+    }
+    
+    /* Gelişmiş butonlar */
+    .btn-sm {
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .btn-sm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Sayfalama Stilleri */
+    .pagination {
+      margin-top: 40px;
+    }
+    
+    .page-item {
+      margin: 0 3px;
+    }
+    
+    .page-link {
+      border-radius: 50% !important;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6f42c1;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .page-link:hover {
+      background-color: #f8f5ff;
+      color: #6f42c1;
+      border-color: #6f42c1;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(111, 66, 193, 0.15);
+    }
+    
+    .page-item.active .page-link {
+      background-color: #6f42c1;
+      border-color: #6f42c1;
+      color: white;
+      box-shadow: 0 5px 10px rgba(111, 66, 193, 0.3);
+    }
+    
+    .page-item.disabled .page-link {
+      color: #adb5bd;
+      background-color: #f8f9fa;
+      border-color: #dee2e6;
+      box-shadow: none;
+      pointer-events: none;
+    }
+    
+    /* Responsive Düzenlemeler */
+    @media (max-width: 768px) {
+      .page-banner {
+        padding: 80px 0 100px;
+      }
+    
+      .section-title {
+        font-size: 2rem;
+      }
+    
+      .course-thumbnail {
+        height: 180px;
+      }
+    
+      .course-content {
+        padding: 15px !important;
+      }
+    
+      .badge {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+    
+      .play-button {
+        width: 50px;
+        height: 50px;
+      }
+    
+      .page-link {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* Modal Tasarımı */
+    .modal-content {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+      background-color: #f8f9fa;
+      border-radius: 15px 15px 0 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .modal-footer {
+      border-top: 1px solid #f0f0f0;
+      border-radius: 0 0 15px 15px;
+    }
+    
+    /* Haftalık bölüm stilleri */
+    .week-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .week-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: #6f42c1;
+      border-radius: 5px 0 0 5px;
+    }
+    
+    .week-header {
+      position: relative;
+    }
+    
+    .week-badge .badge {
+      font-size: 1rem;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .week-progress .progress {
+      border-radius: 10px;
+      background-color: #f0f0f0;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .week-progress .progress-bar {
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    
+    /* Responsive düzenlemeler */
+    @media (max-width: 768px) {
+      .week-section {
+        padding: 20px;
+      }
+    
+      .week-badge .badge {
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* Yatay kaydırmalı modül slider */
+    .modules-slider {
+      position: relative;
+      width: 100%;
+      padding: 0 40px;
+      margin-bottom: 30px;
+    }
+    
+    .modules-scroll {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE ve Edge */
+      padding: 10px 0;
+      gap: 20px;
+    }
+    
+    .modules-scroll::-webkit-scrollbar {
+      display: none; /* Chrome, Safari ve Opera */
+    }
+    
+    .module-card-container {
+      flex: 0 0 auto;
+      width: 330px;
+      max-width: 90%;
+    }
+    
+    .slider-controls {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    .slider-prev,
+    .slider-next {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(111, 66, 193, 0.8);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .slider-prev:hover,
+    .slider-next:hover {
+      background: rgba(111, 66, 193, 1);
+      transform: scale(1.1);
+    }
+    
+    .slider-prev {
+      margin-left: -20px;
+    }
+    
+    .slider-next {
+      margin-right: -20px;
+    }
+  </style>
+
+  {% block extra_js %}
+    <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Modül kaydırma kontrolü
+    const sliderNext = document.querySelectorAll('.slider-next');
+    const sliderPrev = document.querySelectorAll('.slider-prev');
+    
+    sliderNext.forEach(button => {
+      button.addEventListener('click', function() {
+        const scrollContainer = this.closest('.modules-slider').querySelector('.modules-scroll');
+        scrollContainer.scrollBy({
+          left: 350,
+          behavior: 'smooth'
+        });
+      });
+    });
+    
+    sliderPrev.forEach(button => {
+      button.addEventListener('click', function() {
+        const scrollContainer = this.closest('.modules-slider').querySelector('.modules-scroll');
+        scrollContainer.scrollBy({
+          left: -350,
+          behavior: 'smooth'
+        });
+      });
+    });
+    
+    // Hata ayıklama fonksiyonu
+    function debugModulDurumu() {
+      console.log("Tamamlanan Modüller:", {{ tamamlanan_moduller|safe }});
+      console.log("Kayıt Olunan Kurslar:", {{ kayitli_kurslar|safe }});
+      console.log("Aktif modüller:", {{ modullerin_durumlari|safe }});
+      
+      var moduller = document.querySelectorAll('.modul-data');
+      for (var i = 0; i < moduller.length; i++) {
+        var modul = moduller[i];
+        var modulId = modul.getAttribute('data-modul-id');
+        var oncekiModulId = modul.getAttribute('data-onceki-modul-id');
+        var kilitli = modul.getAttribute('data-kilitli') === 'True';
+        
+        console.log("Modül ID:", modulId, "Önceki Modül:", oncekiModulId, "Kilitli:", kilitli);
+        
+        if (modulId && oncekiModulId) {
+          var tamamlananModuller = {{ tamamlanan_moduller|safe }};
+          var oncekiTamamlandi = tamamlananModuller.includes(parseInt(oncekiModulId));
+          console.log("Modül " + modulId + " için önceki modül " + oncekiModulId + " tamamlanma durumu: " + oncekiTamamlandi);
+        }
+      }
+    }
+    
+    // Debug URL parametresi varsa debug butonunu göster
+    if (window.location.href.indexOf('debug=true') > -1) {
+      var debugButton = document.createElement('button');
+      debugButton.textContent = 'Modül Durumlarını Kontrol Et';
+      debugButton.style.position = 'fixed';
+      debugButton.style.bottom = '20px';
+      debugButton.style.right = '20px';
+      debugButton.style.zIndex = '9999';
+      debugButton.style.padding = '10px';
+      debugButton.style.backgroundColor = '#ff5722';
+      debugButton.style.color = 'white';
+      debugButton.style.border = 'none';
+      debugButton.style.borderRadius = '5px';
+      debugButton.style.cursor = 'pointer';
+      
+      debugButton.onclick = debugModulDurumu;
+      
+      document.body.appendChild(debugButton);
+    }
+  });
+  </script>
+  {% endblock %}
+{% endblock %}
