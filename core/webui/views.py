@@ -97,7 +97,7 @@ def courses(request):
     kayit_tarihi = getattr(request.user, 'kayit_tarihi', None) or request.user.date_joined.date()
     
     # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm erişimleri aç
-    lock_system_kullanicisi = LockSystem.objects.filter(users__in=[request.user]).exists()
+    lock_system_kullanicisi = LockSystem.objects.filter(users=request.user).exists()
     
     # Tüm aktif modülleri getir
     moduller = Modul.objects.filter(
@@ -276,7 +276,7 @@ def courses(request):
             if aktivite.kullanici_yaniti_var:
                 yanit = aktivite.kullanici_yaniti_getir(request.user)
                 aktivite.tamamlandi = yanit.tamamlandi if yanit else False
-    except:
+    except Exception as e:
         # HaftalikAktivite modeli henüz oluşturulmamış olabilir
         aktiviteler = []
     
@@ -507,7 +507,7 @@ def modul_erisim_kontrolu(request, modul_id):
             return True, None
         
         # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm modüllere erişim ver
-        if LockSystem.objects.filter(users__in=[request.user]).exists():
+        if LockSystem.objects.filter(users=request.user).exists():
             return True, None
         
         # Tüm aktif modülleri haftaya göre grupla ve ilerleme bilgilerini al
@@ -681,7 +681,7 @@ def video_erisim_kontrolu(request, video_id):
         return True, modul
     
     # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm videolara erişim ver
-    if LockSystem.objects.filter(users__in=[request.user]).exists():
+    if LockSystem.objects.filter(users=request.user).exists():
         return True, modul
     
     # Önce modül erişim kontrolü yap
@@ -2259,6 +2259,11 @@ def kullanici_detay(request, kullanici_id):
     modul_tamamlama_yuzdesi = (tamamlanan_modul_sayisi / toplam_modul_sayisi * 100) if toplam_modul_sayisi > 0 else 0
     dogru_cevap_yuzdesi = (dogru_cevap_sayisi / toplam_soru_sayisi * 100) if toplam_soru_sayisi > 0 else 0
     
+    if LockSystem.objects.filter(users=kullanici).exists():
+        lock_system_kullanicisi = True
+    else:
+        lock_system_kullanicisi = False
+
     context = {
         'kullanici': kullanici,
         'tamamlanan_moduller': tamamlanan_moduller,
@@ -2273,6 +2278,7 @@ def kullanici_detay(request, kullanici_id):
         'tamamlanan_modul_sayisi': tamamlanan_modul_sayisi,
         'toplam_soru_sayisi': toplam_soru_sayisi,
         'dogru_cevap_sayisi': dogru_cevap_sayisi,
+        'lock_system_kullanicisi': lock_system_kullanicisi,
     }
     
     return render(request, 'yonetim/kullanici_detay.html', context)
@@ -3056,7 +3062,7 @@ def aktivite_hafta_erisim_kontrolu(request, hafta):
         return None
     
     # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm haftalara erişim ver
-    if LockSystem.objects.filter(users__in=[request.user]).exists():
+    if LockSystem.objects.filter(users=request.user).exists():
         return None
     
     # İlk hafta her zaman erişilebilir
@@ -3159,7 +3165,7 @@ def aktivite_detay(request, aktivite_id):
     aktivite = get_object_or_404(HaftalikAktivite, id=aktivite_id, aktif=True, silindi=False)
     
     # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa aktiviteye erişim ver
-    lock_system_kullanicisi = LockSystem.objects.filter(users__in=[request.user]).exists()
+    lock_system_kullanicisi = LockSystem.objects.filter(users=request.user).exists()
     
     # Aktivitenin kullanıcıya açık olup olmadığını kontrol et (LockSystem kullanıcısı değilse)
     if not lock_system_kullanicisi and not aktivite.kullaniciya_acik_mi(request.user):

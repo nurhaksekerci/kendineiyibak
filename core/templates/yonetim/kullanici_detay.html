@@ -293,7 +293,11 @@
                             <h5 class="mb-0">Kilitleri Kaldır</h5>
                           </div>
                           <div class="" style="height: 20px;">
-                            <a href="{% url 'lock_system' kullanici_id=kullanici.id %}?next={{ request.path|urlencode }}" class="btn btn-primary">Kilitleri Kaldır</a>
+                            {% if not lock_system_kullanicisi %}
+                              <a href="{% url 'lock_system' kullanici_id=kullanici.id %}?next={{ request.path|urlencode }}" class="btn btn-primary">Kilitleri Kaldır</a>
+                            {% else %}
+                              <span class="badge bg-success">Kilitleri Kaldırıldı</span>
+                            {% endif %}
                           </div>
                         </div>
                       </div>

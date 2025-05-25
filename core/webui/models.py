@@ -171,7 +171,7 @@ class Modul(models.Model):
         Aynı haftadaki modüller bu versiyon ile birlikte sırayla değil, toplu olarak erişime açılır.
         """
 
-        if LockSystem.objects.filter(users__in=kullanici):
+        if LockSystem.objects.filter(users=kullanici).exists():
             return True
 
         # Admin ve superuser her zaman erişebilir
@@ -755,7 +755,7 @@ class HaftalikAktivite(models.Model):
         Önceki hafta modülleri ve aktiviteleri tamamlanmışsa bir sonraki haftaya erişim izni verir.
         Aynı haftadaki aktiviteler bu versiyon ile birlikte sırayla değil, toplu olarak erişime açılır.
         """
-        if LockSystem.objects.filter(users__in=kullanici):
+        if LockSystem.objects.filter(users=kullanici).exists():
             return True
 
         # Admin ve superuser her zaman erişebilir

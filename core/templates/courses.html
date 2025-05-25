@@ -279,11 +279,12 @@
               <!-- Aktiviteler Tab İçeriği -->
               <div class="tab-pane fade" id="activities-{{ hafta.grouper }}" role="tabpanel" aria-labelledby="activities-tab-{{ hafta.grouper }}">
                 <div class="row g-4">
+                 
                   {% if aktiviteler %}
                     {% for aktivite in aktiviteler reversed %}
                       {% if aktivite.hafta == hafta.grouper %}
                         <div class="col-lg-4 col-md-6">
-                          {% if aktivite.erisim_var and hafta_tamamlanan_moduller|get_item:hafta.grouper %}
+                          {% if aktivite.erisim_var %}
                             <div class="activity-card h-100 rounded-4 overflow-hidden shadow-sm">
                               <a href="{% url 'aktivite_detay' aktivite.id %}" class="text-decoration-none">
                                 <div class="activity-header position-relative">
