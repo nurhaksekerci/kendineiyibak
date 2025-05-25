@@ -16,56 +16,56 @@ from .models import (
 from django.utils import timezone
 
 # User Admin için ek alanları ekle
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'fullname', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
-    list_editable = ('is_active', 'is_staff')
-    search_fields = ('username', 'email', 'first_name', 'last_name', 'fullname')
-    fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Kişisel Bilgiler', {'fields': ('fullname', 'first_name', 'last_name', 'email', 'sorumlu_staff')}),
-        ('Yetkiler', {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
-            'description': 'Kullanıcıya yönetim paneli erişimi vermek için "Staff statüsü" (is_staff) seçeneğini işaretleyin.'
-        }),
-        ('Önemli Tarihler', {'fields': ('last_login', 'date_joined', 'kayit_tarihi')}),
-    )
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'fullname', 'first_name', 'last_name', 'email', 'password1', 'password2'),
-        }),
-        ('Yetkiler', {
-            'classes': ('wide',),
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'sorumlu_staff'),
-            'description': 'Kullanıcıya yönetim paneli erişimi vermek için "Staff statüsü" (is_staff) seçeneğini işaretleyin.'
-        }),
-    )
+# class CustomUserAdmin(UserAdmin):
+#     list_display = ('username', 'email', 'fullname', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser')
+#     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
+#     list_editable = ('is_active', 'is_staff')
+#     search_fields = ('username', 'email', 'first_name', 'last_name', 'fullname')
+#     fieldsets = (
+#         (None, {'fields': ('username', 'password')}),
+#         ('Kişisel Bilgiler', {'fields': ('fullname', 'first_name', 'last_name', 'email', 'sorumlu_staff')}),
+#         ('Yetkiler', {
+#             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+#             'description': 'Kullanıcıya yönetim paneli erişimi vermek için "Staff statüsü" (is_staff) seçeneğini işaretleyin.'
+#         }),
+#         ('Önemli Tarihler', {'fields': ('last_login', 'date_joined', 'kayit_tarihi')}),
+#     )
+#     add_fieldsets = (
+#         (None, {
+#             'classes': ('wide',),
+#             'fields': ('username', 'fullname', 'first_name', 'last_name', 'email', 'password1', 'password2'),
+#         }),
+#         ('Yetkiler', {
+#             'classes': ('wide',),
+#             'fields': ('is_active', 'is_staff', 'is_superuser', 'sorumlu_staff'),
+#             'description': 'Kullanıcıya yönetim paneli erişimi vermek için "Staff statüsü" (is_staff) seçeneğini işaretleyin.'
+#         }),
+#     )
     
-    def sorumlu_staff_display(self, obj):
-        if obj.sorumlu_staff:
-            first_name = obj.sorumlu_staff.first_name or ""
-            last_name = obj.sorumlu_staff.last_name or ""
-            full_name = f"{first_name} {last_name}".strip()
-            return full_name if full_name else obj.sorumlu_staff.username
-        return "-"
-    sorumlu_staff_display.short_description = "Sorumlu Staff"
+#     def sorumlu_staff_display(self, obj):
+#         if obj.sorumlu_staff:
+#             first_name = obj.sorumlu_staff.first_name or ""
+#             last_name = obj.sorumlu_staff.last_name or ""
+#             full_name = f"{first_name} {last_name}".strip()
+#             return full_name if full_name else obj.sorumlu_staff.username
+#         return "-"
+#     sorumlu_staff_display.short_description = "Sorumlu Staff"
     
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # Staff olmayan kullanıcılara sorumlu_staff olarak sadece staff kullanıcıları göster
-        if db_field.name == "sorumlu_staff":
-            kwargs["queryset"] = User.objects.filter(is_staff=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+#         # Staff olmayan kullanıcılara sorumlu_staff olarak sadece staff kullanıcıları göster
+#         if db_field.name == "sorumlu_staff":
+#             kwargs["queryset"] = User.objects.filter(is_staff=True)
+#         return super().formfield_for_foreignkey(db_field, request, **kwargs)
         
-    def save_model(self, request, obj, form, change):
-        """Kullanıcı kaydedilirken kayıt tarihini bugün olarak ayarla (eğer belirtilmemişse)"""
-        if not obj.pk and not hasattr(obj, 'kayit_tarihi'):
-            obj.kayit_tarihi = timezone.now().date()
-        super().save_model(request, obj, form, change)
+#     def save_model(self, request, obj, form, change):
+#         """Kullanıcı kaydedilirken kayıt tarihini bugün olarak ayarla (eğer belirtilmemişse)"""
+#         if not obj.pk and not hasattr(obj, 'kayit_tarihi'):
+#             obj.kayit_tarihi = timezone.now().date()
+#         super().save_model(request, obj, form, change)
 
-# User Admin'i özelleştirilmiş versiyonla değiştir
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+# # User Admin'i özelleştirilmiş versiyonla değiştir
+# admin.site.unregister(User)
+# admin.site.register(User, CustomUserAdmin)
 
 # Admin panel kayıtları
 @admin.register(Kategori)

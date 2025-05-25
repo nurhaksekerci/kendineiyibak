@@ -170,10 +170,16 @@ class Modul(models.Model):
         Ayrıca önceki hafta modülleri ve aktiviteleri tamamlanmışsa bir sonraki haftaya erişim izni verir.
         Aynı haftadaki modüller bu versiyon ile birlikte sırayla değil, toplu olarak erişime açılır.
         """
+
+        if LockSystem.objects.filter(users__in=kullanici):
+            return True
+
         # Admin ve superuser her zaman erişebilir
         if kullanici.is_superuser or kullanici.is_staff:
             return True
-            
+        
+        
+        
         # İlk hafta her zaman erişilebilir
         if self.hafta == 1:
             return True
@@ -749,10 +755,15 @@ class HaftalikAktivite(models.Model):
         Önceki hafta modülleri ve aktiviteleri tamamlanmışsa bir sonraki haftaya erişim izni verir.
         Aynı haftadaki aktiviteler bu versiyon ile birlikte sırayla değil, toplu olarak erişime açılır.
         """
+        if LockSystem.objects.filter(users__in=kullanici):
+            return True
+
         # Admin ve superuser her zaman erişebilir
         if kullanici.is_superuser or kullanici.is_staff:
             return True
-            
+        
+        
+
         # İlk hafta her zaman erişilebilir
         if self.hafta == 1:
             return True
@@ -962,3 +973,13 @@ class KullaniciAktiviteYaniti(models.Model):
             return tablo_veri.get(hucre_key, "")
         except (TypeError, KeyError):
             return ""
+
+
+class LockSystem(models.Model):
+    users = models.ManyToManyField(User, related_name='locked_users', db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"LockSystem for {self.users.count()} users"
+

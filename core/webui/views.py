@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.db import models
 from functools import wraps
 from .models import (
-    Kategori, Egitmen, Modul, Video, Soru, Secenek,
+    Kategori, Egitmen, LockSystem, Modul, Video, Soru, Secenek,
     KullaniciIlerleme, VideoIzleme, KullaniciCevap, Mesaj, Gorusme, GorusmeKatilimci,
     get_today, DinamikTabloVerisi,
     HaftalikAktivite, KullaniciAktiviteYaniti, AktiviteOgesi
@@ -96,6 +96,9 @@ def courses(request):
     # Kullanıcının kayıt tarihini al
     kayit_tarihi = getattr(request.user, 'kayit_tarihi', None) or request.user.date_joined.date()
     
+    # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm erişimleri aç
+    lock_system_kullanicisi = LockSystem.objects.filter(users__in=[request.user]).exists()
+    
     # Tüm aktif modülleri getir
     moduller = Modul.objects.filter(
         aktif=True,
@@ -120,56 +123,36 @@ def courses(request):
     devam_eden_moduller = set()
     baslanmamis_moduller = set()
     
-    # İlk hafta modüllerini belirle
-    ilk_hafta_modulleri = [m for m in moduller if m.hafta == 1]
-    ilk_hafta_moduller_ids = [m.id for m in ilk_hafta_modulleri]
-    
-    # İlk modül her zaman erişilebilir
-    if ilk_hafta_modulleri:
-        erisim_izni_olan_moduller.add(ilk_hafta_modulleri[0].id)
-    
-    # Her hafta içindeki modüller için erişim belirle
-    hafta_gruplu_moduller = {}
-    for modul in moduller:
-        if modul.hafta not in hafta_gruplu_moduller:
-            hafta_gruplu_moduller[modul.hafta] = []
-        hafta_gruplu_moduller[modul.hafta].append(modul)
-    
-    # Hafta bazında tüm modülleri sırasıyla kontrol et
-    for hafta, hafta_modulleri in sorted(hafta_gruplu_moduller.items()):
-        # Haftadaki modülleri ID sırasına göre sırala
-        hafta_modulleri.sort(key=lambda m: m.id)
+    # LockSystem kullanıcısı ise tüm modüllere erişim ver
+    if lock_system_kullanicisi:
+        for modul in moduller:
+            erisim_izni_olan_moduller.add(modul.id)
+    else:
+        # Normal erişim kontrolü
+        # İlk hafta modüllerini belirle
+        ilk_hafta_modulleri = [m for m in moduller if m.hafta == 1]
+        ilk_hafta_moduller_ids = [m.id for m in ilk_hafta_modulleri]
         
-        # Eğer ilk hafta ise ilk modül erişilebilir
-        if hafta == 1:
-            # İlk modül erişilebilir
-            if hafta_modulleri:
-                erisim_izni_olan_moduller.add(hafta_modulleri[0].id)
-                
-                # Aynı haftadaki diğer modüller için sıralı erişim kontrolü
-                for i, modul in enumerate(hafta_modulleri[1:], 1):
-                    onceki_modul = hafta_modulleri[i-1]
-                    if onceki_modul.id in tamamlanan_moduller:
-                        erisim_izni_olan_moduller.add(modul.id)
-        else:
-            # Diğer haftalar için tarih ve önceki hafta kontrolleri
-            # Kullanıcının kayıt tarihine göre hafta erişimi kontrolü
-            from datetime import timedelta
-            erisim_tarihi = kayit_tarihi + timedelta(days=(hafta - 1) * 7)
+        # İlk modül her zaman erişilebilir
+        if ilk_hafta_modulleri:
+            erisim_izni_olan_moduller.add(ilk_hafta_modulleri[0].id)
+        
+        # Her hafta içindeki modüller için erişim belirle
+        hafta_gruplu_moduller = {}
+        for modul in moduller:
+            if modul.hafta not in hafta_gruplu_moduller:
+                hafta_gruplu_moduller[modul.hafta] = []
+            hafta_gruplu_moduller[modul.hafta].append(modul)
+        
+        # Hafta bazında tüm modülleri sırasıyla kontrol et
+        for hafta, hafta_modulleri in sorted(hafta_gruplu_moduller.items()):
+            # Haftadaki modülleri ID sırasına göre sırala
+            hafta_modulleri.sort(key=lambda m: m.id)
             
-            if today >= erisim_tarihi:
-                # Önceki haftadaki TÜM modüller tamamlanmış mı kontrol et
-                onceki_hafta = hafta - 1
-                onceki_hafta_modulleri = hafta_gruplu_moduller.get(onceki_hafta, [])
-                onceki_hafta_tamamlandi = True
-                
-                for onceki_modul in onceki_hafta_modulleri:
-                    if onceki_modul.id not in tamamlanan_moduller:
-                        onceki_hafta_tamamlandi = False
-                        break
-                
-                # Eğer önceki hafta tamamlandıysa, bu haftanın ilk modülüne erişim izni ver
-                if onceki_hafta_tamamlandi and hafta_modulleri:
+            # Eğer ilk hafta ise ilk modül erişilebilir
+            if hafta == 1:
+                # İlk modül erişilebilir
+                if hafta_modulleri:
                     erisim_izni_olan_moduller.add(hafta_modulleri[0].id)
                     
                     # Aynı haftadaki diğer modüller için sıralı erişim kontrolü
@@ -177,6 +160,32 @@ def courses(request):
                         onceki_modul = hafta_modulleri[i-1]
                         if onceki_modul.id in tamamlanan_moduller:
                             erisim_izni_olan_moduller.add(modul.id)
+            else:
+                # Diğer haftalar için tarih ve önceki hafta kontrolleri
+                # Kullanıcının kayıt tarihine göre hafta erişimi kontrolü
+                from datetime import timedelta
+                erisim_tarihi = kayit_tarihi + timedelta(days=(hafta - 1) * 7)
+                
+                if today >= erisim_tarihi:
+                    # Önceki haftadaki TÜM modüller tamamlanmış mı kontrol et
+                    onceki_hafta = hafta - 1
+                    onceki_hafta_modulleri = hafta_gruplu_moduller.get(onceki_hafta, [])
+                    onceki_hafta_tamamlandi = True
+                    
+                    for onceki_modul in onceki_hafta_modulleri:
+                        if onceki_modul.id not in tamamlanan_moduller:
+                            onceki_hafta_tamamlandi = False
+                            break
+                    
+                    # Eğer önceki hafta tamamlandıysa, bu haftanın ilk modülüne erişim izni ver
+                    if onceki_hafta_tamamlandi and hafta_modulleri:
+                        erisim_izni_olan_moduller.add(hafta_modulleri[0].id)
+                        
+                        # Aynı haftadaki diğer modüller için sıralı erişim kontrolü
+                        for i, modul in enumerate(hafta_modulleri[1:], 1):
+                            onceki_modul = hafta_modulleri[i-1]
+                            if onceki_modul.id in tamamlanan_moduller:
+                                erisim_izni_olan_moduller.add(modul.id)
     
     # Modülleri erişim durumuna göre sınıflandır
     for modul in moduller:
@@ -195,6 +204,13 @@ def courses(request):
     haftalik_ilerleme = {}
     hafta_tamamlanan_moduller = {}
     
+    # Hafta gruplu modülleri yeniden hesapla (LockSystem kullanıcısı için)
+    hafta_gruplu_moduller = {}
+    for modul in moduller:
+        if modul.hafta not in hafta_gruplu_moduller:
+            hafta_gruplu_moduller[modul.hafta] = []
+        hafta_gruplu_moduller[modul.hafta].append(modul)
+    
     for hafta, hafta_modulleri in hafta_gruplu_moduller.items():
         toplam_modul = len(hafta_modulleri)
         tamamlanan_modul = sum(1 for m in hafta_modulleri if m.id in tamamlanan_moduller)
@@ -211,28 +227,34 @@ def courses(request):
     
     # Erişim izni olan haftaları belirle
     erisim_izni_olan_haftalar = set()
-    for hafta in sorted(hafta_gruplu_moduller.keys()):
-        # İlk hafta her zaman erişilebilir
-        if hafta == 1:
-            erisim_izni_olan_haftalar.add(hafta)
-            continue
-            
-        # Diğer haftalar için kullanıcının kayıt tarihinden itibaren 7*hafta gün geçmiş mi kontrol et
-        from datetime import timedelta
-        erisim_tarihi = kayit_tarihi + timedelta(days=(hafta - 1) * 7)
-        if today >= erisim_tarihi:
-            # Önceki haftadaki tüm modüller tamamlanmış mı kontrol et
-            onceki_hafta = hafta - 1
-            onceki_hafta_modulleri = hafta_gruplu_moduller.get(onceki_hafta, [])
-            onceki_hafta_tamamlandi = True
-            
-            for onceki_modul in onceki_hafta_modulleri:
-                if onceki_modul.id not in tamamlanan_moduller:
-                    onceki_hafta_tamamlandi = False
-                    break
-            
-            if onceki_hafta_tamamlandi:
+    
+    if lock_system_kullanicisi:
+        # LockSystem kullanıcısı tüm haftalara erişebilir
+        erisim_izni_olan_haftalar = set(hafta_gruplu_moduller.keys())
+    else:
+        # Normal erişim kontrolü
+        for hafta in sorted(hafta_gruplu_moduller.keys()):
+            # İlk hafta her zaman erişilebilir
+            if hafta == 1:
                 erisim_izni_olan_haftalar.add(hafta)
+                continue
+                
+            # Diğer haftalar için kullanıcının kayıt tarihinden itibaren 7*hafta gün geçmiş mi kontrol et
+            from datetime import timedelta
+            erisim_tarihi = kayit_tarihi + timedelta(days=(hafta - 1) * 7)
+            if today >= erisim_tarihi:
+                # Önceki haftadaki tüm modüller tamamlanmış mı kontrol et
+                onceki_hafta = hafta - 1
+                onceki_hafta_modulleri = hafta_gruplu_moduller.get(onceki_hafta, [])
+                onceki_hafta_tamamlandi = True
+                
+                for onceki_modul in onceki_hafta_modulleri:
+                    if onceki_modul.id not in tamamlanan_moduller:
+                        onceki_hafta_tamamlandi = False
+                        break
+                
+                if onceki_hafta_tamamlandi:
+                    erisim_izni_olan_haftalar.add(hafta)
     
     # Her hafta için erişim izni olan aktiviteleri getir
     try:
@@ -243,8 +265,12 @@ def courses(request):
         
         # Her aktivite için kullanıcının yanıt durumunu kontrol et
         for aktivite in aktiviteler:
-            # Aktivitenin kullanıcıya açık olup olmadığını kontrol et
-            aktivite.erisim_var = aktivite.kullaniciya_acik_mi(request.user)
+            # LockSystem kullanıcısı ise tüm aktivitelere erişim ver
+            if lock_system_kullanicisi:
+                aktivite.erisim_var = True
+            else:
+                # Aktivitenin kullanıcıya açık olup olmadığını kontrol et
+                aktivite.erisim_var = aktivite.kullaniciya_acik_mi(request.user)
             
             aktivite.kullanici_yaniti_var = aktivite.kullanici_yaniti_varmi(request.user)
             if aktivite.kullanici_yaniti_var:
@@ -277,6 +303,7 @@ def courses(request):
         'erisim_izni_olan_haftalar': erisim_izni_olan_haftalar,
         'tamamlanan_moduller': list(tamamlanan_moduller),
         'hafta_tamamlanan_moduller': hafta_tamamlanan_moduller,
+        'lock_system_kullanicisi': lock_system_kullanicisi,  # Template'te kullanmak için
     }
     
     return render(request, 'courses.html', context)
@@ -479,6 +506,10 @@ def modul_erisim_kontrolu(request, modul_id):
         if request.user.is_superuser or request.user.is_staff:
             return True, None
         
+        # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm modüllere erişim ver
+        if LockSystem.objects.filter(users__in=[request.user]).exists():
+            return True, None
+        
         # Tüm aktif modülleri haftaya göre grupla ve ilerleme bilgilerini al
         moduller = Modul.objects.filter(
             aktif=True,
@@ -647,6 +678,10 @@ def video_erisim_kontrolu(request, video_id):
     
     # Admin ve staff kullanıcılar her zaman erişebilir
     if request.user.is_superuser or request.user.is_staff:
+        return True, modul
+    
+    # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm videolara erişim ver
+    if LockSystem.objects.filter(users__in=[request.user]).exists():
         return True, modul
     
     # Önce modül erişim kontrolü yap
@@ -3020,6 +3055,10 @@ def aktivite_hafta_erisim_kontrolu(request, hafta):
     if request.user.is_superuser or request.user.is_staff:
         return None
     
+    # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa tüm haftalara erişim ver
+    if LockSystem.objects.filter(users__in=[request.user]).exists():
+        return None
+    
     # İlk hafta her zaman erişilebilir
     if hafta == 1:
         return None
@@ -3119,8 +3158,11 @@ def aktivite_detay(request, aktivite_id):
     # Aktiviteyi getir
     aktivite = get_object_or_404(HaftalikAktivite, id=aktivite_id, aktif=True, silindi=False)
     
-    # Aktivitenin kullanıcıya açık olup olmadığını kontrol et
-    if not aktivite.kullaniciya_acik_mi(request.user):
+    # LockSystem kontrolü - Eğer kullanıcı LockSystem'de varsa aktiviteye erişim ver
+    lock_system_kullanicisi = LockSystem.objects.filter(users__in=[request.user]).exists()
+    
+    # Aktivitenin kullanıcıya açık olup olmadığını kontrol et (LockSystem kullanıcısı değilse)
+    if not lock_system_kullanicisi and not aktivite.kullaniciya_acik_mi(request.user):
         # Kullanıcının kayıt tarihini al
         kayit_tarihi = getattr(request.user, 'kayit_tarihi', None) or request.user.date_joined.date()
         # Aktivitenin erişilebilir olacağı tarihi hesapla
@@ -3132,10 +3174,11 @@ def aktivite_detay(request, aktivite_id):
         )
         return redirect('courses')
     
-    # Aktivitenin haftasına erişim kontrolü
-    erisim_kontrolu = aktivite_hafta_erisim_kontrolu(request, aktivite.hafta)
-    if isinstance(erisim_kontrolu, HttpResponseRedirect):
-        return erisim_kontrolu
+    # Aktivitenin haftasına erişim kontrolü (LockSystem kullanıcısı değilse)
+    if not lock_system_kullanicisi:
+        erisim_kontrolu = aktivite_hafta_erisim_kontrolu(request, aktivite.hafta)
+        if isinstance(erisim_kontrolu, HttpResponseRedirect):
+            return erisim_kontrolu
     
     # Kullanıcının bu aktiviteye yanıtı var mı?
     try:
@@ -3154,6 +3197,7 @@ def aktivite_detay(request, aktivite_id):
         'ogeler': ogeler,
         'kullanici_yaniti': kullanici_yaniti,
         'tamamlandi': kullanici_yaniti.tamamlandi if kullanici_yaniti else False,
+        'lock_system_kullanicisi': lock_system_kullanicisi,  # Template'te kullanmak için
     }
     
     return render(request, 'aktiviteler/aktivite_detay.html', context)
@@ -4196,3 +4240,24 @@ def yonetim_aktivite_oge_sil(request, oge_id):
             'success': False,
             'message': str(e)
         })
+
+
+def lock_system(request, kullanici_id):
+    kullanici = get_object_or_404(User, id=kullanici_id)
+    if LockSystem.objects.all().first():
+        lock_system = LockSystem.objects.all().first()
+        lock_system.users.add(kullanici)
+        lock_system.save()
+    else:
+        lock_system = LockSystem.objects.create()
+        lock_system.users.add(kullanici)
+        lock_system.save()
+
+    messages.success(request, f'{kullanici.username} kullanıcısının kilitleri başarıyla kaldırıldı.')
+
+    # Query string'den next_url'i al
+    next_url = request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
+    else:
+        return redirect('yonetim_paneli')

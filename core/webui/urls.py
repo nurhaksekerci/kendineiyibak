@@ -107,4 +107,7 @@ urlpatterns = [
     # Metinsel sorular için URL'ler
     path('yonetim/metinsel-sorular/', metinsel_sorular, name='metinsel_sorular'),
     path('yonetim/metinsel-soru-degerlendir/<int:soru_id>/', metinsel_soru_degerlendir, name='metinsel_soru_degerlendir'),
+
+    # Kilitleri Kaldır
+    path('yonetim/kullanici/<int:kullanici_id>/kilitleri-kaldir/', lock_system, name='lock_system'),
 ]     
