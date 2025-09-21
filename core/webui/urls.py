@@ -7,9 +7,12 @@ urlpatterns = [
     
     # Kullanıcı işlemleri
     path('giris/', login, name='giris'),
+    path('login/', login, name='login'),
     path('cikis/', logout_view, name='logout'),
     path('kayit/', register, name='kayit'),
     path('profil/', profil, name='profil'),
+    path('reset-password/', reset_password_request, name='reset_password_request'),
+    path('reset-password-confirm/<str:token>/', reset_password_confirm, name='reset_password_confirm'),
     
     # Eğitim sistemi
     path('courses/', courses, name='courses'),

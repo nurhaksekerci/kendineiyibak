@@ -28,6 +28,7 @@ urlpatterns = [
     # Ana uygulamalar
     path('', include('webui.urls')),
     
+    
     # Forum URL'leri - Doğru yolu kullanın
     path('forum/', include('forum.urls')),
     

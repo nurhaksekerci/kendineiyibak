@@ -983,3 +983,29 @@ class LockSystem(models.Model):
     def __str__(self):
         return f"LockSystem for {self.users.count()} users"
 
+
+class PasswordResetToken(models.Model):
+    """Şifre sıfırlama token'ları"""
+    kullanici = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Kullanıcı")
+    token = models.CharField(max_length=100, unique=True, verbose_name="Token")
+    olusturma_tarihi = models.DateTimeField(auto_now_add=True, verbose_name="Oluşturma Tarihi")
+    son_kullanma_tarihi = models.DateTimeField(verbose_name="Son Kullanma Tarihi")
+    kullanildi = models.BooleanField(default=False, verbose_name="Kullanıldı mı?")
+    
+    class Meta:
+        verbose_name = "Şifre Sıfırlama Token"
+        verbose_name_plural = "Şifre Sıfırlama Tokenları"
+        ordering = ['-olusturma_tarihi']
+    
+    def __str__(self):
+        return f"{self.kullanici.username} - {self.token[:10]}..."
+    
+    def is_valid(self):
+        """Token'ın geçerli olup olmadığını kontrol eder"""
+        return not self.kullanildi and timezone.now() < self.son_kullanma_tarihi
+    
+    def mark_as_used(self):
+        """Token'ı kullanılmış olarak işaretle"""
+        self.kullanildi = True
+        self.save()
+

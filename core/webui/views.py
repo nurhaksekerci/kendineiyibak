@@ -13,7 +13,7 @@ from .models import (
     Kategori, Egitmen, LockSystem, Modul, Video, Soru, Secenek,
     KullaniciIlerleme, VideoIzleme, KullaniciCevap, Mesaj, Gorusme, GorusmeKatilimci,
     get_today, DinamikTabloVerisi,
-    HaftalikAktivite, KullaniciAktiviteYaniti, AktiviteOgesi
+    HaftalikAktivite, KullaniciAktiviteYaniti, AktiviteOgesi, PasswordResetToken
 )
 # Forum modellerini import edelim
 from forum.models import ForumKategori, ForumKonu, ForumYorum, ForumBegeni, ForumGoruntulenme
@@ -441,6 +441,141 @@ def logout_view(request):
     messages.info(request, 'Başarıyla çıkış yaptınız.')
     logout(request)
     return redirect('index')
+
+def reset_password_confirm(request, token):
+    """Şifre sıfırlama token'ını doğrula ve yeni şifre belirle"""
+    try:
+        reset_token = PasswordResetToken.objects.get(token=token)
+        
+        # Token'ın geçerliliğini kontrol et
+        if not reset_token.is_valid():
+            messages.error(request, 'Bu şifre sıfırlama linki geçersiz veya süresi dolmuş.')
+            return redirect('giris')
+        
+        if request.method == 'POST':
+            password1 = request.POST.get('password1', '').strip()
+            password2 = request.POST.get('password2', '').strip()
+            
+            # Şifre kontrolü
+            if not password1 or not password2:
+                messages.error(request, 'Şifre alanları boş bırakılamaz.')
+                return render(request, 'reset_password_confirm.html', {'token': token})
+            
+            # Şifre uzunluk kontrolü
+            if len(password1) < 6:
+                messages.error(request, 'Şifre en az 6 karakter olmalıdır.')
+                return render(request, 'reset_password_confirm.html', {'token': token})
+            
+            # Şifre eşleşme kontrolü
+            if password1 != password2:
+                messages.error(request, 'Şifreler eşleşmiyor.')
+                return render(request, 'reset_password_confirm.html', {'token': token})
+            
+            # Şifreyi güncelle
+            user = reset_token.kullanici
+            user.set_password(password1)
+            user.save()
+            
+            # Token'ı kullanılmış olarak işaretle
+            reset_token.mark_as_used()
+            
+            messages.success(request, 'Şifreniz başarıyla güncellendi. Yeni şifrenizle giriş yapabilirsiniz.')
+            return redirect('giris')
+        
+        # GET isteği - şifre sıfırlama formunu göster
+        context = {
+            'token': token,
+            'user': reset_token.kullanici
+        }
+        return render(request, 'reset_password_confirm.html', context)
+        
+    except PasswordResetToken.DoesNotExist:
+        messages.error(request, 'Geçersiz şifre sıfırlama linki.')
+        return redirect('giris')
+
+def reset_password_request(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        
+        # E-posta kontrolü
+        if not email:
+            messages.error(request, 'E-posta adresi boş bırakılamaz.')
+            return render(request, 'reset_password.html')
+        
+        # E-posta formatı kontrolü
+        import re
+        email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        if not email_pattern.match(email):
+            messages.error(request, 'Geçerli bir e-posta adresi giriniz.')
+            return render(request, 'reset_password.html')
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Önceki aktif token'ları pasif hale getir
+            PasswordResetToken.objects.filter(kullanici=user, kullanildi=False).update(kullanildi=True)
+            
+            # Yeni token oluştur
+            from django.utils.crypto import get_random_string
+            token = get_random_string(32)
+            
+            # Token'ın son kullanma tarihini 1 saat sonra belirle
+            from datetime import timedelta
+            son_kullanma_tarihi = timezone.now() + timedelta(hours=1)
+            
+            # Token'ı veritabanına kaydet
+            reset_token = PasswordResetToken.objects.create(
+                kullanici=user,
+                token=token,
+                son_kullanma_tarihi=son_kullanma_tarihi
+            )
+            
+            # Şifre sıfırlama linkini oluştur
+            from django.urls import reverse
+            reset_url = reverse('reset_password_confirm', args=[token])
+            reset_link = request.build_absolute_uri(reset_url)
+            
+            # E-posta gönder
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            subject = 'Kendine İyi Bak - Şifre Sıfırlama Talimatları'
+            message = f'''
+Merhaba {user.first_name or user.username},
+
+Şifrenizi sıfırlamak için aşağıdaki linke tıklayın:
+{reset_link}
+
+Bu link 1 saat boyunca geçerlidir.
+
+Eğer bu isteği siz yapmadıysanız, bu e-postayı görmezden gelebilirsiniz.
+
+İyi günler,
+Kendine İyi Bak Ekibi
+            '''
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Şifre sıfırlama linki e-posta adresinize gönderildi. Lütfen e-posta kutunuzu kontrol edin.')
+            return render(request, 'reset_password.html')
+            
+        except User.DoesNotExist:
+            # Güvenlik nedeniyle aynı mesajı göster (email varlığını gizle)
+            messages.success(request, 'Eğer bu e-posta adresine kayıtlı bir hesap varsa, şifre sıfırlama linki gönderilmiştir.')
+            return render(request, 'reset_password.html')
+            
+        except Exception as e:
+            messages.error(request, 'E-posta gönderilirken bir hata oluştu. Lütfen tekrar deneyin.')
+            return render(request, 'reset_password.html')
+    
+    return render(request, 'reset_password.html')
+
 
 # Kullanıcı profil sayfası
 @custom_login_required
@@ -2682,6 +2817,116 @@ def yeni_gorusme(request):
             gorusme.bildirim_gonder('planlandi')
         elif durum == 'aktif':
             gorusme.bildirim_gonder('aktif')
+        
+        # Email bildirimi gönder
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            # Oluşturana email gönder
+            if request.user.email:
+                olusturan_subject = 'Kendine İyi Bak - Randevu Kaydınız Alınmıştır'
+                
+                if durum == 'bekliyor':
+                    tarih_str = baslangic_zamani.strftime('%d.%m.%Y %H:%M')
+                    olusturan_message = f'''
+Merhaba {request.user.first_name or request.user.username},
+
+"{baslik}" başlıklı randevu kaydınız başarıyla alınmıştır.
+
+Randevu Detayları:
+- Başlık: {baslik}
+- Tarih ve Saat: {tarih_str}
+- Açıklama: {aciklama or "Açıklama eklenmemiş"}
+
+Randevuya platformdan görüşmeler bölümünden ulaşabilirsiniz.
+
+İyi günler,
+Kendine İyi Bak Ekibi
+                    '''
+                else:
+                    olusturan_message = f'''
+Merhaba {request.user.first_name or request.user.username},
+
+"{baslik}" başlıklı anlık görüşmeniz başarıyla oluşturulmuştur.
+
+Görüşme Detayları:
+- Başlık: {baslik}
+- Durum: Aktif (Şimdi katılabilirsiniz)
+- Açıklama: {aciklama or "Açıklama eklenmemiş"}
+
+Görüşme linkine platformdan ulaşabilirsiniz.
+
+İyi günler,
+Kendine İyi Bak Ekibi
+                    '''
+                
+                send_mail(
+                    olusturan_subject,
+                    olusturan_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [request.user.email],
+                    fail_silently=True,
+                )
+            
+            # Seçilen katılımcılara email gönder (sadece staff olanlara)
+            if giris_izni == 'davetli':
+                katilimcilar = GorusmeKatilimci.objects.filter(gorusme=gorusme)
+                
+                for katilimci_obj in katilimcilar:
+                    katilimci = katilimci_obj.kullanici
+                    
+                    # Sadece staff olan katılımcılara email gönder
+                    if katilimci.is_staff and katilimci.email:
+                        katilimci_subject = 'Kendine İyi Bak - Yeni Randevu Talebi'
+                        
+                        if durum == 'bekliyor':
+                            tarih_str = baslangic_zamani.strftime('%d.%m.%Y %H:%M')
+                            katilimci_message = f'''
+Merhaba {katilimci.first_name or katilimci.username},
+
+{request.user.first_name or request.user.username} tarafından yeni bir randevu talebi oluşturulmuştur.
+
+Randevu Detayları:
+- Başlık: {baslik}
+- Talep Eden: {request.user.first_name or request.user.username}
+- Tarih ve Saat: {tarih_str}
+- Açıklama: {aciklama or "Açıklama eklenmemiş"}
+
+Bu randevuyu onaylamak veya detaylarını görmek için platformdaki görüşmeler bölümünü ziyaret edin.
+
+İyi çalışmalar,
+Kendine İyi Bak Ekibi
+                            '''
+                        else:
+                            katilimci_message = f'''
+Merhaba {katilimci.first_name or katilimci.username},
+
+{request.user.first_name or request.user.username} tarafından anlık bir görüşme başlatılmıştır.
+
+Görüşme Detayları:
+- Başlık: {baslik}
+- Başlatan: {request.user.first_name or request.user.username}
+- Durum: Aktif (Şimdi katılabilirsiniz)
+- Açıklama: {aciklama or "Açıklama eklenmemiş"}
+
+Görüşmeye katılmak için platformdaki görüşmeler bölümünü ziyaret edin.
+
+İyi çalışmalar,
+Kendine İyi Bak Ekibi
+                            '''
+                        
+                        send_mail(
+                            katilimci_subject,
+                            katilimci_message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [katilimci.email],
+                            fail_silently=True,
+                        )
+                        
+        except Exception as e:
+            # Email gönderme hatası olursa silent fail
+            pass
             
         messages.success(request, 'Görüşme başarıyla oluşturuldu.')
         
@@ -2745,6 +2990,43 @@ def gorusme_detay(request, gorusme_id):
         # Durum değiştiyse bildirim gönder
         if eski_durum != 'aktif':
             gorusme.bildirim_gonder('aktif')
+            
+            # Randevu onaylandı email'i gönder
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                
+                # Oluşturana randevu onaylandı email'i gönder
+                if gorusme.olusturan.email:
+                    tarih_str = gorusme.baslangic_zamani.strftime('%d.%m.%Y %H:%M')
+                    subject = 'Kendine İyi Bak - Randevunuz Onaylandı'
+                    message = f'''
+Merhaba {gorusme.olusturan.get_full_name() or gorusme.olusturan.username},
+
+"{gorusme.baslik}" başlıklı randevunuz onaylanmıştır ve artık aktiftir.
+
+Randevu Detayları:
+- Başlık: {gorusme.baslik}
+- Tarih ve Saat: {tarih_str}
+- Durum: Aktif (Katılım sağlayabilirsiniz)
+
+Görüşmeye katılmak için platformdaki görüşmeler bölümünden randevunuza erişebilirsiniz.
+
+İyi günler,
+Kendine İyi Bak Ekibi
+                    '''
+                    
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [gorusme.olusturan.email],
+                        fail_silently=True,
+                    )
+                    
+            except Exception as e:
+                # Email gönderme hatası olursa silent fail
+                pass
     
     # Kullanıcı görüşmeye katıldı olarak işaretle
     if gorusme.durum == 'aktif' and not gorusme.olusturan == request.user:

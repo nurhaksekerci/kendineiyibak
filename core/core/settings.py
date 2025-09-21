@@ -137,5 +137,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Login URL - Kullanıcı girişi gerektiğinde yönlendirilecek URL
 LOGIN_URL = '/login/'
 
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "yardim.kendineiyibak@gmail.com"
+EMAIL_HOST_PASSWORD = "eobo awbb zmap ynof"
+DEFAULT_FROM_EMAIL = "yardim.kendineiyibak@gmail.com"
+
+# Eski ayarlar (geriye uyumluluk için)
 EMAIL_PASS = "eobo awbb zmap ynof"
 EMAIL_USERNAME = "yardim.kendineiyibak@gmail.com"
