@@ -136,3 +136,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Login URL - Kullanıcı girişi gerektiğinde yönlendirilecek URL
 LOGIN_URL = '/login/'
+
+EMAIL_PASS = "eobo awbb zmap ynof"
+EMAIL_USERNAME = "yardim.kendineiyibak@gmail.com"
