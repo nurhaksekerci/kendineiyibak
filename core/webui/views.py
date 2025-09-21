@@ -418,7 +418,7 @@ def register(request):
         
         try:
             # Kullanıcı oluştur
-            user = User.objects.create_user(username=username, email=email, password=password1)
+            user = User.objects.create_user(username=username, first_name=fullname, email=email, password=password1)
             
             # Fullname alanını ekle
             user.fullname = fullname
